@@ -282,7 +282,7 @@ Tools never look at HTTP headers, env vars, or the auth provider. They consult `
 ### 6.2 Pagination & async (two separate mechanisms)
 
 - **Pagination** for explicit follow-up: `vo_tap_query` accepts `cursor`, returns `next_cursor` when more rows are available. Backend injects `OFFSET` + stable `ORDER BY` if caller's ADQL lacks one.
-- **Async** for big jobs: the `vo_tap_submit` / `status` / `results` / `abort` path. Async results that complete go through the same shaper — a giant async result still gets staged to a Resource or MyDB.
+- **Async** for big jobs: `vo_tap_query` auto-promotes to async and returns a job handle, then `vo_tap_status` / `vo_tap_results` / `vo_tap_abort` drive the job. Async results that complete go through the same shaper — a giant async result still gets staged to a Resource or MyDB.
 
 ### 6.3 Response envelope
 
@@ -476,8 +476,8 @@ astro-archives-mcp/
 │   ├── tools/
 │   │   ├── ivoa.py             # vo_tap_*, vo_sia_*, vo_cone_*, vo_registry_*
 │   │   ├── datalab.py          # dl_mydb_*
-│   │   ├── alma.py             # alma_datalink_stage (stretch)
-│   │   ├── sparcl.py           # sparcl_* (stretch)
+│   │   ├── alma.py             # alma_datalink_stage (stretch — created when slice B is reached)
+│   │   ├── sparcl.py           # sparcl_* (stretch — created when slice B is reached)
 │   │   └── knowledge.py        # kb_search, object_resolve
 │   ├── shaper.py               # result tier selection
 │   ├── errors.py               # ToolExecutionError taxonomy
