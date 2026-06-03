@@ -1,0 +1,40 @@
+"""Shim around vcrpy's response stub.
+
+astropy.io.votable.parse calls ``response.read(amt, decode_content=True)``
+on the urllib3 HTTPResponse it receives. vcrpy's ``VCRHTTPResponse.read``
+forwards ``decode_content`` straight to the underlying ``BytesIO``, which
+rejects unknown kwargs. We strip ``decode_content`` so replay matches the
+behaviour of a real urllib3 response (which simply ignores it for already-
+decoded content).
+
+Lives at tests/conftest.py (not a subdirectory) so the patch applies to
+every test that uses @pytest.mark.vcr — including the in-memory MCP client
+tests under tests/tools/, which exercise the same astropy votable code path.
+"""
+
+import pytest
+from vcr.stubs import VCRHTTPResponse
+
+from astro_archives_mcp.app import build_mcp
+
+
+@pytest.fixture
+def mcp_server():
+    """In-memory FastMCP instance for tests that talk to it via fastmcp.Client."""
+    return build_mcp()
+
+
+def _read(self, *args, **kwargs):
+    kwargs.pop("decode_content", None)
+    return self._content.read(*args, **kwargs)
+
+
+def _read1(self, *args, **kwargs):
+    kwargs.pop("decode_content", None)
+    return self._content.read1(*args, **kwargs)
+
+
+if not getattr(VCRHTTPResponse, "_decode_content_patched", False):
+    VCRHTTPResponse.read = _read  # type: ignore[assignment]
+    VCRHTTPResponse.read1 = _read1  # type: ignore[assignment]
+    VCRHTTPResponse._decode_content_patched = True  # type: ignore[attr-defined]

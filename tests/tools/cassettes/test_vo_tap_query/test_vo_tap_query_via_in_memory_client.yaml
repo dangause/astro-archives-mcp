@@ -1,0 +1,92 @@
+interactions:
+- request:
+    body: REQUEST=doQuery&LANG=ADQL&MAXREC=10&QUERY=SELECT+TOP+3+ra%2C+dec+FROM+smash_dr2.object+WHERE+ra+BETWEEN+185+AND+185.01+ORDER+BY+ra
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '130'
+      Content-Type:
+      - application/x-www-form-urlencoded
+      User-Agent:
+      - pyVO/1.8.1 Python/3.12.12 (Darwin)
+    method: POST
+    uri: https://datalab.noirlab.edu/tap/sync
+  response:
+    body:
+      string: '<?xml version="1.0" encoding="UTF-8"?>
+
+        <VOTABLE xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+
+        xsi:noNamespaceSchemaLocation="xmlns:http://www.ivoa.net/xml/VOTable-1.2.xsd"
+        version="1.2">
+
+        <RESOURCE type="results">
+
+        <DESCRIPTION>DALServer TAP Query</DESCRIPTION>
+
+        <INFO name="QUERY_STATUS" value="OK"/>
+
+        <INFO name="QUERY" value="SELECT TOP 3 ra, dec FROM smash_dr2.object WHERE
+        ra BETWEEN 185 AND 185.01 ORDER BY ra"/>
+
+        <INFO name="TableRows" value="3"/>
+
+        <TABLE>
+
+        <FIELD ID="ra" name="ra" datatype="double" ucd="pos.eq.ra;meta.main" unit="Degrees">
+
+        <DESCRIPTION>Right Ascension (J2000.0) of source, in degrees</DESCRIPTION>
+
+        </FIELD>
+
+        <FIELD ID="dec" name="dec" datatype="double" ucd="pos.eq.dec;meta.main" unit="Degrees">
+
+        <DESCRIPTION>Declination (J2000.0) of source, in degrees</DESCRIPTION>
+
+        </FIELD>
+
+        <DATA>
+
+        <TABLEDATA>
+
+        <TR><TD>185.00000105710555</TD><TD>-30.503690808206777</TD></TR>
+
+        <TR><TD>185.00000131361767</TD><TD>-31.806085728113533</TD></TR>
+
+        <TR><TD>185.00000183230316</TD><TD>-30.713148489433255</TD></TR>
+
+        </TABLEDATA>
+
+        </DATA>
+
+        </TABLE>
+
+        </RESOURCE>
+
+        </VOTABLE>
+
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Disposition:
+      - attachment; filename="result_i55rrzcslcn4tf70.xml"
+      Content-Type:
+      - application/x-votable+xml
+      Date:
+      - Wed, 03 Jun 2026 02:59:54 GMT
+      Server:
+      - nginx/1.27.3
+      Strict-Transport-Security:
+      - max-age=31536000
+      Transfer-Encoding:
+      - chunked
+    status:
+      code: 200
+      message: OK
+version: 1
