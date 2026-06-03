@@ -3,6 +3,7 @@ from typing import Annotated
 
 from pydantic import Field
 
+from astro_archives_mcp._archive_label import archive_label
 from astro_archives_mcp.backends.tap import TapClient
 from astro_archives_mcp.errors import wrap_tool_errors
 from astro_archives_mcp.shaper import shape_inline_table
@@ -80,17 +81,4 @@ def vo_tap_query(
     stays stable either way.)
     """
     table = _get_tap().query(endpoint=endpoint, adql=adql, maxrec=maxrec)
-    return shape_inline_table(table, archive=_archive_label(endpoint), maxrec=maxrec)
-
-
-def _archive_label(endpoint: str) -> str:
-    """Coarse label for the `archive` field. Static map for Slice A; later
-    slices replace with a registry-aware lookup."""
-    e = endpoint.lower()
-    if "datalab.noirlab" in e:
-        return "datalab"
-    if "almascience" in e:
-        return "alma"
-    if "data-query.nrao" in e:
-        return "nrao_vla"
-    return "other"
+    return shape_inline_table(table, archive=archive_label(endpoint), maxrec=maxrec)
