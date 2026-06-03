@@ -6,11 +6,20 @@ from pydantic import Field
 
 from astro_archives_mcp.backends.tap import TapClient
 from astro_archives_mcp.errors import ToolExecutionError, error_to_payload
+from astro_archives_mcp.observability import current_request_id
 from astro_archives_mcp.shaper import shape_inline_table
 
 log = logging.getLogger(__name__)
 
-_tap = TapClient()
+_tap: TapClient | None = None
+
+
+def _get_tap() -> TapClient:
+    """Lazy accessor so tests can patch TapClient without import-time side effects."""
+    global _tap
+    if _tap is None:
+        _tap = TapClient()
+    return _tap
 
 
 def vo_tap_query(
@@ -70,13 +79,15 @@ def vo_tap_query(
     `message`, `retry_strategy`, and (when available) `hint`.
     """
     try:
-        table = _tap.query(endpoint=endpoint, adql=adql, maxrec=maxrec)
+        table = _get_tap().query(endpoint=endpoint, adql=adql, maxrec=maxrec)
     except ToolExecutionError as e:
-        log.warning("vo_tap_query: %s (request_id=%s)", e.error_class, e.request_id)
-        return {"isError": True, **error_to_payload(e)}
+        rid = current_request_id.get()
+        log.warning("vo_tap_query: %s (request_id=%s)", e.error_class, rid)
+        return {"isError": True, **error_to_payload(e, request_id=rid)}
     except Exception as e:  # noqa: BLE001
-        log.exception("vo_tap_query: unexpected error from backend")
-        return {"isError": True, **error_to_payload(e)}
+        rid = current_request_id.get()
+        log.exception("vo_tap_query: unexpected error (request_id=%s)", rid)
+        return {"isError": True, **error_to_payload(e, request_id=rid)}
     return shape_inline_table(table, archive=_archive_label(endpoint), maxrec=maxrec)
 
 

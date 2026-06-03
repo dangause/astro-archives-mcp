@@ -12,7 +12,16 @@ every test that uses @pytest.mark.vcr — including the in-memory MCP client
 tests under tests/tools/, which exercise the same astropy votable code path.
 """
 
+import pytest
 from vcr.stubs import VCRHTTPResponse
+
+from astro_archives_mcp.app import build_mcp
+
+
+@pytest.fixture
+def mcp_server():
+    """In-memory FastMCP instance for tests that talk to it via fastmcp.Client."""
+    return build_mcp()
 
 
 def _read(self, *args, **kwargs):
