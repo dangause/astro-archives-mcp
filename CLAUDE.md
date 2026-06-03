@@ -50,11 +50,21 @@ Tests mirror this: `tests/unit/` (pure), `tests/backends/` (vcrpy cassettes), `t
 - **Error payloads carry `error_class` + `retry_strategy`.** `error_class` is the discriminator the LLM branches on. No `isError` key (intentional — see `tools/ivoa.py` docstring).
 - **Tokens / raw tracebacks never reach the LLM.** `InternalError.redact_message = True` (ClassVar) drives `error_to_payload` to swap in `_INTERNAL_GENERIC_MESSAGE`. Server logs retain the cause via `__cause__`.
 
-## Workflow
+## Git flow
 
-1. Branch from `main`, e.g. `slice-2-implementation`.
-2. Design changes go through the superpowers skills: brainstorming → writing-plans → executing.
-3. Open a PR. CI (`.github/workflows/ci.yml`) runs ruff + pytest + container build + Inspector smoke.
-4. Merge when green.
+Three branch kinds:
+
+- **`main`** — stable. Only updated by merging from `dev` (or, eventually, release/hotfix branches). Do NOT commit or merge feature work directly to `main`.
+- **`dev`** — integration target for ongoing work. All feature PRs land here.
+- **`<initials>/<feature-name>`** — feature branches, prefixed with the author's initials. Dan uses `dpg/`. Example: `dpg/slice-2-async-tap`. Branched from `dev`, PR'd back to `dev`.
+
+Workflow per change:
+
+1. `git checkout dev && git pull origin dev`
+2. `git checkout -b dpg/<feature-name>`
+3. Implement (design changes go through the superpowers skills: brainstorming → writing-plans → executing).
+4. `gh pr create --base dev` once tests + ruff pass locally. CI (`.github/workflows/ci.yml`) runs ruff + pytest + container build + Inspector smoke.
+5. Merge to `dev` when green.
+6. Periodically (e.g. at slice boundaries), open a PR `dev → main` to promote a stable cut.
 
 Slice-C carryover items (deferred from Slice A's whole-branch review) are tracked in `docs/superpowers/notes/2026-06-03-slice-a-final-review.md`.
