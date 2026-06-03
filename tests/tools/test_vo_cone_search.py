@@ -1,0 +1,49 @@
+import pytest
+from fastmcp import Client
+
+from astro_archives_mcp.errors import TapQueryError
+from astro_archives_mcp.tools import ivoa as ivoa_tools
+
+SCS_ENDPOINT = "https://gaia.ari.uni-heidelberg.de/cone/gaiadr2?"
+
+
+@pytest.mark.vcr
+async def test_vo_cone_search_via_in_memory_client(mcp_server):
+    async with Client(mcp_server) as client:
+        result = await client.call_tool(
+            "vo_cone_search",
+            {
+                "endpoint": SCS_ENDPOINT,
+                "ra": 185.43,
+                "dec": -31.99,
+                "radius_deg": 0.01,
+                "maxrec": 20,
+            },
+        )
+        payload = result.structured_content
+        assert payload["truncated"] is False
+        # Heidelberg Gaia cone returns rows; LLM tool envelope contract:
+        assert "rows" in payload
+        assert "columns" in payload
+        names = {c["name"].lower() for c in payload["columns"]}
+        assert "ra" in names and "dec" in names
+
+
+class _FakeCone:
+    def __init__(self, exc):
+        self._exc = exc
+
+    def search(self, **_):
+        raise self._exc
+
+
+def test_vo_cone_search_error_path(monkeypatch):
+    monkeypatch.setattr(
+        ivoa_tools, "_get_cone",
+        lambda: _FakeCone(exc=TapQueryError(message="bad cone request")),
+    )
+    out = ivoa_tools.vo_cone_search(
+        endpoint=SCS_ENDPOINT,
+        ra=185.0, dec=-31.0, radius_deg=0.1, maxrec=10,
+    )
+    assert out["error_class"] == "tap_query_error"
