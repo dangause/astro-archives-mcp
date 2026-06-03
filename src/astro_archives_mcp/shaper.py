@@ -27,8 +27,8 @@ def shape_inline_table(
         columns.append({
             "name": name,
             "type": str(col.dtype),
-            "unit": str(col.unit) if col.unit else None,
-            "ucd": getattr(col, "meta", {}).get("ucd"),
+            "unit": (str(col.unit) if col.unit and str(col.unit) else None),
+            "ucd": _column_ucd(col),
             "description": col.description or None,
         })
 
@@ -64,3 +64,16 @@ def _normalize(value: Any) -> Any:
     if isinstance(value, bytes):
         return value.decode("utf-8", errors="replace")
     return value
+
+
+def _column_ucd(col) -> str | None:
+    """Resolve a column's UCD, checking the attribute first then meta variants.
+
+    pyvo TAP results expose UCD via col.ucd. Hand-built astropy.Tables and some
+    VOTable-loaded tables put it under col.meta['ucd'] or col.meta['UCD'].
+    """
+    direct = getattr(col, "ucd", None)
+    if direct:
+        return str(direct)
+    meta = getattr(col, "meta", {}) or {}
+    return meta.get("ucd") or meta.get("UCD")

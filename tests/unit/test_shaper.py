@@ -1,5 +1,6 @@
 import math
 
+import astropy.units as u
 import numpy as np
 from astropy.table import Table
 
@@ -58,3 +59,67 @@ def test_nan_becomes_json_null():
     t["x"] = [1.0, math.nan]
     out = shape_inline_table(t, archive="datalab", maxrec=10)
     assert out["rows"][1][0] is None
+
+
+def test_string_column_normalizes_to_python_str():
+    t = Table()
+    t["name"] = ["alpha", "beta"]
+    out = shape_inline_table(t, archive="datalab", maxrec=10)
+    assert out["rows"][0] == ["alpha"]
+    assert out["rows"][1] == ["beta"]
+    assert all(isinstance(v, str) for v in (out["rows"][0][0], out["rows"][1][0]))
+
+
+def test_int_column_stays_int():
+    t = Table()
+    t["count"] = np.array([1, 2, 3], dtype=np.int32)
+    out = shape_inline_table(t, archive="datalab", maxrec=10)
+    assert out["rows"][0] == [1]
+    assert isinstance(out["rows"][0][0], int)
+
+
+def test_ucd_picked_up_from_attribute():
+    t = Table()
+    t["ra"] = [185.43]
+    # Mimic pyvo's behavior: UCD as first-class attribute on the Column.
+    t["ra"].ucd = "pos.eq.ra;meta.main"
+    out = shape_inline_table(t, archive="datalab", maxrec=10)
+    cols_by_name = {c["name"]: c for c in out["columns"]}
+    assert cols_by_name["ra"]["ucd"] == "pos.eq.ra;meta.main"
+
+
+def test_ucd_picked_up_from_meta_lowercase():
+    t = Table()
+    t["dec"] = [-31.99]
+    t["dec"].meta["ucd"] = "pos.eq.dec;meta.main"
+    out = shape_inline_table(t, archive="datalab", maxrec=10)
+    cols_by_name = {c["name"]: c for c in out["columns"]}
+    assert cols_by_name["dec"]["ucd"] == "pos.eq.dec;meta.main"
+
+
+def test_ucd_picked_up_from_meta_uppercase():
+    t = Table()
+    t["gmag"] = [18.4]
+    t["gmag"].meta["UCD"] = "phot.mag;em.opt.g"
+    out = shape_inline_table(t, archive="datalab", maxrec=10)
+    cols_by_name = {c["name"]: c for c in out["columns"]}
+    assert cols_by_name["gmag"]["ucd"] == "phot.mag;em.opt.g"
+
+
+def test_dimensionless_unit_serializes_to_none():
+    t = Table()
+    t["count"] = [1, 2, 3]
+    t["count"].unit = u.dimensionless_unscaled
+    out = shape_inline_table(t, archive="datalab", maxrec=10)
+    cols_by_name = {c["name"]: c for c in out["columns"]}
+    assert cols_by_name["count"]["unit"] is None
+
+
+def test_no_unit_no_description_no_ucd_all_none():
+    t = Table()
+    t["bare"] = [1.0]
+    out = shape_inline_table(t, archive="datalab", maxrec=10)
+    cols_by_name = {c["name"]: c for c in out["columns"]}
+    assert cols_by_name["bare"]["unit"] is None
+    assert cols_by_name["bare"]["description"] is None
+    assert cols_by_name["bare"]["ucd"] is None
