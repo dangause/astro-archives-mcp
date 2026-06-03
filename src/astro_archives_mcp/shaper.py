@@ -77,3 +77,20 @@ def _column_ucd(col) -> str | None:
         return str(direct)
     meta = getattr(col, "meta", {}) or {}
     return meta.get("ucd") or meta.get("UCD")
+
+
+def shape_registry_search_result(services: list[dict], *, maxrec: int) -> dict:
+    """Envelope for vo_registry_search results."""
+    truncated = len(services) > maxrec
+    visible = services[:maxrec] if truncated else services
+    return {
+        "services": visible,
+        "row_count": len(visible),
+        "truncated": truncated,
+        "truncation_reason": "maxrec_exceeded" if truncated else None,
+    }
+
+
+def shape_registry_describe_result(described: dict) -> dict:
+    """Pass-through envelope for vo_registry_describe."""
+    return dict(described)
