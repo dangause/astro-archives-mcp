@@ -1,4 +1,5 @@
 from astro_archives_mcp.errors import (
+    _INTERNAL_GENERIC_MESSAGE,
     TapQueryError,
     ValidationError,
     wrap_tool_errors,
@@ -34,7 +35,7 @@ def test_decorator_coerces_unknown_exception_to_internal_error():
     out = t()
     assert out["error_class"] == "internal_error"
     # InternalError redacts the message
-    assert out["message"] == "Internal server error. Contact ops with request_id."
+    assert out["message"] == _INTERNAL_GENERIC_MESSAGE
 
 
 def test_decorator_threads_request_id_from_contextvar():
@@ -49,3 +50,16 @@ def test_decorator_threads_request_id_from_contextvar():
         current_request_id.reset(token)
 
     assert out["request_id"] == "test-req-id-123"
+
+
+def test_decorator_logger_name_includes_function_name(caplog):
+    @wrap_tool_errors
+    def vo_thing():
+        raise TapQueryError(message="x")
+
+    with caplog.at_level("WARNING", logger="astro_archives_mcp.tools.vo_thing"):
+        vo_thing()
+    # At least one record should be on the per-function logger
+    matching = [r for r in caplog.records if r.name == "astro_archives_mcp.tools.vo_thing"]
+    assert matching, "expected a WARNING log on logger 'astro_archives_mcp.tools.vo_thing'"
+    assert matching[0].levelname == "WARNING"

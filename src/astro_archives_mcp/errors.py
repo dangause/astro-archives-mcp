@@ -1,3 +1,4 @@
+import asyncio
 import functools
 import logging
 from collections.abc import Callable
@@ -98,6 +99,11 @@ def wrap_tool_errors(fn: Callable) -> Callable:
     Logs at WARN level for expected errors, EXCEPTION for unexpected.
     """
     name = fn.__name__
+    if asyncio.iscoroutinefunction(fn):
+        raise TypeError(
+            f"wrap_tool_errors is sync-only; {name} is async. "
+            "Slice 3 will introduce an async variant if needed."
+        )
     log = logging.getLogger(f"astro_archives_mcp.tools.{name}")
 
     @functools.wraps(fn)
