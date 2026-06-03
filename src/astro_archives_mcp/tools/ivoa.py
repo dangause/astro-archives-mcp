@@ -194,7 +194,7 @@ def vo_registry_describe(
                 "Either an IVOID (starts with 'ivo://') or a TAP service "
                 "URL. The tool resolves both forms via RegTAP."
             ),
-            examples=["ivo://datalab/smash_dr2", "https://datalab.noirlab.edu/tap"],
+            examples=["ivo://eso.org/tap_obs", "https://datalab.noirlab.edu/tap"],
         ),
     ],
 ) -> dict:
