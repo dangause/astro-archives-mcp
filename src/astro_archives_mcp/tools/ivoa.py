@@ -4,9 +4,13 @@ from typing import Annotated
 from pydantic import Field
 
 from astro_archives_mcp._archive_label import archive_label
+from astro_archives_mcp.backends.registry import RegistryClient
 from astro_archives_mcp.backends.tap import TapClient
 from astro_archives_mcp.errors import wrap_tool_errors
-from astro_archives_mcp.shaper import shape_inline_table
+from astro_archives_mcp.shaper import (
+    shape_inline_table,
+    shape_registry_search_result,
+)
 
 _tap: TapClient | None = None
 
@@ -82,3 +86,61 @@ def vo_tap_query(
     """
     table = _get_tap().query(endpoint=endpoint, adql=adql, maxrec=maxrec)
     return shape_inline_table(table, archive=archive_label(endpoint), maxrec=maxrec)
+
+
+_registry: RegistryClient | None = None
+
+
+def _get_registry() -> RegistryClient:
+    global _registry
+    if _registry is None:
+        _registry = RegistryClient()
+    return _registry
+
+
+@wrap_tool_errors
+def vo_registry_search(
+    keywords: Annotated[
+        list[str] | None,
+        Field(
+            description=(
+                "Free-text keywords to match against service titles/descriptions. "
+                "Example: ['Magellanic', 'photometry']."
+            ),
+            examples=[["smash"], ["RR Lyrae", "variable"]],
+        ),
+    ] = None,
+    servicetype: Annotated[
+        str | None,
+        Field(
+            description="Filter by service type: 'tap', 'sia', 'scs', 'ssa'.",
+            examples=["tap", "sia"],
+        ),
+    ] = None,
+    waveband: Annotated[
+        str | None,
+        Field(
+            description=(
+                "Filter by waveband: 'radio', 'infrared', 'optical', 'uv', "
+                "'euv', 'x-ray', 'gamma-ray'."
+            ),
+            examples=["optical", "infrared"],
+        ),
+    ] = None,
+    maxrec: Annotated[int, Field(ge=1, le=500)] = 50,
+) -> dict:
+    """Discover IVOA-registered services matching the given constraints.
+
+    Returns a {services: [...], row_count, truncated, truncation_reason}
+    envelope. Each service entry has: ivoid, title, description, publisher,
+    waveband, and one URL per capability (tap_url, sia_url, scs_url,
+    ssa_url; null when the service doesn't expose that capability).
+
+    Use for discovery before calling vo_tap_query / vo_sia_search /
+    vo_cone_search on a specific endpoint. Smaller default maxrec (50)
+    than catalog tools — discovery is about choice, not bulk data.
+    """
+    services = _get_registry().search(
+        keywords=keywords, servicetype=servicetype, waveband=waveband, maxrec=maxrec
+    )
+    return shape_registry_search_result(services, maxrec=maxrec)
