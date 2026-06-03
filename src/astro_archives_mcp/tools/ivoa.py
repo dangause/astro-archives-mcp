@@ -18,6 +18,7 @@ from astro_archives_mcp.backends.tap import TapClient
 from astro_archives_mcp.errors import wrap_tool_errors
 from astro_archives_mcp.shaper import (
     shape_inline_table,
+    shape_registry_describe_result,
     shape_registry_search_result,
 )
 
@@ -160,5 +161,30 @@ def vo_registry_search(
     return shape_registry_search_result(services, maxrec=maxrec)
 
 
+@wrap_tool_errors
+def vo_registry_describe(
+    ivoid_or_url: Annotated[
+        str,
+        Field(
+            description=(
+                "Either an IVOID (starts with 'ivo://') or a TAP service "
+                "URL. The tool resolves both forms via RegTAP."
+            ),
+            examples=["ivo://datalab/smash_dr2", "https://datalab.noirlab.edu/tap"],
+        ),
+    ],
+) -> dict:
+    """Introspect a specific IVOA service: its capabilities, and for TAP
+    services its tables and columns.
+
+    Returns {ivoid, title, description, capabilities, tables}. Use after
+    vo_registry_search to learn what's queryable on a specific service
+    before composing ADQL via vo_tap_query.
+    """
+    described = _get_registry().describe(ivoid_or_url=ivoid_or_url)
+    return shape_registry_describe_result(described)
+
+
 vo_tap_query.__doc__ = (vo_tap_query.__doc__ or "") + _ERROR_DOCSTRING
 vo_registry_search.__doc__ = (vo_registry_search.__doc__ or "") + _ERROR_DOCSTRING
+vo_registry_describe.__doc__ = (vo_registry_describe.__doc__ or "") + _ERROR_DOCSTRING

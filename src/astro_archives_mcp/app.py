@@ -10,7 +10,11 @@ from astro_archives_mcp.observability import (
     current_request_id,
     new_request_id,
 )
-from astro_archives_mcp.tools.ivoa import vo_registry_search, vo_tap_query
+from astro_archives_mcp.tools.ivoa import (
+    vo_registry_describe,
+    vo_registry_search,
+    vo_tap_query,
+)
 
 
 class RequestIdMiddleware:
@@ -44,6 +48,7 @@ def build_mcp() -> FastMCP:
     mcp = FastMCP(name="astro-archives-mcp")
     mcp.tool(vo_tap_query)
     mcp.tool(vo_registry_search)
+    mcp.tool(vo_registry_describe)
     return mcp
 
 
