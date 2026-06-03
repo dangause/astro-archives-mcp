@@ -15,6 +15,7 @@ from pydantic import Field
 from astro_archives_mcp._archive_label import archive_label
 from astro_archives_mcp.backends.cone import ConeSearchClient
 from astro_archives_mcp.backends.registry import RegistryClient
+from astro_archives_mcp.backends.sia import SiaClient
 from astro_archives_mcp.backends.tap import TapClient
 from astro_archives_mcp.errors import wrap_tool_errors
 from astro_archives_mcp.shaper import (
@@ -120,6 +121,17 @@ def _get_cone() -> ConeSearchClient:
     if _cone is None:
         _cone = ConeSearchClient()
     return _cone
+
+
+_sia: SiaClient | None = None
+
+
+def _get_sia() -> SiaClient:
+    """Lazy accessor so tests can patch SiaClient without import-time side effects."""
+    global _sia
+    if _sia is None:
+        _sia = SiaClient()
+    return _sia
 
 
 @wrap_tool_errors
@@ -231,7 +243,61 @@ def vo_cone_search(
     return shape_inline_table(table, archive=archive_label(endpoint), maxrec=maxrec)
 
 
+@wrap_tool_errors
+def vo_sia_search(
+    endpoint: Annotated[
+        str,
+        Field(
+            description=(
+                "SIA 2.0 endpoint URL. Example: "
+                "'https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/sia' (CADC). "
+                "Note: Data Lab is SIA v1; use SIA2-capable archives like "
+                "CADC or ESO. Discover with vo_registry_search(servicetype='sia')."
+            ),
+            examples=["https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/sia"],
+        ),
+    ],
+    ra: Annotated[float, Field(description="Right ascension (ICRS), degrees.")],
+    dec: Annotated[float, Field(description="Declination (ICRS), degrees.")],
+    size_deg: Annotated[
+        float,
+        Field(ge=0.0001, le=5.0, description="Field-of-view size in degrees."),
+    ],
+    band: Annotated[
+        str | None,
+        Field(
+            description="Optional waveband filter (e.g. 'optical', 'infrared').",
+            examples=["optical"],
+        ),
+    ] = None,
+    fmt: Annotated[
+        str | None,
+        Field(
+            description="Optional image format (e.g. 'image/fits').",
+            examples=["image/fits"],
+        ),
+    ] = None,
+    maxrec: Annotated[int, Field(ge=1, le=10_000, description="Hard cap on rows returned. Default 1_000.")] = 1_000,
+) -> dict:
+    """Discover images at a sky position via Simple Image Access (SIA 2.0).
+
+    Returns the inline tabular envelope. Each row is image metadata; the
+    `access_url` column points at a FITS file you can fetch directly.
+    Slice 2: no server-side image fetching — that arrives with the
+    Resource tier in Slice 3.
+
+    For all-sky discovery first, see vo_registry_search with
+    servicetype='sia'.
+    """
+    table = _get_sia().search(
+        endpoint=endpoint, ra=ra, dec=dec, size_deg=size_deg,
+        band=band, fmt=fmt, maxrec=maxrec,
+    )
+    return shape_inline_table(table, archive=archive_label(endpoint), maxrec=maxrec)
+
+
 vo_tap_query.__doc__ = (vo_tap_query.__doc__ or "") + _ERROR_DOCSTRING
 vo_registry_search.__doc__ = (vo_registry_search.__doc__ or "") + _ERROR_DOCSTRING
 vo_registry_describe.__doc__ = (vo_registry_describe.__doc__ or "") + _ERROR_DOCSTRING
 vo_cone_search.__doc__ = (vo_cone_search.__doc__ or "") + _ERROR_DOCSTRING
+vo_sia_search.__doc__ = (vo_sia_search.__doc__ or "") + _ERROR_DOCSTRING
