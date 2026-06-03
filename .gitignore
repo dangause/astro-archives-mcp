@@ -17,7 +17,8 @@ htmlcov/
 
 # Env
 .env
-.env.local
+.env.*
+!.env.example
 
 # Build
 dist/
