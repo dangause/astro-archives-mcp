@@ -1,13 +1,18 @@
 from dataclasses import dataclass
-from typing import Literal
+from typing import ClassVar, Literal
 
 RetryStrategy = Literal["fix_and_retry", "wait_and_retry", "submit_async", "abandon"]
 
 
 @dataclass
 class ToolExecutionError(Exception):
-    """Base class — every concrete subclass sets error_class + retry_strategy."""
+    """Base class — every concrete subclass sets error_class + retry_strategy.
 
+    Subclasses that should have their message redacted in the LLM-facing
+    payload (e.g. internal server errors) override redact_message to True.
+    """
+
+    redact_message: ClassVar[bool] = False
     error_class: str = "internal_error"
     retry_strategy: RetryStrategy = "abandon"
     message: str = ""
@@ -39,6 +44,7 @@ class TapQueryError(ToolExecutionError):
 
 @dataclass
 class InternalError(ToolExecutionError):
+    redact_message: ClassVar[bool] = True
     error_class: str = "internal_error"
     retry_strategy: RetryStrategy = "abandon"
 
@@ -51,16 +57,22 @@ def error_to_payload(
 ) -> dict:
     """Convert any error into the LLM-facing payload shape.
 
-    Unknown exceptions become InternalError; their raw message is redacted to
-    avoid leaking tracebacks or creds.
+    Unknown exceptions (anything not a ToolExecutionError) are coerced into
+    InternalError; the original exception is attached as __cause__ so the
+    caller's logger can still recover it.
+
+    The LLM-facing payload omits hint and retry_after_seconds when not present
+    to save tokens; callers should use payload.get(...) on those keys.
     """
     if not isinstance(err, ToolExecutionError):
+        original = err
         err = InternalError(message="", request_id=request_id)
+        err.__cause__ = original
 
     payload: dict = {
         "error_class": err.error_class,
         "message": (
-            _INTERNAL_GENERIC_MESSAGE if err.error_class == "internal_error" else err.message
+            _INTERNAL_GENERIC_MESSAGE if err.redact_message else err.message
         ),
         "retry_strategy": err.retry_strategy,
         "request_id": err.request_id or request_id,
