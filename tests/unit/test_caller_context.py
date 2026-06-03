@@ -1,8 +1,9 @@
 import dataclasses
+from types import MappingProxyType
 
 import pytest
 
-from astro_archives_mcp.auth.base import CallerContext
+from astro_archives_mcp.auth.base import AuthProvider, CallerContext
 from astro_archives_mcp.auth.none import NoAuthProvider
 
 
@@ -26,3 +27,20 @@ async def test_no_auth_provider_yields_anonymous_context():
     assert ctx.auth_mode == "none"
     assert ctx.archive_creds == {}
     assert ctx.request_id == "r-2"
+
+
+def test_caller_context_archive_creds_is_read_only():
+    ctx = CallerContext(
+        caller_id="anonymous",
+        auth_mode="none",
+        request_id="r-1",
+        archive_creds=MappingProxyType({"datalab": "tok"}),
+    )
+    with pytest.raises(TypeError):
+        ctx.archive_creds["datalab"] = "other"  # type: ignore[index]
+    assert ctx.archive_creds["datalab"] == "tok"
+
+
+def test_no_auth_provider_satisfies_runtime_protocol():
+    provider = NoAuthProvider()
+    assert isinstance(provider, AuthProvider)

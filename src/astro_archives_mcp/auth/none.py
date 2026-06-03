@@ -1,7 +1,7 @@
-from astro_archives_mcp.auth.base import CallerContext
+from astro_archives_mcp.auth.base import AuthProvider, CallerContext
 
 
-class NoAuthProvider:
+class NoAuthProvider(AuthProvider):
     """All requests resolve to anonymous; no creds injected."""
 
     async def authenticate(

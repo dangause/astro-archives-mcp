@@ -1,5 +1,7 @@
+from collections.abc import Mapping
 from dataclasses import dataclass, field
-from typing import Protocol
+from types import MappingProxyType
+from typing import Protocol, runtime_checkable
 
 
 @dataclass(frozen=True, slots=True)
@@ -8,10 +10,14 @@ class CallerContext:
     caller_id: str
     auth_mode: str  # "none" | "bearer" | "oidc"
     request_id: str
-    archive_creds: dict[str, str] = field(default_factory=dict)
+    # Providers should construct with `MappingProxyType(...)` to keep the view read-only.
+    archive_creds: Mapping[str, str] = field(
+        default_factory=lambda: MappingProxyType({})
+    )
     scopes: frozenset[str] = field(default_factory=frozenset)
 
 
+@runtime_checkable
 class AuthProvider(Protocol):
     """Resolves an inbound request into a CallerContext."""
     async def authenticate(
