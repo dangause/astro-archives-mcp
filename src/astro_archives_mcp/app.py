@@ -2,31 +2,39 @@
 from fastmcp import FastMCP
 from starlette.applications import Starlette
 from starlette.middleware import Middleware
-from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 from starlette.routing import Mount, Route
 
 from astro_archives_mcp import __version__
 from astro_archives_mcp.observability import (
-    configure_logging,
     current_request_id,
     new_request_id,
 )
 from astro_archives_mcp.tools.ivoa import vo_tap_query
 
 
-class RequestIdMiddleware(BaseHTTPMiddleware):
-    """Set ``current_request_id`` for the duration of each inbound HTTP request.
+class RequestIdMiddleware:
+    """Pure ASGI middleware: set ``current_request_id`` for the duration of an
+    HTTP request.
 
-    The in-memory MCP client bypasses Starlette, so tool code reading the
-    ContextVar in those tests sees ``None``. That is fine — tools tolerate the
-    missing ID and the integration test does not assert on it.
+    Implemented as pure ASGI (not ``BaseHTTPMiddleware``) so the streaming
+    ``/mcp`` endpoint is not wrapped in an extra anyio task group and memory
+    stream, which can interfere with ``StreamableHTTPSessionManager``.
+
+    Tests using the in-memory FastMCP Client bypass this middleware entirely;
+    tests using ``httpx.ASGITransport`` against ``build_app()`` do go through
+    it.
     """
 
-    async def dispatch(self, request, call_next):
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            return await self.app(scope, receive, send)
         token = current_request_id.set(new_request_id())
         try:
-            return await call_next(request)
+            await self.app(scope, receive, send)
         finally:
             current_request_id.reset(token)
 
@@ -39,8 +47,8 @@ def build_mcp() -> FastMCP:
 
 
 def build_app() -> Starlette:
-    configure_logging()
     mcp = build_mcp()
+    mcp_app = mcp.http_app(path="/")
 
     async def health(_request):
         return JSONResponse({"status": "ok", "version": __version__})
@@ -53,7 +61,8 @@ def build_app() -> Starlette:
         routes=[
             Route("/health", health),
             Route("/ready", ready),
-            Mount("/mcp", app=mcp.http_app()),
+            Mount("/mcp", app=mcp_app),
         ],
         middleware=[Middleware(RequestIdMiddleware)],
+        lifespan=mcp_app.lifespan,
     )

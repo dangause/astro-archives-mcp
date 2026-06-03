@@ -81,13 +81,11 @@ def vo_tap_query(
     try:
         table = _get_tap().query(endpoint=endpoint, adql=adql, maxrec=maxrec)
     except ToolExecutionError as e:
-        rid = current_request_id.get()
-        log.warning("vo_tap_query: %s (request_id=%s)", e.error_class, rid)
-        return {"isError": True, **error_to_payload(e, request_id=rid)}
+        log.warning("vo_tap_query: %s", e.error_class)
+        return {"isError": True, **error_to_payload(e, request_id=current_request_id.get())}
     except Exception as e:  # noqa: BLE001
-        rid = current_request_id.get()
-        log.exception("vo_tap_query: unexpected error (request_id=%s)", rid)
-        return {"isError": True, **error_to_payload(e, request_id=rid)}
+        log.exception("vo_tap_query: unexpected error")
+        return {"isError": True, **error_to_payload(e, request_id=current_request_id.get())}
     return shape_inline_table(table, archive=_archive_label(endpoint), maxrec=maxrec)
 
 

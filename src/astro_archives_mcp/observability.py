@@ -31,6 +31,9 @@ class _JsonFormatter(logging.Formatter):
             "message": record.getMessage(),
             "time": self.formatTime(record, "%Y-%m-%dT%H:%M:%S%z"),
         }
+        rid = current_request_id.get()
+        if rid is not None:
+            payload["request_id"] = rid
         if record.exc_info:
             payload["exc_info"] = self.formatException(record.exc_info)
         return json.dumps(payload)
