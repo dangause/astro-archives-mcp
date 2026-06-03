@@ -76,16 +76,20 @@ def vo_tap_query(
     tier for medium-large results, and registry-aware archive labels.
 
     On error, returns a Tool Execution Error payload with `error_class`,
-    `message`, `retry_strategy`, and (when available) `hint`.
+    `message`, `retry_strategy`, and (when available) `hint`. The presence of
+    `error_class` is the discriminator the LLM should branch on — do NOT rely
+    on a separate `isError` field. (Slice C will decide whether to also surface
+    errors at the MCP protocol level via `raise`; the payload contract here
+    stays stable either way.)
     """
     try:
         table = _get_tap().query(endpoint=endpoint, adql=adql, maxrec=maxrec)
     except ToolExecutionError as e:
         log.warning("vo_tap_query: %s", e.error_class)
-        return {"isError": True, **error_to_payload(e, request_id=current_request_id.get())}
+        return error_to_payload(e, request_id=current_request_id.get())
     except Exception as e:  # noqa: BLE001
         log.exception("vo_tap_query: unexpected error")
-        return {"isError": True, **error_to_payload(e, request_id=current_request_id.get())}
+        return error_to_payload(e, request_id=current_request_id.get())
     return shape_inline_table(table, archive=_archive_label(endpoint), maxrec=maxrec)
 
 

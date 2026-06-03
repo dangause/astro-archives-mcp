@@ -6,6 +6,9 @@ talks to it with ``fastmcp.Client``. Network traffic is recorded with vcrpy.
 import pytest
 from fastmcp import Client
 
+from astro_archives_mcp.errors import TapQueryError, ValidationError
+from astro_archives_mcp.tools import ivoa as ivoa_tools
+
 
 @pytest.mark.vcr
 async def test_vo_tap_query_via_in_memory_client(mcp_server):
@@ -45,10 +48,44 @@ async def test_vo_tap_query_validation_error_surface(mcp_server):
         # FastMCP 3.3.1 surfaces Pydantic validation as a framework-level tool
         # error: is_error=True with the message in result.content (TextContent).
         # If a future version starts shipping our error payload through
-        # structured_content instead, accept that shape too.
+        # structured_content instead, the discriminator is `error_class`.
         if result.is_error:
             content_text = "".join(getattr(c, "text", "") for c in result.content)
             assert "maxrec" in content_text
         else:
             payload = result.structured_content
-            assert payload.get("isError") is True
+            assert payload.get("error_class") is not None
+
+
+class _FakeTap:
+    def __init__(self, exc):
+        self._exc = exc
+
+    def query(self, **_kw):
+        raise self._exc
+
+
+@pytest.mark.parametrize(
+    ("exc", "expected_error_class"),
+    [
+        (TapQueryError(message="column not found"), "tap_query_error"),
+        (ValidationError(message="bad endpoint", hint="see docs"), "validation_error"),
+        (RuntimeError("upstream blew up"), "internal_error"),
+    ],
+)
+def test_vo_tap_query_error_path_returns_structured_payload(
+    exc, expected_error_class, monkeypatch
+):
+    """When the backend raises, vo_tap_query returns a structured payload
+    keyed on ``error_class`` (NOT ``isError``). The protocol-level
+    ``is_error`` flag is FastMCP's separate concern.
+    """
+    monkeypatch.setattr(ivoa_tools, "_get_tap", lambda: _FakeTap(exc))
+    payload = ivoa_tools.vo_tap_query(
+        endpoint="https://datalab.noirlab.edu/tap",
+        adql="SELECT 1",
+        maxrec=10,
+    )
+    assert "isError" not in payload, "isError key should not be in the payload (see ivoa.py docstring)"
+    assert payload["error_class"] == expected_error_class
+    assert "retry_strategy" in payload
