@@ -1,0 +1,43 @@
+interactions:
+- request:
+    body: REQUEST=doQuery&LANG=ADQL&MAXREC=10&QUERY=SELECT+garbage+FROM+nowhere
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '69'
+      Content-Type:
+      - application/x-www-form-urlencoded
+      User-Agent:
+      - pyVO/1.8.1 Python/3.12.12 (Darwin)
+    method: POST
+    uri: https://datalab.noirlab.edu/tap/sync
+  response:
+    body:
+      string: "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<VOTABLE xmlns=\"http://www.ivoa.net/xml/VOTable/v1.2\"
+        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" version=\"1.2\">\r\n
+        \ <RESOURCE type=\"results\">\r\n    <INFO name=\"QUERY_STATUS\" value=\"ERROR\">IllegalArgumentException:
+        Table [ nowhere ] is not found in TapSchema</INFO>\r\n  </RESOURCE>\r\n</VOTABLE>\r\n"
+    headers:
+      Connection:
+      - keep-alive
+      Content-Disposition:
+      - attachment; filename="error_yr79oywwj0a2muy4.xml"
+      Content-Type:
+      - application/x-votable+xml
+      Date:
+      - Wed, 03 Jun 2026 01:22:36 GMT
+      Server:
+      - nginx/1.27.3
+      Strict-Transport-Security:
+      - max-age=31536000
+      Transfer-Encoding:
+      - chunked
+    status:
+      code: 200
+      message: OK
+version: 1
