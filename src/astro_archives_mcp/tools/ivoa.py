@@ -1,4 +1,13 @@
-"""IVOA generic tools. Slice A ships only vo_tap_query (sync, inline tier)."""
+"""IVOA generic tools (sync, inline tier).
+
+One tool per IVOA standard:
+* TAP: vo_tap_query
+* Registry: vo_registry_search, vo_registry_describe (Slice 2)
+* Simple Cone Search: vo_cone_search (Slice 2)
+* Simple Image Access: vo_sia_search (Slice 2)
+
+Async TAP, Resource tier, and SIA image fetching are deferred to Slice 3.
+"""
 from typing import Annotated
 
 from pydantic import Field
@@ -10,6 +19,14 @@ from astro_archives_mcp.errors import wrap_tool_errors
 from astro_archives_mcp.shaper import (
     shape_inline_table,
     shape_registry_search_result,
+)
+
+_ERROR_DOCSTRING = (
+    "\n\n"
+    "On error, returns a Tool Execution Error payload with `error_class`, "
+    "`message`, `retry_strategy`, and (when available) `hint`. The presence "
+    "of `error_class` is the discriminator the LLM should branch on — do "
+    "NOT rely on a separate `isError` field."
 )
 
 _tap: TapClient | None = None
@@ -32,7 +49,7 @@ def vo_tap_query(
                 "Full TAP service URL. Example: "
                 "'https://datalab.noirlab.edu/tap' (NOIRLab Astro Data Lab) "
                 "or 'https://almascience.nrao.edu/tap' (ALMA Science Archive). "
-                "Discover services via vo_registry_search (later slice)."
+                "Discover services via vo_registry_search."
             ),
             examples=[
                 "https://datalab.noirlab.edu/tap",
@@ -76,13 +93,6 @@ def vo_tap_query(
 
     Later slices add: async / auto-promote for very large jobs, a Resource
     tier for medium-large results, and registry-aware archive labels.
-
-    On error, returns a Tool Execution Error payload with `error_class`,
-    `message`, `retry_strategy`, and (when available) `hint`. The presence of
-    `error_class` is the discriminator the LLM should branch on — do NOT rely
-    on a separate `isError` field. (Slice C will decide whether to also surface
-    errors at the MCP protocol level via `raise`; the payload contract here
-    stays stable either way.)
     """
     table = _get_tap().query(endpoint=endpoint, adql=adql, maxrec=maxrec)
     return shape_inline_table(table, archive=archive_label(endpoint), maxrec=maxrec)
@@ -92,6 +102,7 @@ _registry: RegistryClient | None = None
 
 
 def _get_registry() -> RegistryClient:
+    """Lazy accessor so tests can patch RegistryClient without import-time side effects."""
     global _registry
     if _registry is None:
         _registry = RegistryClient()
@@ -107,7 +118,7 @@ def vo_registry_search(
                 "Free-text keywords to match against service titles/descriptions. "
                 "Example: ['Magellanic', 'photometry']."
             ),
-            examples=[["smash"], ["RR Lyrae", "variable"]],
+            examples=[["magellanic"], ["RR Lyrae", "variable"]],
         ),
     ] = None,
     servicetype: Annotated[
@@ -127,7 +138,10 @@ def vo_registry_search(
             examples=["optical", "infrared"],
         ),
     ] = None,
-    maxrec: Annotated[int, Field(ge=1, le=500)] = 50,
+    maxrec: Annotated[
+        int,
+        Field(ge=1, le=500, description="Hard cap on services returned. Default 50."),
+    ] = 50,
 ) -> dict:
     """Discover IVOA-registered services matching the given constraints.
 
@@ -144,3 +158,7 @@ def vo_registry_search(
         keywords=keywords, servicetype=servicetype, waveband=waveband, maxrec=maxrec
     )
     return shape_registry_search_result(services, maxrec=maxrec)
+
+
+vo_tap_query.__doc__ = (vo_tap_query.__doc__ or "") + _ERROR_DOCSTRING
+vo_registry_search.__doc__ = (vo_registry_search.__doc__ or "") + _ERROR_DOCSTRING
