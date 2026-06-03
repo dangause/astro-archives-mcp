@@ -1,15 +1,11 @@
 """IVOA generic tools. Slice A ships only vo_tap_query (sync, inline tier)."""
-import logging
 from typing import Annotated
 
 from pydantic import Field
 
 from astro_archives_mcp.backends.tap import TapClient
-from astro_archives_mcp.errors import ToolExecutionError, error_to_payload
-from astro_archives_mcp.observability import current_request_id
+from astro_archives_mcp.errors import wrap_tool_errors
 from astro_archives_mcp.shaper import shape_inline_table
-
-log = logging.getLogger(__name__)
 
 _tap: TapClient | None = None
 
@@ -22,6 +18,7 @@ def _get_tap() -> TapClient:
     return _tap
 
 
+@wrap_tool_errors
 def vo_tap_query(
     endpoint: Annotated[
         str,
@@ -82,14 +79,7 @@ def vo_tap_query(
     errors at the MCP protocol level via `raise`; the payload contract here
     stays stable either way.)
     """
-    try:
-        table = _get_tap().query(endpoint=endpoint, adql=adql, maxrec=maxrec)
-    except ToolExecutionError as e:
-        log.warning("vo_tap_query: %s", e.error_class)
-        return error_to_payload(e, request_id=current_request_id.get())
-    except Exception as e:  # noqa: BLE001
-        log.exception("vo_tap_query: unexpected error")
-        return error_to_payload(e, request_id=current_request_id.get())
+    table = _get_tap().query(endpoint=endpoint, adql=adql, maxrec=maxrec)
     return shape_inline_table(table, archive=_archive_label(endpoint), maxrec=maxrec)
 
 
