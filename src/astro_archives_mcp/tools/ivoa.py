@@ -1,4 +1,5 @@
 """IVOA generic tools. Slice A ships only vo_tap_query (sync, inline tier)."""
+import logging
 from typing import Annotated
 
 from pydantic import Field
@@ -6,6 +7,8 @@ from pydantic import Field
 from astro_archives_mcp.backends.tap import TapClient
 from astro_archives_mcp.errors import ToolExecutionError, error_to_payload
 from astro_archives_mcp.shaper import shape_inline_table
+
+log = logging.getLogger(__name__)
 
 _tap = TapClient()
 
@@ -51,11 +54,17 @@ def vo_tap_query(
 ) -> dict:
     """Run a synchronous ADQL query against any IVOA-compliant TAP service.
 
-    Returns the inline result envelope: {row_count, columns, rows, archive,
-    truncated, ...}. Slice A only supports the inline tier (<= 1000 rows or
-    ~512 KB); larger results will be truncated with `truncated: true` and
-    `truncation_reason: "maxrec_exceeded"`. Async, auto-promote, and Resource-
-    tier responses ship in later slices.
+    Returns the inline result envelope:
+    {row_count, columns, rows, archive, truncated, ...}.
+
+    Results are returned inline up to `maxrec` rows (default 10000, hard cap
+    100000). If more rows match the query, the response is truncated to
+    `maxrec` and the envelope reports `truncated=true` with
+    `truncation_reason="maxrec_exceeded"`. Always inspect `truncated` before
+    treating the result as complete.
+
+    Later slices add: async / auto-promote for very large jobs, a Resource
+    tier for medium-large results, and registry-aware archive labels.
 
     On error, returns a Tool Execution Error payload with `error_class`,
     `message`, `retry_strategy`, and (when available) `hint`.
@@ -63,8 +72,10 @@ def vo_tap_query(
     try:
         table = _tap.query(endpoint=endpoint, adql=adql, maxrec=maxrec)
     except ToolExecutionError as e:
+        log.warning("vo_tap_query: %s (request_id=%s)", e.error_class, e.request_id)
         return {"isError": True, **error_to_payload(e)}
     except Exception as e:  # noqa: BLE001
+        log.exception("vo_tap_query: unexpected error from backend")
         return {"isError": True, **error_to_payload(e)}
     return shape_inline_table(table, archive=_archive_label(endpoint), maxrec=maxrec)
 
