@@ -9,5 +9,4 @@ __pycache__/
 .env.local
 docs/
 tests/
-README.md
 deploy/

@@ -1,0 +1,7 @@
+services:
+  mcp:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      STABLE_LOG_LEVEL: INFO
