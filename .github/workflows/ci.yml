@@ -1,0 +1,49 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+        with:
+          version: "0.4.30"
+          enable-cache: true
+      - name: Install Python 3.12
+        run: uv python install 3.12
+      - name: Sync deps
+        run: uv sync
+      - name: Lint
+        run: uv run ruff check .
+      - name: Tests (replay-only)
+        run: uv run pytest --record-mode=none
+
+  container:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -t astro-archives-mcp:ci .
+      - name: Run container
+        run: |
+          docker run -d --rm -p 8000:8000 --name aamcp astro-archives-mcp:ci
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:8000/health > /dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS http://localhost:8000/health
+      - name: Inspector smoke
+        run: |
+          npx -y @modelcontextprotocol/inspector \
+            --cli http://localhost:8000/mcp --method tools/list \
+            | tee inspector.json
+          grep -q '"name": "vo_tap_query"' inspector.json
+      - name: Stop container
+        if: always()
+        run: docker stop aamcp || true
