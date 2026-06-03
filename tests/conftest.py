@@ -6,9 +6,11 @@ forwards ``decode_content`` straight to the underlying ``BytesIO``, which
 rejects unknown kwargs. We strip ``decode_content`` so replay matches the
 behaviour of a real urllib3 response (which simply ignores it for already-
 decoded content).
-"""
 
-from io import BytesIO
+Lives at tests/conftest.py (not a subdirectory) so the patch applies to
+every test that uses @pytest.mark.vcr — including the in-memory MCP client
+tests under tests/tools/, which exercise the same astropy votable code path.
+"""
 
 from vcr.stubs import VCRHTTPResponse
 
@@ -23,10 +25,7 @@ def _read1(self, *args, **kwargs):
     return self._content.read1(*args, **kwargs)
 
 
-VCRHTTPResponse.read = _read  # type: ignore[assignment]
-VCRHTTPResponse.read1 = _read1  # type: ignore[assignment]
-
-
-# Ensure BytesIO is imported so the module is non-empty at import time even
-# if the patch is no-op'd by an upstream fix later.
-_ = BytesIO
+if not getattr(VCRHTTPResponse, "_decode_content_patched", False):
+    VCRHTTPResponse.read = _read  # type: ignore[assignment]
+    VCRHTTPResponse.read1 = _read1  # type: ignore[assignment]
+    VCRHTTPResponse._decode_content_patched = True  # type: ignore[attr-defined]
