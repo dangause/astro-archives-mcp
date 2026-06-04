@@ -6,7 +6,7 @@ from pydantic import Field
 from astro_archives_mcp._archive_label import archive_label
 from astro_archives_mcp.backends.cone import ConeSearchClient
 from astro_archives_mcp.errors import wrap_tool_errors
-from astro_archives_mcp.shaper import shape_inline_table
+from astro_archives_mcp.shaper import shape_table
 from astro_archives_mcp.tools._constants import _ERROR_DOCSTRING
 
 _cone: ConeSearchClient | None = None
@@ -51,7 +51,7 @@ def vo_cone_search(
     table = _get_cone().search(
         endpoint=endpoint, ra=ra, dec=dec, radius_deg=radius_deg, maxrec=maxrec,
     )
-    return shape_inline_table(table, archive=archive_label(endpoint), maxrec=maxrec)
+    return shape_table(table, archive=archive_label(endpoint), maxrec=maxrec)
 
 
 vo_cone_search.__doc__ = (vo_cone_search.__doc__ or "") + _ERROR_DOCSTRING

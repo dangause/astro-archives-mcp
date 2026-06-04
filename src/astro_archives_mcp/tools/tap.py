@@ -6,7 +6,7 @@ from pydantic import Field
 from astro_archives_mcp._archive_label import archive_label
 from astro_archives_mcp.backends.tap import TapClient
 from astro_archives_mcp.errors import wrap_tool_errors
-from astro_archives_mcp.shaper import shape_inline_table
+from astro_archives_mcp.shaper import shape_table
 from astro_archives_mcp.tools._constants import _ERROR_DOCSTRING
 
 _tap: TapClient | None = None
@@ -75,7 +75,7 @@ def vo_tap_query(
     tier for medium-large results, and registry-aware archive labels.
     """
     table = _get_tap().query(endpoint=endpoint, adql=adql, maxrec=maxrec)
-    return shape_inline_table(table, archive=archive_label(endpoint), maxrec=maxrec)
+    return shape_table(table, archive=archive_label(endpoint), maxrec=maxrec)
 
 
 vo_tap_query.__doc__ = (vo_tap_query.__doc__ or "") + _ERROR_DOCSTRING
