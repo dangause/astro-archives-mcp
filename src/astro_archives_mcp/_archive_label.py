@@ -10,6 +10,8 @@ services on the same host get distinct labels. Restart wipes it; archive
 identities don't churn.
 """
 
+from urllib.parse import urlparse
+
 # (substring → label). Substring matched lowercase against the full URL.
 _STATIC_MAP: dict[str, str] = {
     "datalab.noirlab": "datalab",
@@ -17,6 +19,7 @@ _STATIC_MAP: dict[str, str] = {
     "data-query.nrao": "nrao_vla",
     "archive.eso": "eso",
     "gea.esac.esa": "gaia",
+    "gaia.ari.uni-heidelberg.de": "gaia_ari",
     "cadc-ccda.hia-iha": "cadc",
     "ws.cadc-ccda": "cadc",
     "sdss.org": "sdss",
@@ -47,3 +50,26 @@ def _registry_find_label(endpoint: str) -> str | None:
     # (and to keep _archive_label cheap to import at module load).
     from astro_archives_mcp.backends.registry import RegistryClient
     return RegistryClient().find_label(endpoint)
+
+
+def is_known_archive_url(url: str) -> bool:
+    """Return True iff the URL host substring-matches an entry in
+    `_STATIC_MAP`.
+
+    Used as an SSRF defense in `vo_sia_fetch`: the LLM may not pass
+    arbitrary URLs to the server — only ones pointing at known IVOA
+    archives. The function deliberately does NOT consult the registry
+    fallback cache (`_CACHE`); otherwise an LLM could "warm" the cache
+    via `vo_registry_describe(url=...)` and then bypass the check.
+    """
+    try:
+        parsed = urlparse(url)
+        host = (parsed.hostname or "").lower()
+    except (ValueError, TypeError):
+        return False
+    if not host:
+        return False
+    for needle in _STATIC_MAP:
+        if needle in host:
+            return True
+    return False

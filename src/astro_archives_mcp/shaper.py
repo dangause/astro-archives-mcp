@@ -93,7 +93,7 @@ def _shape_resource(table: Table, *, archive: str, maxrec: int) -> dict[str, Any
     pa_table = pa.table({name: visible[name].data for name in visible.colnames})
     buf = io.BytesIO()
     pq.write_table(pa_table, buf)
-    uuid_hex, expires_at = result_store.put(buf.getvalue())
+    uuid_hex, expires_at = result_store.put(buf.getvalue(), "application/vnd.apache.parquet")
 
     # Reuse inline envelope shape for preview rows
     preview_envelope = shape_inline_table(
@@ -171,3 +171,37 @@ def shape_registry_search_result(services: list[dict], *, maxrec: int) -> dict:
 def shape_registry_describe_result(described: dict) -> dict:
     """Pass-through envelope for vo_registry_describe."""
     return dict(described)
+
+
+def shape_blob_fetch(
+    payload: bytes,
+    *,
+    source_url: str,
+    mime_type: str,
+    archive: str,
+) -> dict:
+    """Build the envelope for vo_sia_fetch and similar blob-returning tools.
+
+    Stashes payload in result_store and returns a small JSON envelope
+    pointing at the Resource URI. The bytes themselves do NOT flow
+    inline.
+    """
+    uuid_hex, expires_at = result_store.put(payload, mime_type)
+    # Cosmetic file extension based on MIME — helps clients suggest filenames
+    ext_map = {
+        "image/fits": "fits",
+        "image/jpeg": "jpg",
+        "image/png": "png",
+        "application/vnd.apache.parquet": "parquet",
+    }
+    ext = ext_map.get(mime_type, "bin")
+    return {
+        "resource_uri": f"resource://results/{uuid_hex}.{ext}",
+        "resource_expires_at": expires_at.isoformat(),
+        "mime_type": mime_type,
+        "source_url": source_url,
+        "bytes_fetched": len(payload),
+        "archive": archive,
+        "next_steps": None,
+        "hints": [],
+    }
