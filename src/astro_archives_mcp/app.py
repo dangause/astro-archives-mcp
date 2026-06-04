@@ -10,7 +10,7 @@ from astro_archives_mcp.observability import (
     current_request_id,
     new_request_id,
 )
-from astro_archives_mcp.tools.ivoa import (
+from astro_archives_mcp.tools import (
     vo_cone_search,
     vo_registry_describe,
     vo_registry_search,

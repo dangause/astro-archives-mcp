@@ -43,9 +43,13 @@ class ArchiveError(ToolExecutionError):
 
 
 @dataclass
-class TapQueryError(ToolExecutionError):
+class DalQueryError(ToolExecutionError):
     error_class: str = "tap_query_error"
     retry_strategy: RetryStrategy = "fix_and_retry"
+
+
+# Backward-compat alias. Remove once no callers remain.
+TapQueryError = DalQueryError
 
 
 @dataclass

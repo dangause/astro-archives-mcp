@@ -4,7 +4,7 @@ import pyvo
 from astropy.table import Table
 from pyvo.dal.exceptions import DALQueryError, DALServiceError
 
-from astro_archives_mcp.errors import ArchiveError, TapQueryError
+from astro_archives_mcp.errors import ArchiveError, DalQueryError
 
 log = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ class TapClient:
             service = pyvo.dal.TAPService(endpoint)
             result = service.search(adql, maxrec=maxrec)
         except DALQueryError as e:
-            raise TapQueryError(message=str(e)) from e
+            raise DalQueryError(message=str(e)) from e
         except DALServiceError as e:
             raise ArchiveError(message=str(e)) from e
         return result.to_table()

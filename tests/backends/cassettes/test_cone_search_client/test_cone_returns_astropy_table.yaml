@@ -11,7 +11,7 @@ interactions:
       User-Agent:
       - pyVO/1.8.1 Python/3.12.12 (Darwin)
     method: GET
-    uri: https://gaia.ari.uni-heidelberg.de/cone/gaiadr2?RA=185.43&DEC=-31.99&SR=0.01&VERB=2
+    uri: https://gaia.ari.uni-heidelberg.de/cone/gaiadr2?RA=185.43&DEC=-31.99&SR=0.01&VERB=2&MAXREC=20
   response:
     body:
       string: "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<VOTABLE version=\"1.4\"
@@ -19,7 +19,7 @@ interactions:
         xsi:schemaLocation=\"http://www.ivoa.net/xml/VOTable/v1.3 http://www.ivoa.net/xml/VOTable/v1.3\">\n\t<RESOURCE
         type=\"results\">\n\t\t<INFO ID=\"Provider\" name=\"Provider\" value=\"ARI's
         simple Cone Search service for Gaia data.\">Service that has provided this
-        table.</INFO>\n\t\t<INFO ID=\"Query\" name=\"Query\" value=\"RA=185.43&amp;DEC=-31.99&amp;SR=0.01&amp;VERB=2
+        table.</INFO>\n\t\t<INFO ID=\"Query\" name=\"Query\" value=\"RA=185.43&amp;DEC=-31.99&amp;SR=0.01&amp;VERB=2&amp;MAXREC=20
         =&gt; {RA: 185.43 deg, DEC: -31.99 deg, RADIUS: 0.01 deg, VERB: 2}\">Exact
         parameters submitted to the Cone Search service, followed by the same parameters
         as understood by the service.</INFO>\n\t\t<COOSYS ID=\"GDR2_ICRS\" system=\"ICRS\"
@@ -152,7 +152,7 @@ interactions:
       Content-Type:
       - application/x-votable+xml; serialization=tabledata;charset=UTF-8
       Date:
-      - Wed, 03 Jun 2026 19:13:04 GMT
+      - Thu, 04 Jun 2026 15:02:31 GMT
       Keep-Alive:
       - timeout=5, max=100
       Server:
