@@ -1,7 +1,7 @@
 import pytest
 
 from astro_archives_mcp.backends.tap import TapClient
-from astro_archives_mcp.errors import TapQueryError
+from astro_archives_mcp.errors import DalQueryError
 
 SMASH_TAP = "https://datalab.noirlab.edu/tap"
 SAFE_ADQL = (
@@ -22,7 +22,7 @@ def test_tap_client_returns_astropy_table():
 @pytest.mark.vcr
 def test_tap_client_bad_adql_raises_tap_query_error():
     client = TapClient()
-    with pytest.raises(TapQueryError) as exc:
+    with pytest.raises(DalQueryError) as exc:
         client.query(
             endpoint=SMASH_TAP,
             adql="SELECT garbage FROM nowhere",

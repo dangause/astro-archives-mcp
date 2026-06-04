@@ -5,7 +5,7 @@ from urllib.parse import urlparse
 import pyvo.registry
 from pyvo.dal.exceptions import DALQueryError, DALServiceError
 
-from astro_archives_mcp.errors import ArchiveError, TapQueryError, ValidationError
+from astro_archives_mcp.errors import ArchiveError, DalQueryError, ValidationError
 
 log = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ class RegistryClient:
         try:
             results = pyvo.registry.search(**kwargs)
         except DALQueryError as e:
-            raise TapQueryError(message=str(e)) from e
+            raise DalQueryError(message=str(e)) from e
         except DALServiceError as e:
             raise ArchiveError(message=str(e)) from e
 
@@ -78,7 +78,7 @@ class RegistryClient:
         try:
             results = list(pyvo.registry.search(ivoid=ivoid))
         except DALQueryError as e:
-            raise TapQueryError(message=str(e)) from e
+            raise DalQueryError(message=str(e)) from e
         except DALServiceError as e:
             raise ArchiveError(message=str(e)) from e
 
@@ -95,7 +95,7 @@ class RegistryClient:
                     match = r
                     break
         except DALQueryError as e:
-            raise TapQueryError(message=str(e)) from e
+            raise DalQueryError(message=str(e)) from e
         except DALServiceError as e:
             raise ArchiveError(message=str(e)) from e
 

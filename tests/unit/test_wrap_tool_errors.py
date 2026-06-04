@@ -1,6 +1,6 @@
 from astro_archives_mcp.errors import (
     _INTERNAL_GENERIC_MESSAGE,
-    TapQueryError,
+    DalQueryError,
     ValidationError,
     wrap_tool_errors,
 )
@@ -18,7 +18,7 @@ def test_decorator_passthrough_on_success():
 def test_decorator_catches_tool_execution_error_and_returns_payload():
     @wrap_tool_errors
     def t():
-        raise TapQueryError(message="bad ADQL")
+        raise DalQueryError(message="bad ADQL")
 
     out = t()
     assert out["error_class"] == "tap_query_error"
@@ -55,7 +55,7 @@ def test_decorator_threads_request_id_from_contextvar():
 def test_decorator_logger_name_includes_function_name(caplog):
     @wrap_tool_errors
     def vo_thing():
-        raise TapQueryError(message="x")
+        raise DalQueryError(message="x")
 
     with caplog.at_level("WARNING", logger="astro_archives_mcp.tools.vo_thing"):
         vo_thing()

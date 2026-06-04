@@ -4,7 +4,7 @@ import pyvo
 from astropy.table import Table
 from pyvo.dal.exceptions import DALAccessError, DALQueryError
 
-from astro_archives_mcp.errors import ArchiveError, TapQueryError
+from astro_archives_mcp.errors import ArchiveError, DalQueryError
 
 log = logging.getLogger(__name__)
 
@@ -25,7 +25,7 @@ class ConeSearchClient:
             svc = pyvo.dal.SCSService(endpoint)
             result = svc.search(pos=(ra, dec), radius=radius_deg)
         except DALQueryError as e:
-            raise TapQueryError(message=str(e)) from e
+            raise DalQueryError(message=str(e)) from e
         except DALAccessError as e:
             raise ArchiveError(message=str(e)) from e
 

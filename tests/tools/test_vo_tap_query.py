@@ -6,7 +6,7 @@ talks to it with ``fastmcp.Client``. Network traffic is recorded with vcrpy.
 import pytest
 from fastmcp import Client
 
-from astro_archives_mcp.errors import TapQueryError, ValidationError
+from astro_archives_mcp.errors import DalQueryError, ValidationError
 from astro_archives_mcp.tools import ivoa as ivoa_tools
 
 
@@ -68,7 +68,7 @@ class _FakeTap:
 @pytest.mark.parametrize(
     ("exc", "expected_error_class"),
     [
-        (TapQueryError(message="column not found"), "tap_query_error"),
+        (DalQueryError(message="column not found"), "tap_query_error"),
         (ValidationError(message="bad endpoint", hint="see docs"), "validation_error"),
         (RuntimeError("upstream blew up"), "internal_error"),
     ],
