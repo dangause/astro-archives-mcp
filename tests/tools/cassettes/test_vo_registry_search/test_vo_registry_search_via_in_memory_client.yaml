@@ -1,0 +1,397 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - pyVO/1.8.1 Python/3.12.12 (Darwin)
+    method: GET
+    uri: http://reg.g-vo.org/tap/capabilities
+  response:
+    body:
+      string: "<?xml version='1.0' encoding='utf-8'?>\n<?xml-stylesheet href='/static/xsl/vosi.xsl'
+        type='text/xsl'?>\n<cap:capabilities xmlns:cap=\"http://www.ivoa.net/xml/VOSICapabilities/v1.0\"
+        xmlns:tr=\"http://www.ivoa.net/xml/TAPRegExt/v1.0\" xmlns:vg=\"http://www.ivoa.net/xml/VORegistry/v1.0\"
+        xmlns:vr=\"http://www.ivoa.net/xml/VOResource/v1.0\" xmlns:vs=\"http://www.ivoa.net/xml/VODataService/v1.1\"
+        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.ivoa.net/xml/VOSICapabilities/v1.0
+        http://vo.ari.uni-heidelberg.de/docs/schemata/VOSICapabilities-v1.0.xsd http://www.ivoa.net/xml/TAPRegExt/v1.0
+        http://vo.ari.uni-heidelberg.de/docs/schemata/TAPRegExt.xsd http://www.ivoa.net/xml/VORegistry/v1.0
+        http://vo.ari.uni-heidelberg.de/docs/schemata/VORegistry.xsd http://www.ivoa.net/xml/VOResource/v1.0
+        http://vo.ari.uni-heidelberg.de/docs/schemata/VOResource.xsd http://www.ivoa.net/xml/VODataService/v1.1
+        http://vo.ari.uni-heidelberg.de/docs/schemata/VODataService.xsd\"><capability
+        standardID=\"ivo://ivoa.net/std/TAP\" xsi:type=\"tr:TableAccess\"><interface
+        role=\"std\" version=\"1.1\" xsi:type=\"vs:ParamHTTP\"><accessURL use=\"full\">http://dc.g-vo.org/tap</accessURL><mirrorURL>https://dc.g-vo.org/tap</mirrorURL></interface><dataModel
+        ivo-id=\"ivo://ivoa.net/std/obscore#core-1.1\">Obscore-1.1</dataModel><dataModel
+        ivo-id=\"ivo://ivoa.net/std/regtap#1.2\">Registry 1.2</dataModel><dataModel
+        ivo-id=\"ivo://org.gavo.dc/std/glots#tables-1.0\">GloTS 1.0</dataModel><language><name>ADQL</name><version
+        ivo-id=\"ivo://ivoa.net/std/ADQL#v2.0\">2.0</version><version ivo-id=\"ivo://ivoa.net/std/ADQL#v2.1\">2.1</version><description>The
+        Astronomical Data Query Language is the standard IVOA dialect of SQL; it contains
+        a very general SELECT statement as well as some extensions for spherical geometry
+        and higher mathematics.</description><languageFeatures type=\"ivo://ivoa.net/std/TAPRegExt#features-udf\"><feature><form>gavo_apply_pm(ra
+        DOUBLE PRECISION, dec DOUBLE PRECISION, pmra DOUBLE PRECISION, pmde DOUBLE
+        PRECISION, epdist DOUBLE PRECISION) -&gt; POINT</form><description>Returns
+        a POINT (in the UNDEFINED reference frame) for the position\nan object at
+        ra/dec with proper motion pmra/pmde has after epdist years.\n\npositions must
+        be in degrees, PMs in should be in julian years (i.e., proper\nmotions are
+        expected in degrees/year).  pmra is assumed to contain\ncos(delta).\n\nThis
+        function goes through the tangential plane.  Since it does not have\ninformation
+        on distance and radial velocity, it cannot reconstruct\nthe true space motion,
+        and hence its results will degrade over time.\n\nThis function should not
+        be used in new queries; use ivo_epoch_prop\ninstead.</description></feature><feature><form>gavo_getauthority(ivoid
+        TEXT) -&gt; TEXT</form><description>returns the authority part of an ivoid
+        (or, more generally a URI).\nSo, ivo://org.gavo.dc/foo/bar#baz becomes org.gavo.dc.\n\nThe
+        behaviour for anything that's not a full URI is undefined.</description></feature><feature><form>gavo_ipix(long
+        REAL, lat REAL) -&gt; BIGINT</form><description>gavo_ipix returns the q3c
+        ipix for a long/lat pair (it simply wraps\nthe 13c_ang2ipix function).\n\nThis
+        is probably only relevant when you play tricks with indices or\nPPMXL ids.</description></feature><feature><form>gavo_match(pattern
+        TEXT, string TEXT) -&gt; INTEGER</form><description>gavo_match returns 1 if
+        the POSIX regular expression pattern\nmatches anything in string, 0 otherwise.</description></feature><feature><form>gavo_mocintersect(moc1
+        MOC, moc2 MOC) -&gt; MOC</form><description>returns the intersection of two
+        MOCs.</description></feature><feature><form>gavo_mocunion(moc1 MOC, moc2 MOC)
+        -&gt; MOC</form><description>returns the union of two MOCs.</description></feature><feature><form>gavo_specconv(expr
+        DOUBLE PRECISION, dest_unit TEXT) -&gt; DOUBLE PRECISION</form><description>returns
+        the spectral value expr converted to dest_unit.\n\nexpr has to be in either
+        energy, wavelength, or frequency, and dest_unit\nmust be a VOUnit giving another
+        spectral unit (e.g., MHz, keV, nm, or\nAngstrom). This is intended to let
+        users express spectral constraints\nin their preferred unit independently
+        of the choice of unit in the\ndatabase.  Examples::\n\n\tgavo_specconv(obscore.em_min,
+        \"keV\") &gt; 300\n\tgavo_specconv(obscore.em_max, \"MHz\") &gt; 30\n\tgavo_specconv(spectral_start,
+        \"Angstrom\") &gt; 4000\n\nThere is a variant of gavo_specconv accepting expr's
+        unit in a third\nargument.</description></feature><feature><form>gavo_specconv(expr
+        NUMERIC, expr_unit TEXT, dest_unit TEXT) -&gt; NUMERIC</form><description>returns
+        expr assumed to be in expr_unit expressed in dest_unit.\n\n\t\tThis is a variant
+        of the two-argument gavo_specconv for when\n\t\tthe unit of expr is not known
+        to the ADQL translator, either because\n\t\tit because it is a literal or
+        because it does not look like\n\t\ta spectral unit.  Examples::\n\n\t\t\tgavo_specconv(656,
+        'nm', 'J') BETWEEN spectral_start AND spectral_end\n\t\t\tgavo_specconv(arccos(phi)*incidence,
+        'Hz', 'eV')\n\n\t\tClearly, overriding known units is likely to yield bad
+        results;\n\t\tthe translator therefore warns if an existing unit is overridden\n\t\twith
+        a different unit.</description></feature><feature><form>gavo_vocmatch(vocname
+        TEXT, term TEXT, matchagainst TEXT) -&gt; INTEGER</form><description>returns
+        1 if matchagainst is term or narrower in the IVOA vocabulary\nvocname, 0 otherwise.\n\nThis
+        is intended for semantic querying.  For instance,\ngavo_vocmatch('datalink/core',
+        'calibration', semantics) would be 1\nif semantics is any of calibration,
+        bias, dark, or flat.\n\nFor RDF-flavoured vocabularies (strict trees), term
+        will expand to the\nentire branch rooted in term.  For SKOS-flavoured vocabularies
+        (where\nnarrower is not transitive), only directly narrower terms will be
+        included.\n\nBoth the term and the vocabulary name must be string literals
+        (i.e.,\nconstants).  matchagainst can be any string-valued expression.</description></feature><feature><form>ivo_epoch_prop(ra
+        DOUBLE PRECISION, dec DOUBLE PRECISION, parallax DOUBLE PRECISION, pmra DOUBLE
+        PRECISION, pmdec DOUBLE PRECISION, radial_velocity DOUBLE PRECISION, ref_epoch
+        DOUBLE PRECISION, out_epoch DOUBLE PRECISION) -&gt; DOUBLE PRECISION[6]</form><description>Returns
+        a 6-vector of (ra, dec, parallax, pmra, pmdec, rv)\nat out_epoch for these
+        quantities at ref_epoch.\n\nEssentially, it will apply the proper motion under
+        the assumption of\nlinear motion.  Despite the name of the positional parameters,
+        this is\nnot restricted to equatorial systems, as long as positions and proper\nmotions
+        are expressed in the same reference frames.\n\nUnits on input and output are
+        degrees for ra and dec, mas for parallax,\nmas/yr for pmra and pmdec, and
+        km/s for the radial velocity.\n\nref_epoch and out_epoch are given in Julian
+        years.\n\nparallax, pmra, pmdec, and radial_velocity may be None and will
+        enter\nthe computations as 0 then, except in the case of parallax, which\nwill
+        be some small value.  When abs(parallax) is smaller or equal\nto that small
+        value, parallax and radial velocity will be NULL on\noutput.\n\nIn daily use,
+        you probably want to use the ivo_epoch_prop_pos functions.</description></feature><feature><form>ivo_epoch_prop_pos(ra
+        DOUBLE PRECISION, dec DOUBLE PRECISION, parallax DOUBLE PRECISION, pmra DOUBLE
+        PRECISION, pmdec DOUBLE PRECISION, radial_velocity DOUBLE PRECISION, ref_epoch
+        DOUBLE PRECISION, out_epoch DOUBLE PRECISION) -&gt; POINT</form><description>Returns
+        a POINT giving the position at out_epoch for an object\nwith the six parameters
+        at ref_epoch.\n\nEssentially, it will apply the proper motion under the assumption
+        of\nlinear motion.  Despite the name of the positional parameters, this is\nnot
+        restricted to equatorial systems, as long as positions and proper\nmotions
+        are expressed in the same reference frames.\n\nUnits on input are degrees
+        for ra and dec, mas for parallax,\nmas/yr for pmra and pmdec, and km/s for
+        the radial velocity.\nref_epoch and out_epoch are given in Julian years.\n\nparallax,
+        pmra, pmdec, and radial_velocity may be None and will enter\nthe computations
+        as 0 then, except in the case of parallax, which\nwill be some small value.</description></feature><feature><form>ivo_epoch_prop_pos(ra
+        DOUBLE PRECISION, dec DOUBLE PRECISION, pmra DOUBLE PRECISION, pmdec DOUBLE
+        PRECISION, ref_epoch DOUBLE PRECISION, out_epoch DOUBLE PRECISION) -&gt; POINT</form><description>A
+        variant of ivo_epoch_prop_pos that behave as if parallax\n\t\tand radial_velocity
+        were both passed as NULL.</description></feature><feature><form>ivo_geom_transform(from_sys
+        TEXT, to_sys TEXT, geo GEOMETRY) -&gt; GEOMETRY</form><description>The function
+        transforms ADQL geometries between various reference systems.\ngeo can be
+        a POINT, a CIRCLE, or a POLYGON, and the function will return a\ngeometry
+        of the same type.  In the current implementation, from_sys and\nto_sys must
+        be literal strings (i.e., they cannot be computed through\nexpressions or
+        be taken from database columns).\n\nAll transforms are just simple rotations,
+        which is only a rough\napproximation to the actual relationships between reference
+        systems\n(in particular between FK4 and ICRS-based ones).  Note that, in particular,\nthe
+        epoch is not changed (i.e., no proper motions are applied).\n\nWe currently
+        support the following reference frames: ICRS, FK5 (which\nis treated as ICRS),
+        FK4 (for B1950. without epoch-dependent corrections),\nGALACTIC.  Reference
+        frame names are case-sensitive.</description></feature><feature><form>ivo_hashlist_has(hashlist
+        TEXT, item TEXT) -&gt; INTEGER</form><description>The function takes two strings;
+        the first is a list of words not\ncontaining the hash sign (#), concatenated
+        by hash signs, the second is\na word not containing the hash sign.  It returns
+        1 if, compared\ncase-insensitively, the second argument is in the list of
+        words coded in\nthe first argument.  The behaviour in case the the second\nargument
+        contains a hash sign is unspecified.</description></feature><feature><form>ivo_hasword(haystack
+        TEXT, needle TEXT) -&gt; INTEGER</form><description>gavo_hasword returns 1
+        if needle shows up in haystack, 0 otherwise.  This\nis for \"google-like\"-searches
+        in text-like fields.  In word, you can\nactually employ a fairly complex query
+        language; see\nhttps://www.postgresql.org/docs/current/textsearch.html\nfor
+        details.</description></feature><feature><form>ivo_healpix_center(hpxOrder
+        INTEGER, hpxIndex BIGINT) -&gt; POINT</form><description>returns a POINT corresponding
+        to the center of the healpix with\nthe given index at the given order.</description></feature><feature><form>ivo_healpix_index(order
+        INTEGER, ra DOUBLE PRECISION, dec DOUBLE PRECISION) -&gt; BIGINT</form><description>Returns
+        the index of the (nest) healpix with order containing the\nspherical point
+        (ra, dec).\n\nAn alternative, 2-argument form\n\nivo_healpix_index(order INTEGER,
+        p POINT) -&gt; BIGINT\n\nis also available.</description></feature><feature><form>ivo_histogram(val
+        REAL, lower REAL, upper REAL, nbins INTEGER) -&gt; INTEGER[]</form><description>The
+        aggregate function returns a histogram of val with nbins+2 elements.\nAssuming
+        0-based arrays, result[0] contains the number of underflows (i.e.,\nval&lt;lower),
+        result[nbins+1] the number of overflows.  Elements 1..nbins\nare the counts
+        in nbins bins of width (upper-lower)/nbins.  Clients\nwill have to convert
+        back to physical units using some external\ncommunication, there currently
+        is no (meta-) data as lower and upper in\nthe TAP response.</description></feature><feature><form>ivo_interval_has(val
+        NUMERIC, iv INTERVAL) -&gt; INTEGER</form><description>The function returns
+        1 if the interval iv contains val, 0 otherwise.\nThe lower limit is always
+        included in iv, behaviour on the upper\nlimit is column-specific.</description></feature><feature><form>ivo_interval_overlaps(l1
+        NUMERIC, h1 NUMERIC, l2 NUMERIC, h2 NUMERIC) -&gt; INTEGER</form><description>The
+        function returns 1 if the interval [l1...h1] overlaps with\nthe interval [l2...h2].
+        \ For the purposes of this function,\nthe case l1=h2 or l2=h1 is treated as
+        overlap.  The function\nreturns 0 for non-overlapping intervals.</description></feature><feature><form>ivo_nocasematch(value
+        TEXT, pattern TEXT) -&gt; INTEGER</form><description>ivo_nocasematch returns
+        1 if pattern matches value, 0 otherwise.\npattern is defined as for the SQL
+        LIKE operator, but the\nmatch is performed case-insensitively.  This function
+        in effect\nprovides a surrogate for the ILIKE SQL operator that is missing
+        from\nADQL.\n\nOn this site, this is actually implemented using python's and
+        SQL's\nLOWER, so for everything except ASCII, your mileage will vary.</description></feature><feature><form>ivo_normal_random(mu
+        REAL, sigma REAL) -&gt; REAL</form><description>The function returns a random
+        number drawn from a normal distribution\nwith mean mu and width sigma.\n\nImplementation
+        note: Right now, the Gaussian is approximated by\nsumming up and scaling ten
+        calls to random.  This, hence, is not\nvery precise or fast.  It might work
+        for some use cases, and we\nwill provide a better implementation if this proves
+        inadequate.</description></feature><feature><form>ivo_simbadpoint(identifier
+        TEXT) -&gt; POINT</form><description>gavo_simbadpoint queries simbad for an
+        identifier and returns the\ncorresponding point.  Note that identifier can
+        only be a literal,\ni.e., as simple string rather than a column name. This
+        is because\nour database cannot query simbad, and we probably wouldn't want\nto
+        fire off millions of simbad queries anyway; use simbad's own\nTAP service
+        for this kind of application.</description></feature><feature><form>ivo_string_agg(expression
+        TEXT, delimiter TEXT) -&gt; TEXT</form><description>An aggregate function
+        returning all values of\nexpression within a GROUP contcatenated with delimiter</description></feature><feature><form>ivo_to_jd(d
+        TIMESTAMP) -&gt; DOUBLE PRECISION</form><description>The function converts
+        a postgres timestamp to julian date.\nThis is naive; no corrections for timezones,
+        let alone time\nscales or the like are done; you can thus not expect this
+        to be\ngood to second-precision unless you are careful in the construction\nof
+        the timestamp.</description></feature><feature><form>ivo_to_mjd(d TIMESTAMP)
+        -&gt; DOUBLE PRECISION</form><description>The function converts a postgres
+        timestamp to modified julian date.\nThis is naive; no corrections for timezones,
+        let alone time\nscales or the like are done; you can thus not expect this
+        to be\ngood to second-precision unless you are careful in the construction\nof
+        the timestamp.</description></feature></languageFeatures><languageFeatures
+        type=\"ivo://ivoa.net/std/TAPRegExt#features-adqlgeo\"><feature><form>BOX</form></feature><feature><form>POINT</form></feature><feature><form>CIRCLE</form></feature><feature><form>POLYGON</form></feature><feature><form>REGION</form></feature><feature><form>CENTROID</form></feature><feature><form>COORD1</form></feature><feature><form>COORD2</form></feature><feature><form>DISTANCE</form></feature><feature><form>CONTAINS</form></feature><feature><form>INTERSECTS</form></feature><feature><form>AREA</form></feature></languageFeatures><languageFeatures
+        type=\"ivo://ivoa.net/std/TAPRegExt#features-adql-conditional\"><feature><form>COALESCE</form></feature></languageFeatures><languageFeatures
+        type=\"ivo://ivoa.net/std/TAPRegExt#features-adql-string\"><feature><form>LOWER</form></feature><feature><form>ILIKE</form></feature><feature><form>UPPER</form></feature></languageFeatures><languageFeatures
+        type=\"ivo://ivoa.net/std/TAPRegExt#features-adql-offset\"><feature><form>OFFSET</form></feature></languageFeatures><languageFeatures
+        type=\"ivo://ivoa.net/std/TAPRegExt#features-adql-type\"><feature><form>CAST</form></feature></languageFeatures><languageFeatures
+        type=\"ivo://ivoa.net/std/TAPRegExt#features-adql-unit\"><feature><form>IN_UNIT</form></feature></languageFeatures><languageFeatures
+        type=\"ivo://ivoa.net/std/TAPRegExt#features-adql-common-table\"><feature><form>WITH</form></feature></languageFeatures><languageFeatures
+        type=\"ivo://org.gavo.dc/std/exts#extra-adql-keywords\"><feature><form>TABLESAMPLE</form><description>Written
+        after a table reference, TABLESAMPLE(10) will make the database only use 10%
+        of the rows; these are `somewhat random' in that the system will use random
+        blocks.  This should be good enough when just testing queries (and much better
+        than using TOP n).</description></feature><feature><form>MOC</form><description>A
+        geometry function creating MOCs.  It either takes a string argument with an
+        ASCII MOC ('4/13 17-18 8/3002'), or an order and another geometry.</description></feature><feature><form>VECTORMATH</form><description>You
+        can compute with vectors here. See https://wiki.ivoa.net/twiki/bin/view/IVOA/ADQLVectorMath
+        for an overview of the functions and operators available.</description></feature><feature><form>CASE</form><description>The
+        SQL92 CASE expression</description></feature></languageFeatures><languageFeatures
+        type=\"ivo://ivoa.net/std/TAPRegExt#features-adql-sets\"><feature><form>UNION</form></feature><feature><form>EXCEPT</form></feature><feature><form>INTERSECT</form></feature></languageFeatures></language><outputFormat><mime>text/tab-separated-values</mime><alias>tsv</alias></outputFormat><outputFormat><mime>text/plain</mime><alias>txt</alias></outputFormat><outputFormat><mime>text/csv</mime><alias>csv_bare</alias></outputFormat><outputFormat><mime>text/csv;header=present</mime><alias>csv</alias></outputFormat><outputFormat><mime>application/json</mime><alias>json</alias></outputFormat><outputFormat><mime>application/geo+json</mime><alias>geojson</alias></outputFormat><outputFormat
+        ivo-id=\"ivo://ivoa.net/std/TAPRegExt#output-votable-binary\"><mime>application/x-votable+xml</mime><alias>votable</alias></outputFormat><outputFormat
+        ivo-id=\"ivo://ivoa.net/std/TAPRegExt#output-votable-binary2\"><mime>application/x-votable+xml;serialization=BINARY2</mime><alias>votable/b2</alias><alias>votableb2</alias></outputFormat><outputFormat
+        ivo-id=\"ivo://ivoa.net/std/TAPRegExt#output-votable-td\"><mime>application/x-votable+xml;serialization=TABLEDATA</mime><alias>text/xml</alias><alias>votable/td</alias><alias>votabletd</alias></outputFormat><outputFormat><mime>application/x-votable+xml;serialization=TABLEDATA;version=1.1</mime><alias>text/xml</alias><alias>votabletd1.1</alias></outputFormat><outputFormat><mime>application/x-votable+xml;version=1.1</mime><alias>text/xml</alias><alias>votable1.1</alias></outputFormat><outputFormat><mime>application/x-votable+xml;serialization=TABLEDATA;version=1.2</mime><alias>text/xml</alias><alias>votabletd1.2</alias></outputFormat><outputFormat><mime>application/x-votable+xml;serialization=TABLEDATA;version=1.6</mime><alias>vodml</alias></outputFormat><outputFormat><mime>application/x-votable+xml;version=1.6</mime><alias>vodmlb</alias></outputFormat><outputFormat><mime>text/html</mime><alias>html</alias></outputFormat><outputFormat><mime>application/fits</mime><alias>fits</alias></outputFormat><uploadMethod
+        ivo-id=\"ivo://ivoa.net/std/TAPRegExt#upload-inline\"/><uploadMethod ivo-id=\"ivo://ivoa.net/std/TAPRegExt#upload-http\"/><uploadMethod
+        ivo-id=\"ivo://ivoa.net/std/TAPRegExt#upload-https\"/><uploadMethod ivo-id=\"ivo://ivoa.net/std/TAPRegExt#upload-ftp\"/><retentionPeriod><default>172800</default></retentionPeriod><executionDuration><default>20</default></executionDuration><outputLimit><default
+        unit=\"row\">20000</default><hard unit=\"row\">16000000</hard></outputLimit><uploadLimit><hard
+        unit=\"byte\">10000000</hard></uploadLimit></capability><capability standardID=\"ivo://ivoa.net/std/VOSI#capabilities\"><interface
+        role=\"std\" xsi:type=\"vs:ParamHTTP\"><accessURL use=\"full\">http://dc.g-vo.org/__system__/tap/run/capabilities</accessURL><mirrorURL>https://dc.g-vo.org/__system__/tap/run/capabilities</mirrorURL></interface></capability><capability
+        standardID=\"ivo://ivoa.net/std/VOSI#availability\"><interface role=\"std\"
+        xsi:type=\"vs:ParamHTTP\"><accessURL use=\"full\">http://dc.g-vo.org/__system__/tap/run/availability</accessURL><mirrorURL>https://dc.g-vo.org/__system__/tap/run/availability</mirrorURL></interface></capability><capability
+        standardID=\"ivo://ivoa.net/std/VOSI#tables\"><interface role=\"std\" version=\"1.1\"
+        xsi:type=\"vs:ParamHTTP\"><accessURL use=\"full\">http://dc.g-vo.org/__system__/tap/run/tableMetadata</accessURL><mirrorURL>https://dc.g-vo.org/__system__/tap/run/tableMetadata</mirrorURL></interface></capability><capability
+        standardID=\"ivo://ivoa.net/std/DALI#examples\"><interface xsi:type=\"vr:WebBrowser\"><accessURL
+        use=\"full\">http://dc.g-vo.org/__system__/tap/run/examples</accessURL><mirrorURL>https://dc.g-vo.org/__system__/tap/run/examples</mirrorURL></interface></capability></cap:capabilities>"
+    headers:
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - text/xml
+      Date:
+      - Wed, 03 Jun 2026 19:01:40 GMT
+      Server:
+      - DaCHS/2.12.2 twistedWeb/22.4.0
+      Transfer-Encoding:
+      - chunked
+      WWW-Authenticate:
+      - Basic realm="Gavo"
+    status:
+      code: 200
+      message: OK
+- request:
+    body: REQUEST=doQuery&LANG=ADQL&MAXREC=5&QUERY=SELECT%0Aivoid%2C+res_type%2C+short_name%2C+res_title%2C+content_level%2C+res_description%2C+reference_url%2C+creator_seq%2C+created%2C+updated%2C+rights%2C+content_type%2C+source_format%2C+source_value%2C+region_of_regard%2C+waveband%2C+%0A++ivo_string_agg%28COALESCE%28access_url%2C+%27%27%29%2C+%27%3A%3A%3Apy+VO+sep%3A%3A%3A%27%29+AS+access_urls%2C+%0A++ivo_string_agg%28COALESCE%28standard_id%2C+%27%27%29%2C+%27%3A%3A%3Apy+VO+sep%3A%3A%3A%27%29+AS+standard_ids%2C+%0A++ivo_string_agg%28COALESCE%28intf_type%2C+%27%27%29%2C+%27%3A%3A%3Apy+VO+sep%3A%3A%3A%27%29+AS+intf_types%2C+%0A++ivo_string_agg%28COALESCE%28intf_role%2C+%27%27%29%2C+%27%3A%3A%3Apy+VO+sep%3A%3A%3A%27%29+AS+intf_roles%2C+%0A++ivo_string_agg%28COALESCE%28cap_description%2C+%27%27%29%2C+%27%3A%3A%3Apy+VO+sep%3A%3A%3A%27%29+AS+cap_descriptions%0AFROM%0Arr.resource%0ANATURAL+LEFT+OUTER+JOIN+rr.capability%0ANATURAL+LEFT+OUTER+JOIN+rr.interface%0AWHERE%0A%28ivoid+IN+%28SELECT+DISTINCT+ivoid+FROM+rr.resource+WHERE+1%3Divo_hasword%28res_description%2C+%27magellanic%27%29+UNION+ALL+SELECT+DISTINCT+ivoid+FROM+rr.resource+WHERE+1%3Divo_hasword%28res_title%2C+%27magellanic%27%29+UNION+ALL+SELECT+DISTINCT+ivoid+FROM+rr.res_subject+WHERE+rr.res_subject.res_subject+ILIKE+%27%25magellanic%25%27%29%29%0A++AND+%28standard_id+IN+%28%27ivo%3A%2F%2Fivoa.net%2Fstd%2Ftap%27%29%29%0AGROUP+BY%0Aivoid%2C+res_type%2C+short_name%2C+res_title%2C+content_level%2C+res_description%2C+reference_url%2C+creator_seq%2C+created%2C+updated%2C+rights%2C+content_type%2C+source_format%2C+source_value%2C+region_of_regard%2C+waveband
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1624'
+      Content-Type:
+      - application/x-www-form-urlencoded
+      User-Agent:
+      - pyVO/1.8.1 Python/3.12.12 (Darwin)
+    method: POST
+    uri: http://reg.g-vo.org/tap/sync
+  response:
+    body:
+      string: "<?xml version='1.0' encoding='utf-8'?>\n<VOTABLE version=\"1.5\" xmlns=\"http://www.ivoa.net/xml/VOTable/v1.3\"
+        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.ivoa.net/xml/VOTable/v1.3
+        http://vo.ari.uni-heidelberg.de/docs/schemata/VOTable.xsd\"><RESOURCE type=\"results\"><INFO
+        name=\"sql_query\" value=\"SELECT ivoid, res_type, short_name, res_title,
+        content_level, res_description, reference_url, creator_seq, created, updated,
+        rights, content_type, source_format, source_value, region_of_regard, waveband,
+        string_agg(COALESCE ( access_url , '' ), ':::py VO sep:::') AS access_urls,
+        string_agg(COALESCE ( standard_id , '' ), ':::py VO sep:::') AS standard_ids,
+        string_agg(COALESCE ( intf_type , '' ), ':::py VO sep:::') AS intf_types,
+        string_agg(COALESCE ( intf_role , '' ), ':::py VO sep:::') AS intf_roles,
+        string_agg(COALESCE ( cap_description , '' ), ':::py VO sep:::') AS cap_descriptions
+        FROM rr.resource NATURAL LEFT OUTER JOIN rr.capability  NATURAL LEFT OUTER
+        JOIN rr.interface  WHERE ( ivoid IN ( SELECT DISTINCT ivoid FROM rr.resource
+        WHERE (to_tsvector('english', res_description) @@ plainto_tsquery('english',
+        'magellanic')) UNION ALL SELECT DISTINCT ivoid FROM rr.resource WHERE (to_tsvector('english',
+        res_title) @@ plainto_tsquery('english', 'magellanic')) UNION ALL SELECT DISTINCT
+        ivoid FROM rr.res_subject WHERE rr.res_subject.res_subject ILIKE '%%magellanic%%'
+        ) ) AND ( standard_id IN ( 'ivo://ivoa.net/std/tap' ) ) GROUP BY ivoid , res_type
+        , short_name , res_title , content_level , res_description , reference_url
+        , creator_seq , created , updated , rights , content_type , source_format
+        , source_value , region_of_regard , waveband LIMIT 5\">ADQL query translated
+        to local SQL (for debugging)</INFO><INFO name=\"query\" value=\"SELECT\nivoid,
+        res_type, short_name, res_title, content_level, res_description, reference_url,
+        creator_seq, created, updated, rights, content_type, source_format, source_value,
+        region_of_regard, waveband, \n  ivo_string_agg(COALESCE(access_url, ''), ':::py
+        VO sep:::') AS access_urls, \n  ivo_string_agg(COALESCE(standard_id, ''),
+        ':::py VO sep:::') AS standard_ids, \n  ivo_string_agg(COALESCE(intf_type,
+        ''), ':::py VO sep:::') AS intf_types, \n  ivo_string_agg(COALESCE(intf_role,
+        ''), ':::py VO sep:::') AS intf_roles, \n  ivo_string_agg(COALESCE(cap_description,
+        ''), ':::py VO sep:::') AS cap_descriptions\nFROM\nrr.resource\nNATURAL LEFT
+        OUTER JOIN rr.capability\nNATURAL LEFT OUTER JOIN rr.interface\nWHERE\n(ivoid
+        IN (SELECT DISTINCT ivoid FROM rr.resource WHERE 1=ivo_hasword(res_description,
+        'magellanic') UNION ALL SELECT DISTINCT ivoid FROM rr.resource WHERE 1=ivo_hasword(res_title,
+        'magellanic') UNION ALL SELECT DISTINCT ivoid FROM rr.res_subject WHERE rr.res_subject.res_subject
+        ILIKE '%magellanic%'))\n  AND (standard_id IN ('ivo://ivoa.net/std/tap'))\nGROUP
+        BY\nivoid, res_type, short_name, res_title, content_level, res_description,
+        reference_url, creator_seq, created, updated, rights, content_type, source_format,
+        source_value, region_of_regard, waveband\">Original ADQL query</INFO><INFO
+        name=\"QUERY_STATUS\" value=\"OK\">Query successful</INFO><INFO name=\"server_software\"
+        value=\"DaCHS/2.12.2 twistedWeb/22.4.0\">Software that produced this VOTable</INFO><INFO
+        name=\"server\" value=\"http://dc.g-vo.org\">Base URI of the server</INFO><INFO
+        name=\"citation\" ucd=\"\" value=\"http://dc.g-vo.org/__system__/tap/run/howtocite\">Advice
+        on citing this resource</INFO><INFO name=\"citation\" ucd=\"\" value=\"http://dc.g-vo.org/tableinfo/rr.capability#ti-citing\">Advice
+        on citing this resource</INFO><INFO name=\"citation\" ucd=\"\" value=\"http://dc.g-vo.org/tableinfo/rr.interface#ti-citing\">Advice
+        on citing this resource</INFO><INFO name=\"citation\" ucd=\"\" value=\"http://dc.g-vo.org/tableinfo/rr.resource#ti-citing\">Advice
+        on citing this resource</INFO><INFO name=\"citation\" ucd=\"\" value=\"http://dc.g-vo.org/tableinfo/rr.res_subject#ti-citing\">Advice
+        on citing this resource</INFO><INFO name=\"ivoid_service\" ucd=\"meta.ref.ivoid\"
+        value=\"ivo://org.gavo.dc/tap\">Originating VO service</INFO><INFO name=\"ivoid\"
+        ucd=\"meta.ref.ivoid\" value=\"ivo://org.gavo.dc/rr/q/nmah\">Originating VO
+        resource</INFO><INFO name=\"ivoid\" ucd=\"meta.ref.ivoid\" value=\"ivo://org.gavo.dc/rr/q/harvtrig\">Originating
+        VO resource</INFO><INFO name=\"ivoid\" ucd=\"meta.ref.ivoid\" value=\"ivo://org.gavo.dc/rr/q/create\">Originating
+        VO resource</INFO><INFO name=\"ivoid\" ucd=\"meta.ref.ivoid\" value=\"ivo://org.gavo.dc/rr/q/nmah\">Originating
+        VO resource</INFO><INFO name=\"ivoid\" ucd=\"meta.ref.ivoid\" value=\"ivo://org.gavo.dc/rr/q/harvtrig\">Originating
+        VO resource</INFO><INFO name=\"ivoid\" ucd=\"meta.ref.ivoid\" value=\"ivo://org.gavo.dc/rr/q/create\">Originating
+        VO resource</INFO><INFO name=\"ivoid\" ucd=\"meta.ref.ivoid\" value=\"ivo://org.gavo.dc/rr/q/nmah\">Originating
+        VO resource</INFO><INFO name=\"ivoid\" ucd=\"meta.ref.ivoid\" value=\"ivo://org.gavo.dc/rr/q/harvtrig\">Originating
+        VO resource</INFO><INFO name=\"ivoid\" ucd=\"meta.ref.ivoid\" value=\"ivo://org.gavo.dc/rr/q/create\">Originating
+        VO resource</INFO><INFO name=\"ivoid\" ucd=\"meta.ref.ivoid\" value=\"ivo://org.gavo.dc/rr/q/nmah\">Originating
+        VO resource</INFO><INFO name=\"ivoid\" ucd=\"meta.ref.ivoid\" value=\"ivo://org.gavo.dc/rr/q/harvtrig\">Originating
+        VO resource</INFO><INFO name=\"ivoid\" ucd=\"meta.ref.ivoid\" value=\"ivo://org.gavo.dc/rr/q/create\">Originating
+        VO resource</INFO><INFO name=\"publisher\" value=\"The GAVO DC team\">Data
+        centre that has delivered the data</INFO><INFO name=\"request_date\" ucd=\"time.creation\"
+        value=\"2026-06-03T19:01:42Z\"></INFO><INFO name=\"contact\" ucd=\"meta.email\"
+        value=\"gavo@ari.uni-heidelberg.de\">Contact option</INFO><INFO name=\"reference_url\"
+        ucd=\"meta.ref.url\" value=\"http://dc.g-vo.org/__system__/tap/run/info\">More
+        information on the data Source</INFO><INFO name=\"reference_url\" ucd=\"meta.ref.url\"
+        value=\"http://dc.g-vo.org/tableinfo/rr.capability\">More information on the
+        data Source</INFO><INFO name=\"reference_url\" ucd=\"meta.ref.url\" value=\"http://dc.g-vo.org/tableinfo/rr.interface\">More
+        information on the data Source</INFO><INFO name=\"reference_url\" ucd=\"meta.ref.url\"
+        value=\"http://dc.g-vo.org/tableinfo/rr.resource\">More information on the
+        data Source</INFO><INFO name=\"reference_url\" ucd=\"meta.ref.url\" value=\"http://dc.g-vo.org/tableinfo/rr.res_subject\">More
+        information on the data Source</INFO><INFO name=\"creator\" ucd=\"meta.bib.author\"
+        value=\"GAVO Data Centre\">Name of a person or entity that produced a contributing
+        resource</INFO><TABLE name=\"resource_capability_interface\"><GROUP ID=\"ndtoggntmuha\"
+        name=\"note-cl\"><DESCRIPTION>\nThe terms are taken from the vocabulary\nhttp://ivoa.net/rdf/voresource/content_level.</DESCRIPTION><FIELDref
+        ref=\"content_level\"/></GROUP><GROUP ID=\"ndtoggntmbea\" name=\"note-ct\"><DESCRIPTION>\nThe
+        terms are taken from the vocabulary\nhttp://ivoa.net/rdf/voresource/content_type.</DESCRIPTION><FIELDref
+        ref=\"content_type\"/></GROUP><GROUP ID=\"ndtoggntmasa\" name=\"note-w\"><DESCRIPTION>\nThe
+        allowed values for waveband include:\nRadio, Millimeter, Infrared, Optical,
+        UV, EUV, X-ray, Gamma-ray.</DESCRIPTION><FIELDref ref=\"waveband\"/></GROUP><FIELD
+        ID=\"ivoid\" arraysize=\"*\" datatype=\"char\" name=\"ivoid\" utype=\"xpath:identifier\"><DESCRIPTION>Unambiguous
+        reference to the resource conforming to the IVOA standard for identifiers.</DESCRIPTION></FIELD><FIELD
+        ID=\"res_type\" arraysize=\"*\" datatype=\"char\" name=\"res_type\" utype=\"xpath:@xsi:type\"><DESCRIPTION>Resource
+        type (something like vg:authority, vs:catalogservice, etc).</DESCRIPTION></FIELD><FIELD
+        ID=\"short_name\" arraysize=\"*\" datatype=\"char\" name=\"short_name\" utype=\"xpath:shortName\"><DESCRIPTION>A
+        short name or abbreviation given to something, for presentation in space-constrained
+        fields (up to 16 characters).</DESCRIPTION></FIELD><FIELD ID=\"res_title\"
+        arraysize=\"*\" datatype=\"unicodeChar\" name=\"res_title\" utype=\"xpath:title\"><DESCRIPTION>The
+        full name given to the resource.</DESCRIPTION></FIELD><FIELD ID=\"content_level\"
+        arraysize=\"*\" datatype=\"char\" name=\"content_level\" utype=\"xpath:content/contentLevel\"><DESCRIPTION>A
+        hash-separated list of content levels specifying the intended audience.</DESCRIPTION></FIELD><FIELD
+        ID=\"res_description\" arraysize=\"*\" datatype=\"unicodeChar\" name=\"res_description\"
+        utype=\"xpath:content/description\"><DESCRIPTION>An account of the nature
+        of the resource.</DESCRIPTION></FIELD><FIELD ID=\"reference_url\" arraysize=\"*\"
+        datatype=\"char\" name=\"reference_url\" utype=\"xpath:content/referenceURL\"><DESCRIPTION>URL
+        pointing to a human-readable document describing this resource.</DESCRIPTION></FIELD><FIELD
+        ID=\"creator_seq\" arraysize=\"*\" datatype=\"unicodeChar\" name=\"creator_seq\"
+        utype=\"xpath:curation/creator/name\"><DESCRIPTION>The creator(s) of the resource
+        in the order given by the resource record author, separated by semicolons.</DESCRIPTION></FIELD><FIELD
+        ID=\"created\" arraysize=\"*\" datatype=\"char\" name=\"created\" utype=\"xpath:@created\"
+        xtype=\"timestamp\"><DESCRIPTION>The UTC date and time this resource metadata
+        description was created.</DESCRIPTION><VALUES null=\"\"></VALUES></FIELD><FIELD
+        ID=\"updated\" arraysize=\"*\" datatype=\"char\" name=\"updated\" utype=\"xpath:@updated\"
+        xtype=\"timestamp\"><DESCRIPTION>The UTC date this resource metadata description
+        was last updated.</DESCRIPTION><VALUES null=\"\"></VALUES></FIELD><FIELD ID=\"rights\"
+        arraysize=\"*\" datatype=\"char\" name=\"rights\" utype=\"xpath:/rights\"><DESCRIPTION>A
+        statement of usage conditions (license, attribution, embargo, etc).</DESCRIPTION></FIELD><FIELD
+        ID=\"content_type\" arraysize=\"*\" datatype=\"char\" name=\"content_type\"
+        utype=\"xpath:content/type\"><DESCRIPTION>A hash-separated list of natures
+        or genres of the content of the resource.</DESCRIPTION></FIELD><FIELD ID=\"source_format\"
+        arraysize=\"*\" datatype=\"char\" name=\"source_format\" utype=\"xpath:content/source/@format\"><DESCRIPTION>The
+        format of source_value. This, in particular, can be ``bibcode''.</DESCRIPTION></FIELD><FIELD
+        ID=\"source_value\" arraysize=\"*\" datatype=\"unicodeChar\" name=\"source_value\"
+        utype=\"xpath:content/source\"><DESCRIPTION>A bibliographic reference from
+        which the present resource is derived or extracted.</DESCRIPTION></FIELD><FIELD
+        ID=\"region_of_regard\" datatype=\"float\" name=\"region_of_regard\" unit=\"deg\"
+        utype=\"xpath:coverage/regionOfRegard\"><DESCRIPTION>A single numeric value
+        representing the angle, given in decimal degrees, by which a positional query
+        against this resource should be ``blurred'' in order to get an appropriate
+        match.</DESCRIPTION></FIELD><FIELD ID=\"waveband\" arraysize=\"*\" datatype=\"char\"
+        name=\"waveband\" utype=\"xpath:coverage/waveband\"><DESCRIPTION>A hash-separated
+        list of regions of the electro-magnetic spectrum that the resource's spectral
+        coverage overlaps with.</DESCRIPTION></FIELD><FIELD ID=\"access_urls\" arraysize=\"*\"
+        datatype=\"char\" name=\"access_urls\"/><FIELD ID=\"standard_ids\" arraysize=\"*\"
+        datatype=\"char\" name=\"standard_ids\"/><FIELD ID=\"intf_types\" arraysize=\"*\"
+        datatype=\"char\" name=\"intf_types\"/><FIELD ID=\"intf_roles\" arraysize=\"*\"
+        datatype=\"char\" name=\"intf_roles\"/><FIELD ID=\"cap_descriptions\" arraysize=\"*\"
+        datatype=\"char\" name=\"cap_descriptions\"/><DATA><BINARY><STREAM encoding=\"base64\">AAAADml2bzovL2p2by9pcnNmAAAAEXZzOmNhdGFsb2dzZXJ2aWNlAAAABElSU0YAAAARAEkAUgBTAEYAIABkAGEAdABhACAAcwBlAHIAdgBpAGMAZQAAAAhyZXNlYXJjaAAAAegASQBSAFMARgAgACgASQBuAGYAcgBhAFIAZQBkACAAUwB1AHIAdgBlAHkAIABGAGEAYwBpAGwAaQB0AHkAKQAgAGkAcwAgAGwAbwBjAGEAdABlAGQAIABhAHQAIABTAHUAaAB0AGUAcgBsAGEAbgBkACwAIABTAG8AdQB0AGgAIABBAGYAcgBpAGMAYQAgAGEAbgBkACAAdABoAGUAIABzAHUAcgB2AGUAeQAgAHAAcgBvAGoAZQBjAHQAIABzAHQAYQByAHQAZQBkACAAcwBpAG4AYwBlACAATgBvAHYALgAgADIAMAAwADAAIABpAG4AIAB0AGgAZQAgAG4AZQBhAHIAIABpAG4AZgByAGEAcgBlAGQAIAAoAEoALAAgAEgALAAgAEsAcwApACAAYgBhAG4AZABzAC4AIABUAGgAZQAgAGYAYQBjAGkAbABpAHQAeQAgACgAUwBJAFIASQBVAFMAIABjAGEAbQBlAHIAYQAgAGEAbgBkACAAMQAuADQALQBtACAASQBSACAAdABlAGwAZQBzAGMAbwBwAGUAKQAgAGkAcwAgAGUAYQBzAHkAIABiAG8AdABoACAAZgBvAHIAIABvAHAAZQByAGEAdABpAG8AbgAgAGEAbgBkACAAZABhAHQAYQAtAHIAZQBkAHUAYwB0AGkAbwBuACwAIABvAHcAaQBuAGcAIAB0AG8AIABpAHQAcwAgAHMAaQBtAHAAbABpAGMAaQB0AHkALgAgAFQAaABlACAAaQBuAHMAdAByAHUAbQBlAG4AdAAgAGgAYQBzACAAYgBlAGUAbgAgAHAAcgBvAGQAdQBjAGkAbgBnACAAbgB1AG0AZQByAG8AdQBzACAAcwBjAGkAZQBuAHQAaQBmAGkAYwAgAGQAYQB0AGEAIABlAHYAZQByAHkAIABjAGwAZQBhAHIAIABuAGkAZwBoAHQAIABmAG8AcgAgAHQAaABlACAAbABhAHMAdAAgAGYAbwB1AHIAIABhAG4AZAAgAGgAYQBsAGYAIAB5AGUAYQByAHMAIAB1AG4AZABlAHIAIABmAHIAaQBlAG4AZABsAHkAIABjAG8AbABsAGEAYgBvAHIAYQB0AGkAbwBuACAAYgBlAHQAdwBlAGUAbgAgAE4AYQBnAG8AeQBhACAAVQBuAGkAdgAtAEsAeQBvAHQAbwAgAFUAbgBpAHYALQBOAEEATwBKACAAKABKAGEAcABhAG4AKQAgAGEAbgBkACAAUwBBAEEATwAgACgAUwBvAHUAdABoACAAQQBmAHIAaQBjAGEAKQAuAAAAI2h0dHA6Ly9qdm8ubmFvLmFjLmpwL3BvcnRhbC9pcnNmLmRvAAAAAAAAABMyMDA4LTA0LTEwVDAwOjAwOjAwAAAAEzIwMjYtMDQtMjdUMDU6NTk6NDcAAAAAAAAAB2FyY2hpdmUAAAAAAAAAPgBoAHQAdABwAHMAOgAvAC8AdQBpAC4AYQBkAHMAYQBiAHMALgBoAGEAcgB2AGEAcgBkAC4AZQBkAHUALwBhAGIAcwAvADIAMAAwADcAUABBAFMASgAuAC4ALgA1ADkALgAuADYAMQA1AEsALwBhAGIAcwB0AHIAYQBjAHR/wAAAAAAACGluZnJhcmVkAAAAKGh0dHA6Ly9qdm8ubmFvLmFjLmpwL3NreW5vZGUvZG8vdGFwL2lyc2YAAAAWaXZvOi8vaXZvYS5uZXQvc3RkL3RhcAAAAAx2czpwYXJhbWh0dHAAAAADc3RkAAAAAA==</STREAM></BINARY></DATA></TABLE></RESOURCE></VOTABLE>"
+    headers:
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/x-votable+xml
+      Date:
+      - Wed, 03 Jun 2026 19:01:41 GMT
+      Server:
+      - DaCHS/2.12.2 twistedWeb/22.4.0
+      Transfer-Encoding:
+      - chunked
+    status:
+      code: 200
+      message: OK
+version: 1

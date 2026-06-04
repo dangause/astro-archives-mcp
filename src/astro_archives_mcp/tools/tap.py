@@ -1,15 +1,13 @@
-"""IVOA generic tools. Slice A ships only vo_tap_query (sync, inline tier)."""
-import logging
+"""Tools for IVOA TAP."""
 from typing import Annotated
 
 from pydantic import Field
 
+from astro_archives_mcp._archive_label import archive_label
 from astro_archives_mcp.backends.tap import TapClient
-from astro_archives_mcp.errors import ToolExecutionError, error_to_payload
-from astro_archives_mcp.observability import current_request_id
-from astro_archives_mcp.shaper import shape_inline_table
-
-log = logging.getLogger(__name__)
+from astro_archives_mcp.errors import wrap_tool_errors
+from astro_archives_mcp.shaper import shape_table
+from astro_archives_mcp.tools._constants import _ERROR_DOCSTRING
 
 _tap: TapClient | None = None
 
@@ -22,6 +20,7 @@ def _get_tap() -> TapClient:
     return _tap
 
 
+@wrap_tool_errors
 def vo_tap_query(
     endpoint: Annotated[
         str,
@@ -30,7 +29,7 @@ def vo_tap_query(
                 "Full TAP service URL. Example: "
                 "'https://datalab.noirlab.edu/tap' (NOIRLab Astro Data Lab) "
                 "or 'https://almascience.nrao.edu/tap' (ALMA Science Archive). "
-                "Discover services via vo_registry_search (later slice)."
+                "Discover services via vo_registry_search."
             ),
             examples=[
                 "https://datalab.noirlab.edu/tap",
@@ -74,33 +73,9 @@ def vo_tap_query(
 
     Later slices add: async / auto-promote for very large jobs, a Resource
     tier for medium-large results, and registry-aware archive labels.
-
-    On error, returns a Tool Execution Error payload with `error_class`,
-    `message`, `retry_strategy`, and (when available) `hint`. The presence of
-    `error_class` is the discriminator the LLM should branch on — do NOT rely
-    on a separate `isError` field. (Slice C will decide whether to also surface
-    errors at the MCP protocol level via `raise`; the payload contract here
-    stays stable either way.)
     """
-    try:
-        table = _get_tap().query(endpoint=endpoint, adql=adql, maxrec=maxrec)
-    except ToolExecutionError as e:
-        log.warning("vo_tap_query: %s", e.error_class)
-        return error_to_payload(e, request_id=current_request_id.get())
-    except Exception as e:  # noqa: BLE001
-        log.exception("vo_tap_query: unexpected error")
-        return error_to_payload(e, request_id=current_request_id.get())
-    return shape_inline_table(table, archive=_archive_label(endpoint), maxrec=maxrec)
+    table = _get_tap().query(endpoint=endpoint, adql=adql, maxrec=maxrec)
+    return shape_table(table, archive=archive_label(endpoint), maxrec=maxrec)
 
 
-def _archive_label(endpoint: str) -> str:
-    """Coarse label for the `archive` field. Static map for Slice A; later
-    slices replace with a registry-aware lookup."""
-    e = endpoint.lower()
-    if "datalab.noirlab" in e:
-        return "datalab"
-    if "almascience" in e:
-        return "alma"
-    if "data-query.nrao" in e:
-        return "nrao_vla"
-    return "other"
+vo_tap_query.__doc__ = (vo_tap_query.__doc__ or "") + _ERROR_DOCSTRING

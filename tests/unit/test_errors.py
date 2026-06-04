@@ -1,7 +1,7 @@
 from astro_archives_mcp.errors import (
     ArchiveError,
+    DalQueryError,
     InternalError,
-    TapQueryError,
     ToolExecutionError,
     ValidationError,
     error_to_payload,
@@ -33,7 +33,7 @@ def test_archive_error_carries_retry_after():
 
 
 def test_tap_query_error_default_strategy():
-    err = TapQueryError(message="syntax error", request_id="r-3")
+    err = DalQueryError(message="syntax error", request_id="r-3")
     payload = error_to_payload(err)
     assert payload["error_class"] == "tap_query_error"
     assert payload["retry_strategy"] == "fix_and_retry"
@@ -61,7 +61,7 @@ def test_unknown_error_is_internal():
 
 def test_concrete_errors_are_catchable_as_base():
     """Every concrete error must be catchable via the base class."""
-    for cls in (ValidationError, ArchiveError, TapQueryError, InternalError):
+    for cls in (ValidationError, ArchiveError, DalQueryError, InternalError):
         try:
             raise cls(message="x")
         except ToolExecutionError as caught:

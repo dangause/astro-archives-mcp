@@ -1,0 +1,256 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - pyVO/1.8.1 Python/3.12.12 (Darwin)
+    method: GET
+    uri: https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/sia/capabilities
+  response:
+    body:
+      string: "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<vosi:capabilities xmlns:vosi=\"http://www.ivoa.net/xml/VOSICapabilities/v1.0\"
+        xmlns:vr=\"http://www.ivoa.net/xml/VOResource/v1.0\" xmlns:vs=\"http://www.ivoa.net/xml/VODataService/v1.1\"
+        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\r\n  <capability
+        standardID=\"ivo://ivoa.net/std/VOSI#capabilities\">\r\n    <interface xsi:type=\"vs:ParamHTTP\">\r\n
+        \     <accessURL use=\"full\">https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/sia/capabilities</accessURL>\r\n
+        \   </interface>\r\n  </capability>\r\n  <capability standardID=\"ivo://ivoa.net/std/VOSI#availability\">\r\n
+        \   <interface xsi:type=\"vs:ParamHTTP\">\r\n      <accessURL use=\"full\">https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/sia/availability</accessURL>\r\n
+        \   </interface>\r\n  </capability>\r\n  <capability standardID=\"vos://cadc.nrc.ca~vospace/CADC/std/LOGGING#logControl-1.0\">\r\n
+        \   <interface xsi:type=\"vs:ParamHTTP\" role=\"std\" version=\"1.0\">\r\n
+        \     <accessURL use=\"full\">https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/sia/logControl</accessURL>\r\n
+        \     <securityMethod standardID=\"ivo://ivoa.net/sso#cookie\" />\r\n      <securityMethod
+        standardID=\"ivo://ivoa.net/sso#tls-with-certificate\" />\r\n      <securityMethod
+        standardID=\"ivo://ivoa.net/sso#token\" />\r\n    </interface>\r\n  </capability>\r\n
+        \ <capability standardID=\"ivo://ivoa.net/std/SIA\">\r\n    <interface xsi:type=\"vs:ParamHTTP\"
+        role=\"std\" version=\"1.0\">\r\n      <accessURL use=\"base\">https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/sia/query</accessURL>\r\n
+        \     <securityMethod />\r\n      <securityMethod standardID=\"ivo://ivoa.net/sso#cookie\"
+        />\r\n      <securityMethod standardID=\"ivo://ivoa.net/sso#tls-with-certificate\"
+        />\r\n      <securityMethod standardID=\"ivo://ivoa.net/sso#token\" />\r\n
+        \   </interface>\r\n  </capability>\r\n  <capability standardID=\"ivo://ivoa.net/std/SIA#query-2.0\">\r\n
+        \   <interface xsi:type=\"vs:ParamHTTP\" role=\"std\" version=\"2.0\">\r\n
+        \     <accessURL use=\"base\">https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/sia/v2query</accessURL>\r\n
+        \     <securityMethod />\r\n      <securityMethod standardID=\"ivo://ivoa.net/sso#cookie\"
+        />\r\n      <securityMethod standardID=\"ivo://ivoa.net/sso#tls-with-certificate\"
+        />\r\n      <securityMethod standardID=\"ivo://ivoa.net/sso#token\" />\r\n
+        \   </interface>\r\n  </capability>\r\n</vosi:capabilities>\r\n"
+    headers:
+      content-type:
+      - text/xml
+      date:
+      - Thu, 04 Jun 2026 15:02:32 GMT
+      server:
+      - OpenCADC/cadc-rest + cadc-vosi-1.4
+      strict-transport-security:
+      - max-age=63072000
+      transfer-encoding:
+      - chunked
+      www-authenticate:
+      - ivoa_cookie
+      - ivoa_x509 standard_id="ivo://ivoa.net/sso#cookie", access_url="https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/cred/generate"
+      - ivoa_x509 standard_id="ivo://ivoa.net/sso#BasicAA", access_url="https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/cred/generate"
+      - ivoa_x509 standard_id="ivo://ivoa.net/sso#token", access_url="https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/cred/generate"
+      - ivoa_x509
+      - ivoa_bearer standard_id="ivo://ivoa.net/sso#tls-with-password", access_url="https://ws-cadc.canfar.net/ac/login",
+        HACK=temporary
+      - Bearer
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - pyVO/1.8.1 Python/3.12.12 (Darwin)
+    method: GET
+    uri: https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/sia/v2query?POS=CIRCLE+185.43+-31.99+0.05&MAXREC=5
+  response:
+    body:
+      string: ''
+    headers:
+      content-length:
+      - '0'
+      date:
+      - Thu, 04 Jun 2026 15:02:32 GMT
+      location:
+      - https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/argus/sync/fq1cyyodw2df6ept/run
+      server:
+      - OpenCADC/cadc-rest
+      strict-transport-security:
+      - max-age=63072000
+      www-authenticate:
+      - ivoa_cookie
+      - ivoa_x509 standard_id="ivo://ivoa.net/sso#cookie", access_url="https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/cred/generate"
+      - ivoa_x509 standard_id="ivo://ivoa.net/sso#BasicAA", access_url="https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/cred/generate"
+      - ivoa_x509 standard_id="ivo://ivoa.net/sso#token", access_url="https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/cred/generate"
+      - ivoa_x509
+      - ivoa_bearer standard_id="ivo://ivoa.net/sso#tls-with-password", access_url="https://ws-cadc.canfar.net/ac/login",
+        HACK=temporary
+      - Bearer
+    status:
+      code: 303
+      message: See Other
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - pyVO/1.8.1 Python/3.12.12 (Darwin)
+    method: GET
+    uri: https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/argus/sync/fq1cyyodw2df6ept/run
+  response:
+    body:
+      string: "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<VOTABLE xmlns=\"http://www.ivoa.net/xml/VOTable/v1.3\"
+        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" version=\"1.4\">\r\n
+        \ <RESOURCE type=\"results\">\r\n    <INFO name=\"QUERY_STATUS\" value=\"OK\"
+        />\r\n    <INFO name=\"QUERY_TIMESTAMP\" value=\"2026-06-04T15:02:33.462\"
+        />\r\n    <INFO name=\"QUERY\" value=\"SELECT * FROM ivoa.ObsCore WHERE dataproduct_type
+        IN ( 'image', 'cube' ) AND (INTERSECTS(CIRCLE('ICRS',185.43,-31.99,0.05),
+        s_region) = 1)\" />\r\n    <TABLE>\r\n      <FIELD name=\"obs_publisher_did\"
+        datatype=\"char\" arraysize=\"256*\" ID=\"ivoaPublisherID\" ucd=\"meta.ref.ivoid\"
+        utype=\"obscore:Curation.PublisherDID\" xtype=\"uri\">\r\n        <DESCRIPTION>publisher
+        dataset identifier</DESCRIPTION>\r\n      </FIELD>\r\n      <FIELD name=\"obs_collection\"
+        datatype=\"char\" arraysize=\"128*\" ucd=\"meta.id\" utype=\"obscore:DataID.Collection\">\r\n
+        \       <DESCRIPTION>short name for the data colection</DESCRIPTION>\r\n      </FIELD>\r\n
+        \     <FIELD name=\"facility_name\" datatype=\"char\" arraysize=\"128*\" ucd=\"meta.id;instr.tel\"
+        utype=\"obscore:Provenance.ObsConfig.Facility.name\">\r\n        <DESCRIPTION>telescope
+        name</DESCRIPTION>\r\n      </FIELD>\r\n      <FIELD name=\"instrument_name\"
+        datatype=\"char\" arraysize=\"128*\" ucd=\"meta.id;instr\" utype=\"obscore:Provenance.ObsConfig.Instrument.name\">\r\n
+        \       <DESCRIPTION>instrument name</DESCRIPTION>\r\n      </FIELD>\r\n      <FIELD
+        name=\"obs_id\" datatype=\"char\" arraysize=\"128*\" ucd=\"meta.id\" utype=\"obscore:DataID.observationID\">\r\n
+        \       <DESCRIPTION>internal dataset identifier</DESCRIPTION>\r\n      </FIELD>\r\n
+        \     <FIELD name=\"dataproduct_type\" datatype=\"char\" arraysize=\"128*\"
+        ucd=\"meta.code.class\" utype=\"obscore:ObsDataset.dataProductType\">\r\n
+        \       <DESCRIPTION>type of product</DESCRIPTION>\r\n      </FIELD>\r\n      <FIELD
+        name=\"calib_level\" datatype=\"int\" ucd=\"meta.code;obs.calib\" utype=\"obscore:ObsDataset.calibLevel\">\r\n
+        \       <DESCRIPTION>calibration level (0,1,2,3)</DESCRIPTION>\r\n      </FIELD>\r\n
+        \     <FIELD name=\"obs_release_date\" datatype=\"char\" arraysize=\"23*\"
+        ucd=\"time.release\" utype=\"obscore:Curation.releaseDate\" xtype=\"timestamp\">\r\n
+        \       <DESCRIPTION>timestamp of date the data becomes publicly available</DESCRIPTION>\r\n
+        \     </FIELD>\r\n      <FIELD name=\"target_name\" datatype=\"char\" arraysize=\"32*\"
+        ucd=\"meta.id;src\" utype=\"obscore:Target.Name\">\r\n        <DESCRIPTION>name
+        of intended target</DESCRIPTION>\r\n      </FIELD>\r\n      <FIELD name=\"s_ra\"
+        datatype=\"double\" ucd=\"pos.eq.ra\" unit=\"deg\" utype=\"obscore:Char.SpatialAxis.Coverage.Location.Coord.Position2D.Value2.C1\">\r\n
+        \       <DESCRIPTION>RA of central coordinates</DESCRIPTION>\r\n      </FIELD>\r\n
+        \     <FIELD name=\"s_dec\" datatype=\"double\" ucd=\"pos.eq.dec\" unit=\"deg\"
+        utype=\"obscore:Char.SpatialAxis.Coverage.Location.Coord.Position2D.Value2.C2\">\r\n
+        \       <DESCRIPTION>DEC of central coordinates</DESCRIPTION>\r\n      </FIELD>\r\n
+        \     <FIELD name=\"s_fov\" datatype=\"double\" ucd=\"phys.angSize;instr.fov\"
+        unit=\"deg\" utype=\"obscore:Char.SpatialAxis.Coverage.Bounds.Extent.diameter\">\r\n
+        \       <DESCRIPTION>size of the region covered (~diameter of minimum bounding
+        circle)</DESCRIPTION>\r\n      </FIELD>\r\n      <FIELD name=\"s_region\"
+        datatype=\"char\" arraysize=\"*\" ucd=\"pos.outline;obs.field\" utype=\"obscore:Char.SpatialAxis.Coverage.Support.Area\"
+        xtype=\"adql:REGION\">\r\n        <DESCRIPTION>region bounded by observation</DESCRIPTION>\r\n
+        \     </FIELD>\r\n      <FIELD name=\"s_resolution\" datatype=\"double\" ucd=\"pos.angResolution\"
+        unit=\"arcsec\" utype=\"obscore:Char.SpatialAxis.Resolution.refval.value\">\r\n
+        \       <DESCRIPTION>typical spatial resolution</DESCRIPTION>\r\n      </FIELD>\r\n
+        \     <FIELD name=\"s_xel1\" datatype=\"long\" ucd=\"meta.number\" utype=\"obscore:Char.SpatialAxis.numBins1\">\r\n
+        \       <DESCRIPTION>dimensions (number of pixels) along one spatial axis</DESCRIPTION>\r\n
+        \     </FIELD>\r\n      <FIELD name=\"s_xel2\" datatype=\"long\" ucd=\"meta.number\"
+        utype=\"obscore:Char.SpatialAxis.numBins2\">\r\n        <DESCRIPTION>dimensions
+        (number of pixels) along the other spatial axis</DESCRIPTION>\r\n      </FIELD>\r\n
+        \     <FIELD name=\"t_min\" datatype=\"double\" ucd=\"time.start;obs.exposure\"
+        unit=\"d\" utype=\"obscore:Char.TimeAxis.Coverage.Bounds.Limits.StartTime\">\r\n
+        \       <DESCRIPTION>start time of observation (MJD)</DESCRIPTION>\r\n      </FIELD>\r\n
+        \     <FIELD name=\"t_max\" datatype=\"double\" ucd=\"time.end;obs.exposure\"
+        unit=\"d\" utype=\"obscore:Char.TimeAxis.Coverage.Bounds.Limits.StopTime\">\r\n
+        \       <DESCRIPTION>end time of observation (MJD)</DESCRIPTION>\r\n      </FIELD>\r\n
+        \     <FIELD name=\"t_exptime\" datatype=\"double\" ucd=\"time.duration;obs.exposure\"
+        unit=\"s\" utype=\"obscore:Char.TimeAxis.Coverage.Support.Extent\">\r\n        <DESCRIPTION>exposure
+        time of observation</DESCRIPTION>\r\n      </FIELD>\r\n      <FIELD name=\"t_resolution\"
+        datatype=\"double\" ucd=\"time.resolution\" unit=\"s\" utype=\"obscore:Char.TimeAxis.Resolution.refval.value\">\r\n
+        \       <DESCRIPTION>typical temporal resolution</DESCRIPTION>\r\n      </FIELD>\r\n
+        \     <FIELD name=\"t_xel\" datatype=\"long\" ucd=\"meta.number\" utype=\"obscore:Char.TimeAxis.numBins\">\r\n
+        \       <DESCRIPTION>dimensions (number of pixels) along the time axis</DESCRIPTION>\r\n
+        \     </FIELD>\r\n      <FIELD name=\"em_min\" datatype=\"double\" ucd=\"em.wl;stat.min\"
+        unit=\"m\" utype=\"obscore:Char.SpectralAxis.Coverage.Bounds.Limits.LoLimit\">\r\n
+        \       <DESCRIPTION>start spectral coordinate value</DESCRIPTION>\r\n      </FIELD>\r\n
+        \     <FIELD name=\"em_max\" datatype=\"double\" ucd=\"em.wl;stat.max\" unit=\"m\"
+        utype=\"obscore:Char.SpectralAxis.Coverage.Bounds.Limits.HiLimit\">\r\n        <DESCRIPTION>stop
+        spectral coordinate value</DESCRIPTION>\r\n      </FIELD>\r\n      <FIELD
+        name=\"em_res_power\" datatype=\"double\" ucd=\"spect.resolution\" utype=\"obscore:Char.SpectralAxis.Resolution.ResolPower.refval\">\r\n
+        \       <DESCRIPTION>typical spectral resolution</DESCRIPTION>\r\n      </FIELD>\r\n
+        \     <FIELD name=\"em_xel\" datatype=\"long\" ucd=\"meta.number\" utype=\"obscore:Char.SpectralAxis.numBins\">\r\n
+        \       <DESCRIPTION>dimensions (number of pixels) along the energy axis</DESCRIPTION>\r\n
+        \     </FIELD>\r\n      <FIELD name=\"em_ucd\" datatype=\"char\" arraysize=\"32*\"
+        ucd=\"meta.ucd\" utype=\"obscore:Char.SpectralAxis.ucd\">\r\n        <DESCRIPTION>UCD
+        describing the spectral axis</DESCRIPTION>\r\n      </FIELD>\r\n      <FIELD
+        name=\"pol_states\" datatype=\"char\" arraysize=\"32*\" ucd=\"meta.code;phys.polarization\"
+        utype=\"obscore:Char.PolarizationAxis.stateList\">\r\n        <DESCRIPTION>polarization
+        states present in the data</DESCRIPTION>\r\n      </FIELD>\r\n      <FIELD
+        name=\"pol_xel\" datatype=\"int\" ucd=\"meta.number\" utype=\"obscore:Char.PolarizationAxis.numBins\">\r\n
+        \       <DESCRIPTION>dimensions (number of pixels) along the polarization
+        axis</DESCRIPTION>\r\n      </FIELD>\r\n      <FIELD name=\"o_ucd\" datatype=\"char\"
+        arraysize=\"32*\" ucd=\"meta.ucd\" utype=\"obscore:Char.ObservableAxis.ucd\">\r\n
+        \       <DESCRIPTION>UCD describing the observable axis (pixel values)</DESCRIPTION>\r\n
+        \     </FIELD>\r\n      <FIELD name=\"access_url\" datatype=\"char\" arraysize=\"*\"
+        ucd=\"meta.ref.url\" utype=\"obscore:Access.Reference\" xtype=\"clob\">\r\n
+        \       <DESCRIPTION>URL to download the data</DESCRIPTION>\r\n      </FIELD>\r\n
+        \     <FIELD name=\"access_format\" datatype=\"char\" arraysize=\"128*\" ucd=\"meta.code.mime\"
+        utype=\"obscore:Access.Format\">\r\n        <DESCRIPTION>format of the data
+        file(s)</DESCRIPTION>\r\n      </FIELD>\r\n      <FIELD name=\"access_estsize\"
+        datatype=\"long\" ucd=\"phys.size;meta.file\" unit=\"kbyte\" utype=\"obscore:Access.Size\">\r\n
+        \       <DESCRIPTION>estimated size of the download</DESCRIPTION>\r\n      </FIELD>\r\n
+        \     <FIELD name=\"lastModified\" datatype=\"char\" arraysize=\"23*\" xtype=\"timestamp\">\r\n
+        \       <DESCRIPTION>timestamp of last modification of the metadata</DESCRIPTION>\r\n
+        \     </FIELD>\r\n      <DATA>\r\n        <TABLEDATA>\n<TR><TD>ivo://cadc.nrc.ca/mirror/TESS?tess2023099205517-s0064-1-1-0257-s/tess2023099205517-s0064-1-1-0257-s-CALIBRATED</TD><TD>TESS</TD><TD>TESS</TD><TD>Photometer</TD><TD>tess2023099205517-s0064-1-1-0257-s</TD><TD>image</TD><TD>2</TD><TD>2023-05-23T00:00:00.000</TD><TD>FIELD</TD><TD>191.1444081339235</TD><TD>-32.639946414902894</TD><TD>17.007348775816396</TD><TD>Polygon
+        ICRS 181.600864 -34.677844 187.964267 -24.601236 200.404447 -29.83386 194.462339
+        -40.715703</TD><TD/><TD>2136</TD><TD>2078</TD><TD>60043.876941793984</TD><TD>60043.87925637732</TD><TD>158.399928</TD><TD>158.399928</TD><TD>1</TD><TD>6.0E-7</TD><TD>1.0E-6</TD><TD/><TD/><TD/><TD/><TD/><TD>phot.count</TD><TD>https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/caom2ops/datalink?ID=ivo%3A%2F%2Fcadc.nrc.ca%2Fmirror%2FTESS%3Ftess2023099205517-s0064-1-1-0257-s%2Ftess2023099205517-s0064-1-1-0257-s-CALIBRATED</TD><TD>application/x-votable+xml;content=datalink</TD><TD/><TD>2023-05-25T11:56:52.110</TD></TR>\n<TR><TD>ivo://cadc.nrc.ca/mirror/TESS?tess2023100043517-s0064-1-1-0257-s/tess2023100043517-s0064-1-1-0257-s-RAW_STANDARD</TD><TD>TESS</TD><TD>TESS</TD><TD>Photometer</TD><TD>tess2023100043517-s0064-1-1-0257-s</TD><TD>image</TD><TD>1</TD><TD>2023-05-23T00:00:00.000</TD><TD>FIELD</TD><TD>191.14437883840222</TD><TD>-32.639953985187034</TD><TD>17.007338682725752</TD><TD>Polygon
+        ICRS 181.600837 -34.677853 187.964239 -24.601246 200.404421 -29.833874 194.462302
+        -40.715705</TD><TD/><TD>2136</TD><TD>2078</TD><TD>60044.19638821759</TD><TD>60044.198702800924</TD><TD>158.399928</TD><TD>158.399928</TD><TD>1</TD><TD>6.0E-7</TD><TD>1.0E-6</TD><TD/><TD/><TD/><TD/><TD/><TD>phot.count</TD><TD>https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/caom2ops/datalink?ID=ivo%3A%2F%2Fcadc.nrc.ca%2Fmirror%2FTESS%3Ftess2023100043517-s0064-1-1-0257-s%2Ftess2023100043517-s0064-1-1-0257-s-RAW_STANDARD</TD><TD>application/x-votable+xml;content=datalink</TD><TD/><TD>2023-05-25T11:57:01.362</TD></TR>\n<TR><TD>ivo://cadc.nrc.ca/mirror/TESS?tess2023099142517-s0064-1-1-0257-s/tess2023099142517-s0064-1-1-0257-s-RAW_STANDARD</TD><TD>TESS</TD><TD>TESS</TD><TD>Photometer</TD><TD>tess2023099142517-s0064-1-1-0257-s</TD><TD>image</TD><TD>1</TD><TD>2023-05-23T00:00:00.000</TD><TD>FIELD</TD><TD>191.1444015465847</TD><TD>-32.63994131163456</TD><TD>17.00735738511168</TD><TD>Polygon
+        ICRS 181.600854 -34.677835 187.964261 -24.601227 200.40444 -29.833857 194.46234
+        -40.715701</TD><TD/><TD>2136</TD><TD>2078</TD><TD>60043.60610671296</TD><TD>60043.608421296296</TD><TD>158.399928</TD><TD>158.399928</TD><TD>1</TD><TD>6.0E-7</TD><TD>1.0E-6</TD><TD/><TD/><TD/><TD/><TD/><TD>phot.count</TD><TD>https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/caom2ops/datalink?ID=ivo%3A%2F%2Fcadc.nrc.ca%2Fmirror%2FTESS%3Ftess2023099142517-s0064-1-1-0257-s%2Ftess2023099142517-s0064-1-1-0257-s-RAW_STANDARD</TD><TD>application/x-votable+xml;content=datalink</TD><TD/><TD>2023-05-25T11:57:05.540</TD></TR>\n<TR><TD>ivo://cadc.nrc.ca/mirror/TESS?tess2023100020517-s0064-1-1-0257-s/tess2023100020517-s0064-1-1-0257-s-CALIBRATED</TD><TD>TESS</TD><TD>TESS</TD><TD>Photometer</TD><TD>tess2023100020517-s0064-1-1-0257-s</TD><TD>image</TD><TD>2</TD><TD>2023-05-23T00:00:00.000</TD><TD>FIELD</TD><TD>191.1443965841301</TD><TD>-32.63995254164115</TD><TD>17.00735760234337</TD><TD>Polygon
+        ICRS 181.60085 -34.677848 187.964246 -24.601243 200.404439 -29.833855 194.462327
+        -40.715717</TD><TD/><TD>2136</TD><TD>2078</TD><TD>60044.092220914354</TD><TD>60044.09453549769</TD><TD>158.399928</TD><TD>158.399928</TD><TD>1</TD><TD>6.0E-7</TD><TD>1.0E-6</TD><TD/><TD/><TD/><TD/><TD/><TD>phot.count</TD><TD>https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/caom2ops/datalink?ID=ivo%3A%2F%2Fcadc.nrc.ca%2Fmirror%2FTESS%3Ftess2023100020517-s0064-1-1-0257-s%2Ftess2023100020517-s0064-1-1-0257-s-CALIBRATED</TD><TD>application/x-votable+xml;content=datalink</TD><TD/><TD>2023-05-25T11:57:05.670</TD></TR>\n<TR><TD>ivo://cadc.nrc.ca/mirror/TESS?tess2023099195837-s0064-1-1-0257-s/tess2023099195837-s0064-1-1-0257-s-CALIBRATED</TD><TD>TESS</TD><TD>TESS</TD><TD>Photometer</TD><TD>tess2023099195837-s0064-1-1-0257-s</TD><TD>image</TD><TD>2</TD><TD>2023-05-23T00:00:00.000</TD><TD>FIELD</TD><TD>191.1443883495273</TD><TD>-32.639943799575164</TD><TD>17.00735432672676</TD><TD>Polygon
+        ICRS 181.600843 -34.677833 187.964249 -24.601233 200.40442 -29.833857 194.462331
+        -40.715703</TD><TD/><TD>2136</TD><TD>2078</TD><TD>60043.83758969908</TD><TD>60043.83990428241</TD><TD>158.399928</TD><TD>158.399928</TD><TD>1</TD><TD>6.0E-7</TD><TD>1.0E-6</TD><TD/><TD/><TD/><TD/><TD/><TD>phot.count</TD><TD>https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/caom2ops/datalink?ID=ivo%3A%2F%2Fcadc.nrc.ca%2Fmirror%2FTESS%3Ftess2023099195837-s0064-1-1-0257-s%2Ftess2023099195837-s0064-1-1-0257-s-CALIBRATED</TD><TD>application/x-votable+xml;content=datalink</TD><TD/><TD>2023-05-25T11:57:15.691</TD></TR></TABLEDATA>\r\n
+        \     </DATA>\r\n    </TABLE>\r\n    <INFO name=\"QUERY_STATUS\" value=\"OVERFLOW\"
+        />\r\n  </RESOURCE>\r\n  <RESOURCE type=\"meta\" utype=\"adhoc:service\">\r\n
+        \   <PARAM name=\"resourceIdentifier\" datatype=\"char\" arraysize=\"*\" value=\"ivo://cadc.nrc.ca/caom2ops\"
+        />\r\n    <PARAM name=\"standardID\" datatype=\"char\" arraysize=\"*\" value=\"ivo://ivoa.net/std/DataLink#links-1.1\"
+        />\r\n    <PARAM name=\"accessURL\" datatype=\"char\" arraysize=\"61\" value=\"https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/caom2ops/datalink\"
+        />\r\n    <GROUP name=\"inputParams\">\r\n      <PARAM name=\"ID\" datatype=\"char\"
+        arraysize=\"*\" xtype=\"uri\" ref=\"ivoaPublisherID\" value=\"\" />\r\n    </GROUP>\r\n
+        \ </RESOURCE>\r\n</VOTABLE>\r\n"
+    headers:
+      content-disposition:
+      - inline; filename="result_fq1cyyodw2df6ept.xml"
+      content-type:
+      - application/x-votable+xml; serialization=tabledata
+      date:
+      - Thu, 04 Jun 2026 15:02:33 GMT
+      server:
+      - OpenCADC/cadc-rest
+      strict-transport-security:
+      - max-age=63072000
+      transfer-encoding:
+      - chunked
+      www-authenticate:
+      - ivoa_cookie
+      - ivoa_x509 standard_id="ivo://ivoa.net/sso#cookie", access_url="https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/cred/generate"
+      - ivoa_x509 standard_id="ivo://ivoa.net/sso#BasicAA", access_url="https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/cred/generate"
+      - ivoa_x509 standard_id="ivo://ivoa.net/sso#token", access_url="https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/cred/generate"
+      - ivoa_x509
+      - ivoa_bearer standard_id="ivo://ivoa.net/sso#tls-with-password", access_url="https://ws-cadc.canfar.net/ac/login",
+        HACK=temporary
+      - Bearer
+    status:
+      code: 200
+      message: OK
+version: 1

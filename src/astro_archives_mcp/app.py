@@ -5,12 +5,19 @@ from starlette.middleware import Middleware
 from starlette.responses import JSONResponse
 from starlette.routing import Mount, Route
 
-from astro_archives_mcp import __version__
+from astro_archives_mcp import __version__, result_store
 from astro_archives_mcp.observability import (
     current_request_id,
     new_request_id,
 )
-from astro_archives_mcp.tools.ivoa import vo_tap_query
+from astro_archives_mcp.resources import register_resources
+from astro_archives_mcp.tools import (
+    vo_cone_search,
+    vo_registry_describe,
+    vo_registry_search,
+    vo_sia_search,
+    vo_tap_query,
+)
 
 
 class RequestIdMiddleware:
@@ -43,6 +50,11 @@ def build_mcp() -> FastMCP:
     """Construct the FastMCP server with all Slice-A tools registered."""
     mcp = FastMCP(name="astro-archives-mcp")
     mcp.tool(vo_tap_query)
+    mcp.tool(vo_registry_search)
+    mcp.tool(vo_registry_describe)
+    mcp.tool(vo_cone_search)
+    mcp.tool(vo_sia_search)
+    register_resources(mcp)
     return mcp
 
 
@@ -51,7 +63,11 @@ def build_app() -> Starlette:
     mcp_app = mcp.http_app(path="/")
 
     async def health(_request):
-        return JSONResponse({"status": "ok", "version": __version__})
+        return JSONResponse({
+            "status": "ok",
+            "version": __version__,
+            "store": result_store.size_estimate(),
+        })
 
     async def ready(_request):
         # Slice A: no backend pre-warm. Later slices ping a known TAP endpoint.

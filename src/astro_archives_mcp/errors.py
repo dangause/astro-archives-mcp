@@ -1,5 +1,11 @@
+import asyncio
+import functools
+import logging
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import ClassVar, Literal
+
+from astro_archives_mcp.observability import current_request_id
 
 RetryStrategy = Literal["fix_and_retry", "wait_and_retry", "submit_async", "abandon"]
 
@@ -37,9 +43,13 @@ class ArchiveError(ToolExecutionError):
 
 
 @dataclass
-class TapQueryError(ToolExecutionError):
+class DalQueryError(ToolExecutionError):
     error_class: str = "tap_query_error"
     retry_strategy: RetryStrategy = "fix_and_retry"
+
+
+# Backward-compat alias. Remove once no callers remain.
+TapQueryError = DalQueryError
 
 
 @dataclass
@@ -82,3 +92,33 @@ def error_to_payload(
     if err.retry_after_seconds is not None:
         payload["retry_after_seconds"] = err.retry_after_seconds
     return payload
+
+
+def wrap_tool_errors(fn: Callable) -> Callable:
+    """Decorate an MCP tool so all errors flow through the structured payload path.
+
+    Catches ToolExecutionError subclasses (preserving error_class/retry_strategy)
+    and bare Exception (coerced to InternalError with redacted message).
+    Threads the current request_id from the ContextVar into the payload.
+    Logs at WARN level for expected errors, EXCEPTION for unexpected.
+    """
+    name = fn.__name__
+    if asyncio.iscoroutinefunction(fn):
+        raise TypeError(
+            f"wrap_tool_errors is sync-only; {name} is async. "
+            "Slice 3 will introduce an async variant if needed."
+        )
+    log = logging.getLogger(f"astro_archives_mcp.tools.{name}")
+
+    @functools.wraps(fn)
+    def wrapped(*args, **kwargs):
+        try:
+            return fn(*args, **kwargs)
+        except ToolExecutionError as e:
+            log.warning("%s: %s", name, e.error_class)
+            return error_to_payload(e, request_id=current_request_id.get())
+        except Exception as e:  # noqa: BLE001
+            log.exception("%s: unexpected error", name)
+            return error_to_payload(e, request_id=current_request_id.get())
+
+    return wrapped

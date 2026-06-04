@@ -1,0 +1,165 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - pyVO/1.8.1 Python/3.12.12 (Darwin)
+    method: GET
+    uri: https://gaia.ari.uni-heidelberg.de/cone/gaiadr2?RA=185.43&DEC=-31.99&SR=0.01&VERB=2&MAXREC=20
+  response:
+    body:
+      string: "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<VOTABLE version=\"1.4\"
+        xmlns=\"http://www.ivoa.net/xml/VOTable/v1.3\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"
+        xsi:schemaLocation=\"http://www.ivoa.net/xml/VOTable/v1.3 http://www.ivoa.net/xml/VOTable/v1.3\">\n\t<RESOURCE
+        type=\"results\">\n\t\t<INFO ID=\"Provider\" name=\"Provider\" value=\"ARI's
+        simple Cone Search service for Gaia data.\">Service that has provided this
+        table.</INFO>\n\t\t<INFO ID=\"Query\" name=\"Query\" value=\"RA=185.43&amp;DEC=-31.99&amp;SR=0.01&amp;VERB=2&amp;MAXREC=20
+        =&gt; {RA: 185.43 deg, DEC: -31.99 deg, RADIUS: 0.01 deg, VERB: 2}\">Exact
+        parameters submitted to the Cone Search service, followed by the same parameters
+        as understood by the service.</INFO>\n\t\t<COOSYS ID=\"GDR2_ICRS\" system=\"ICRS\"
+        epoch=\"2015.5\" />\n\t\t<COOSYS ID=\"GDR2_GALACTIC\" system=\"galactic\"
+        epoch=\"2015.5\" />\n\t\t<COOSYS ID=\"GDR2_ECLIPTIC\" system=\"eq_FK5\" equinox=\"J2015\"
+        epoch=\"2015.5\" />\n\t\t<TIMESYS ID=\"J2015.5\" timeorigin=\"2455197.5\"
+        timescale=\"TCB\" refposition=\"barycenter\" />\n\t\t<TABLE name=\"Cone_gaiadr2.gaia_source_[185.43,-31.99]_0.01\">\n\t\t\t<FIELD
+        name=\"source_id\" datatype=\"char\" arraysize=\"*\" ucd=\"ID_MAIN\" ID=\"source_id\">\n\t\t\t\t<DESCRIPTION>Unique
+        source identifier (unique within a particular Data Release)</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD
+        name=\"designation\" datatype=\"char\" arraysize=\"*\" ucd=\"meta.id\" ID=\"designation\">\n\t\t\t\t<DESCRIPTION>Unique
+        source designation (unique across all Data Releases)</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD
+        name=\"ra\" datatype=\"double\" unit=\"deg\" ucd=\"POS_EQ_RA_MAIN\" ref=\"GDR2_ICRS\"
+        ID=\"ra\">\n\t\t\t\t<DESCRIPTION>Right ascension</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD
+        name=\"dec\" datatype=\"double\" unit=\"deg\" ucd=\"POS_EQ_DEC_MAIN\" ref=\"GDR2_ICRS\"
+        ID=\"dec\">\n\t\t\t\t<DESCRIPTION>Declination</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD
+        name=\"l\" datatype=\"double\" unit=\"deg\" ucd=\"pos.galactic.lon\" ref=\"GDR2_GALACTIC\"
+        ID=\"l\">\n\t\t\t\t<DESCRIPTION>Galactic longitude</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD
+        name=\"ecl_lon\" datatype=\"double\" unit=\"deg\" ucd=\"pos.ecliptic.lon\"
+        ref=\"GDR2_ECLIPTIC\" ID=\"ecl_lon\">\n\t\t\t\t<DESCRIPTION>Ecliptic longitude</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD
+        name=\"ecl_lat\" datatype=\"double\" unit=\"deg\" ucd=\"pos.ecliptic.lat\"
+        ref=\"GDR2_ECLIPTIC\" ID=\"ecl_lat\">\n\t\t\t\t<DESCRIPTION>Ecliptic latitude</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD
+        name=\"parallax\" datatype=\"double\" unit=\"mas\" ucd=\"pos.parallax\" ID=\"parallax\">\n\t\t\t\t<DESCRIPTION>Parallax</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD
+        name=\"pmra\" datatype=\"double\" unit=\"mas/yr\" ucd=\"pos.pm;pos.eq.ra\"
+        ID=\"pmra\">\n\t\t\t\t<DESCRIPTION>Proper motion in right ascension direction</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD
+        name=\"pmdec\" datatype=\"double\" unit=\"mas/yr\" ucd=\"pos.pm;pos.eq.dec\"
+        ID=\"pmdec\">\n\t\t\t\t<DESCRIPTION>Proper motion in declination direction</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD
+        name=\"phot_g_mean_mag\" datatype=\"float\" unit=\"mag\" ucd=\"phot.mag;stat.mean;em.opt\"
+        ID=\"phot_g_mean_mag\">\n\t\t\t\t<DESCRIPTION>G-band mean magnitude</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD
+        name=\"phot_bp_mean_mag\" datatype=\"float\" unit=\"mag\" ucd=\"phot.mag;stat.mean\"
+        ID=\"phot_bp_mean_mag\">\n\t\t\t\t<DESCRIPTION>Integrated BP mean magnitude</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD
+        name=\"phot_rp_mean_mag\" datatype=\"float\" unit=\"mag\" ucd=\"phot.mag;stat.mean\"
+        ID=\"phot_rp_mean_mag\">\n\t\t\t\t<DESCRIPTION>Integrated RP mean magnitude</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD
+        name=\"ra_error\" datatype=\"double\" unit=\"mas\" ucd=\"stat.error;pos.eq.ra\"
+        ID=\"ra_error\">\n\t\t\t\t<DESCRIPTION>Standard error of right ascension</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD
+        name=\"dec_error\" datatype=\"double\" unit=\"mas\" ucd=\"stat.error;pos.eq.dec\"
+        ID=\"dec_error\">\n\t\t\t\t<DESCRIPTION>Standard error of declination</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD
+        name=\"parallax_error\" datatype=\"double\" unit=\"mas\" ucd=\"stat.error;pos.parallax\"
+        ID=\"parallax_error\">\n\t\t\t\t<DESCRIPTION>Standard error of parallax</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD
+        name=\"pmra_error\" datatype=\"double\" unit=\"mas/yr\" ucd=\"stat.error;pos.pm;pos.eq.ra\"
+        ID=\"pmra_error\">\n\t\t\t\t<DESCRIPTION>Standard error of proper motion in
+        right ascension direction</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD name=\"pmdec_error\"
+        datatype=\"double\" unit=\"mas/yr\" ucd=\"stat.error;pos.pm;pos.eq.dec\" ID=\"pmdec_error\">\n\t\t\t\t<DESCRIPTION>Standard
+        error of proper motion in declination direction</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD
+        name=\"astrometric_excess_noise\" datatype=\"double\" unit=\"mas\" ucd=\"stat.value\"
+        ID=\"astrometric_excess_noise\">\n\t\t\t\t<DESCRIPTION>Excess noise of the
+        source</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD name=\"astrometric_gof_al\"
+        datatype=\"float\" ucd=\"stat.fit.goodness\" ID=\"astrometric_gof_al\">\n\t\t\t\t<DESCRIPTION>Goodness
+        of fit statistic of model wrt along-scan observations</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD
+        name=\"bp_g\" datatype=\"float\" unit=\"mag\" ucd=\"phot.color\" ID=\"bp_g\">\n\t\t\t\t<DESCRIPTION>BP
+        - G colour</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD name=\"bp_rp\" datatype=\"float\"
+        unit=\"mag\" ucd=\"phot.color\" ID=\"bp_rp\">\n\t\t\t\t<DESCRIPTION>BP - RP
+        colour</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD name=\"dec_parallax_corr\"
+        datatype=\"float\" ucd=\"stat.correlation;pos.eq.dec;pos.parallax\" ID=\"dec_parallax_corr\">\n\t\t\t\t<DESCRIPTION>Correlation
+        between declination and parallax</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD
+        name=\"dec_pmdec_corr\" datatype=\"float\" ucd=\"stat.correlation;pos.eq.dec;pos.pm;pos.eq.dec\"
+        ID=\"dec_pmdec_corr\">\n\t\t\t\t<DESCRIPTION>Correlation between declination
+        and proper motion in declination</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD
+        name=\"dec_pmra_corr\" datatype=\"float\" ucd=\"stat.correlation;pos.eq.dec;pos.pm;pos.eq.ra\"
+        ID=\"dec_pmra_corr\">\n\t\t\t\t<DESCRIPTION>Correlation between declination
+        and proper motion in right ascension</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD
+        name=\"g_rp\" datatype=\"float\" unit=\"mag\" ucd=\"phot.color\" ID=\"g_rp\">\n\t\t\t\t<DESCRIPTION>G
+        - RP colour</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD name=\"lum_val\" datatype=\"float\"
+        unit=\"solLum\" ucd=\"phys.luminosity\" ID=\"lum_val\">\n\t\t\t\t<DESCRIPTION>Stellar
+        luminosity</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD name=\"parallax_pmdec_corr\"
+        datatype=\"float\" ucd=\"stat.correlation;pos.parallax;pos.pm;pos.eq.dec\"
+        ID=\"parallax_pmdec_corr\">\n\t\t\t\t<DESCRIPTION>Correlation between parallax
+        and proper motion in declination</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD
+        name=\"parallax_pmra_corr\" datatype=\"float\" ucd=\"stat.correlation;pos.parallax;pos.pm;pos.eq.ra\"
+        ID=\"parallax_pmra_corr\">\n\t\t\t\t<DESCRIPTION>Correlation between parallax
+        and proper motion in right ascension</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD
+        name=\"phot_bp_mean_flux\" datatype=\"double\" unit=\"s**-1\" ucd=\"phot.flux;stat.mean\"
+        ID=\"phot_bp_mean_flux\">\n\t\t\t\t<DESCRIPTION>Integrated BP mean flux</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD
+        name=\"phot_bp_mean_flux_error\" datatype=\"double\" unit=\"s**-1\" ucd=\"stat.error;phot.flux;stat.mean\"
+        ID=\"phot_bp_mean_flux_error\">\n\t\t\t\t<DESCRIPTION>Error on the integrated
+        BP mean flux</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD name=\"phot_bp_n_obs\"
+        datatype=\"int\" ucd=\"meta.number\" ID=\"phot_bp_n_obs\">\n\t\t\t\t<DESCRIPTION>Number
+        of observations contributing to BP photometry</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD
+        name=\"phot_rp_mean_flux\" datatype=\"double\" unit=\"s**-1\" ucd=\"phot.flux;stat.mean\"
+        ID=\"phot_rp_mean_flux\">\n\t\t\t\t<DESCRIPTION>Integrated RP mean flux</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD
+        name=\"phot_rp_mean_flux_error\" datatype=\"double\" unit=\"s**-1\" ucd=\"stat.error;phot.flux\"
+        ID=\"phot_rp_mean_flux_error\">\n\t\t\t\t<DESCRIPTION>Error on the integrated
+        RP mean flux</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD name=\"phot_rp_n_obs\"
+        datatype=\"int\" ucd=\"meta.number\" ID=\"phot_rp_n_obs\">\n\t\t\t\t<DESCRIPTION>Number
+        of observations contributing to RP photometry</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD
+        name=\"pmra_pmdec_corr\" datatype=\"float\" ucd=\"stat.correlation;pos.pm;pos.eq.ra;pos.pm;pos.eq.dec\"
+        ID=\"pmra_pmdec_corr\">\n\t\t\t\t<DESCRIPTION>Correlation between proper motion
+        in right ascension and proper motion in declination</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD
+        name=\"ra_dec_corr\" datatype=\"float\" ucd=\"stat.correlation;pos.eq.ra;pos.eq.dec\"
+        ID=\"ra_dec_corr\">\n\t\t\t\t<DESCRIPTION>Correlation between right ascension
+        and declination</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD name=\"radial_velocity\"
+        datatype=\"double\" unit=\"km/s\" ucd=\"spect.dopplerVeloc.opt\" ID=\"radial_velocity\">\n\t\t\t\t<DESCRIPTION>Radial
+        velocity</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD name=\"radial_velocity_error\"
+        datatype=\"double\" unit=\"km/s\" ucd=\"stat.error;spect.dopplerVeloc.opt\"
+        ID=\"radial_velocity_error\">\n\t\t\t\t<DESCRIPTION>Radial velocity error</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD
+        name=\"random_index\" datatype=\"long\" ucd=\"meta.code\" ID=\"random_index\">\n\t\t\t\t<DESCRIPTION>Random
+        index used to select subsets</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD name=\"ra_parallax_corr\"
+        datatype=\"float\" ucd=\"stat.correlation;pos.eq.ra;pos.parallax\" ID=\"ra_parallax_corr\">\n\t\t\t\t<DESCRIPTION>Correlation
+        between right ascension and parallax</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD
+        name=\"ra_pmdec_corr\" datatype=\"float\" ucd=\"stat.correlation;pos.eq.ra;pos.pm;pos.eq.dec\"
+        ID=\"ra_pmdec_corr\">\n\t\t\t\t<DESCRIPTION>Correlation between right ascension
+        and proper motion in declination</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD
+        name=\"ra_pmra_corr\" datatype=\"float\" ucd=\"stat.correlation;pos.eq.ra;pos.pm;pos.eq.ra\"
+        ID=\"ra_pmra_corr\">\n\t\t\t\t<DESCRIPTION>Correlation between right ascension
+        and proper motion in right ascension</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD
+        name=\"ref_epoch\" datatype=\"double\" unit=\"yr\" ucd=\"meta.ref;time.epoch\"
+        ref=\"J2015.5\" ID=\"ref_epoch\">\n\t\t\t\t<DESCRIPTION>Reference epoch</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD
+        name=\"teff_val\" datatype=\"float\" unit=\"K\" ucd=\"phys.temperature.effective\"
+        ID=\"teff_val\">\n\t\t\t\t<DESCRIPTION>Stellar effective temperature</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<FIELD
+        name=\"visibility_periods_used\" datatype=\"short\" ucd=\"meta.number\" ID=\"visibility_periods_used\">\n\t\t\t\t<DESCRIPTION>Number
+        of visibility periods used in Astrometric solution</DESCRIPTION>\n\t\t\t</FIELD>\n\t\t\t<DATA>\n\t\t\t\t<TABLEDATA>\n\t\t\t\t\t<TR>\n\t\t\t\t\t\t<TD>3469547669168414720</TD>\n\t\t\t\t\t\t<TD>Gaia
+        DR2 3469547669168414720</TD>\n\t\t\t\t\t\t<TD>185.42243863209467</TD>\n\t\t\t\t\t\t<TD>-31.996493450602433</TD>\n\t\t\t\t\t\t<TD>295.6160705747788</TD>\n\t\t\t\t\t\t<TD>198.61004302374062</TD>\n\t\t\t\t\t\t<TD>-27.01765763982029</TD>\n\t\t\t\t\t\t<TD>0.0329272162360466</TD>\n\t\t\t\t\t\t<TD>-1.8827319701150085</TD>\n\t\t\t\t\t\t<TD>-3.4611064550420623</TD>\n\t\t\t\t\t\t<TD>14.727124</TD>\n\t\t\t\t\t\t<TD>15.2114315</TD>\n\t\t\t\t\t\t<TD>14.0698805</TD>\n\t\t\t\t\t\t<TD>0.02867637808624543</TD>\n\t\t\t\t\t\t<TD>0.030035440459835375</TD>\n\t\t\t\t\t\t<TD>0.036997359159703355</TD>\n\t\t\t\t\t\t<TD>0.05708796202490173</TD>\n\t\t\t\t\t\t<TD>0.046585615970238706</TD>\n\t\t\t\t\t\t<TD>0.0</TD>\n\t\t\t\t\t\t<TD>-2.9922166</TD>\n\t\t\t\t\t\t<TD>0.4843073</TD>\n\t\t\t\t\t\t<TD>1.141551</TD>\n\t\t\t\t\t\t<TD>-0.40912765</TD>\n\t\t\t\t\t\t<TD>-0.83940536</TD>\n\t\t\t\t\t\t<TD>0.3209117</TD>\n\t\t\t\t\t\t<TD>0.6572437</TD>\n\t\t\t\t\t\t<TD></TD>\n\t\t\t\t\t\t<TD>0.44088587</TD>\n\t\t\t\t\t\t<TD>-0.123990804</TD>\n\t\t\t\t\t\t<TD>11375.81999646004</TD>\n\t\t\t\t\t\t<TD>18.35348534268469</TD>\n\t\t\t\t\t\t<TD>29</TD>\n\t\t\t\t\t\t<TD>18915.40926884361</TD>\n\t\t\t\t\t\t<TD>17.3968191316784</TD>\n\t\t\t\t\t\t<TD>28</TD>\n\t\t\t\t\t\t<TD>-0.37406215</TD>\n\t\t\t\t\t\t<TD>-0.2829752</TD>\n\t\t\t\t\t\t<TD></TD>\n\t\t\t\t\t\t<TD></TD>\n\t\t\t\t\t\t<TD>1153834292</TD>\n\t\t\t\t\t\t<TD>-0.077923946</TD>\n\t\t\t\t\t\t<TD>0.23922211</TD>\n\t\t\t\t\t\t<TD>-0.50915015</TD>\n\t\t\t\t\t\t<TD>2015.5</TD>\n\t\t\t\t\t\t<TD>4928.3447</TD>\n\t\t\t\t\t\t<TD>13</TD>\n\t\t\t\t\t</TR>\n\t\t\t\t\t<TR>\n\t\t\t\t\t\t<TD>3469547600448938880</TD>\n\t\t\t\t\t\t<TD>Gaia
+        DR2 3469547600448938880</TD>\n\t\t\t\t\t\t<TD>185.43397152309456</TD>\n\t\t\t\t\t\t<TD>-31.99687707516484</TD>\n\t\t\t\t\t\t<TD>295.6273744080631</TD>\n\t\t\t\t\t\t<TD>198.62006901015047</TD>\n\t\t\t\t\t\t<TD>-27.01365376283505</TD>\n\t\t\t\t\t\t<TD>0.0729088249295481</TD>\n\t\t\t\t\t\t<TD>-1.445563636800723</TD>\n\t\t\t\t\t\t<TD>-2.738930692598567</TD>\n\t\t\t\t\t\t<TD>19.674353</TD>\n\t\t\t\t\t\t<TD>20.003616</TD>\n\t\t\t\t\t\t<TD>19.271627</TD>\n\t\t\t\t\t\t<TD>0.45864652004538303</TD>\n\t\t\t\t\t\t<TD>0.4446179793488227</TD>\n\t\t\t\t\t\t<TD>0.5184416377489973</TD>\n\t\t\t\t\t\t<TD>0.8484004949038568</TD>\n\t\t\t\t\t\t<TD>0.6684885612775512</TD>\n\t\t\t\t\t\t<TD>0.0</TD>\n\t\t\t\t\t\t<TD>-0.30070606</TD>\n\t\t\t\t\t\t<TD>0.3292637</TD>\n\t\t\t\t\t\t<TD>0.7319889</TD>\n\t\t\t\t\t\t<TD>-0.24744262</TD>\n\t\t\t\t\t\t<TD>-0.8617907</TD>\n\t\t\t\t\t\t<TD>0.416823</TD>\n\t\t\t\t\t\t<TD>0.40272522</TD>\n\t\t\t\t\t\t<TD></TD>\n\t\t\t\t\t\t<TD>0.33327368</TD>\n\t\t\t\t\t\t<TD>-0.022777384</TD>\n\t\t\t\t\t\t<TD>137.75543527909252</TD>\n\t\t\t\t\t\t<TD>9.794970311167436</TD>\n\t\t\t\t\t\t<TD>22</TD>\n\t\t\t\t\t\t<TD>157.07869284777288</TD>\n\t\t\t\t\t\t<TD>6.188987661407218</TD>\n\t\t\t\t\t\t<TD>24</TD>\n\t\t\t\t\t\t<TD>-0.45533288</TD>\n\t\t\t\t\t\t<TD>-0.41001028</TD>\n\t\t\t\t\t\t<TD></TD>\n\t\t\t\t\t\t<TD></TD>\n\t\t\t\t\t\t<TD>147632922</TD>\n\t\t\t\t\t\t<TD>-0.22133553</TD>\n\t\t\t\t\t\t<TD>0.33743843</TD>\n\t\t\t\t\t\t<TD>-0.5650247</TD>\n\t\t\t\t\t\t<TD>2015.5</TD>\n\t\t\t\t\t\t<TD></TD>\n\t\t\t\t\t\t<TD>13</TD>\n\t\t\t\t\t</TR>\n\t\t\t\t\t<TR>\n\t\t\t\t\t\t<TD>3469547871031354112</TD>\n\t\t\t\t\t\t<TD>Gaia
+        DR2 3469547871031354112</TD>\n\t\t\t\t\t\t<TD>185.4209737136572</TD>\n\t\t\t\t\t\t<TD>-31.984465581181027</TD>\n\t\t\t\t\t\t<TD>295.6127772323124</TD>\n\t\t\t\t\t\t<TD>198.60279287309515</TD>\n\t\t\t\t\t\t<TD>-27.007435510684207</TD>\n\t\t\t\t\t\t<TD>1.0894855381238377</TD>\n\t\t\t\t\t\t<TD>-0.6465027494285972</TD>\n\t\t\t\t\t\t<TD>0.4785558635507404</TD>\n\t\t\t\t\t\t<TD>20.041399</TD>\n\t\t\t\t\t\t<TD>20.59503</TD>\n\t\t\t\t\t\t<TD>19.322693</TD>\n\t\t\t\t\t\t<TD>0.5650039705640426</TD>\n\t\t\t\t\t\t<TD>0.549909798143957</TD>\n\t\t\t\t\t\t<TD>0.6605329065526171</TD>\n\t\t\t\t\t\t<TD>1.062858242503036</TD>\n\t\t\t\t\t\t<TD>0.8533446255736548</TD>\n\t\t\t\t\t\t<TD>0.0</TD>\n\t\t\t\t\t\t<TD>0.6646381</TD>\n\t\t\t\t\t\t<TD>0.5536308</TD>\n\t\t\t\t\t\t<TD>1.272337</TD>\n\t\t\t\t\t\t<TD>-0.30705625</TD>\n\t\t\t\t\t\t<TD>-0.84818494</TD>\n\t\t\t\t\t\t<TD>0.39696068</TD>\n\t\t\t\t\t\t<TD>0.71870613</TD>\n\t\t\t\t\t\t<TD></TD>\n\t\t\t\t\t\t<TD>0.38183683</TD>\n\t\t\t\t\t\t<TD>-0.04734722</TD>\n\t\t\t\t\t\t<TD>79.8994242449542</TD>\n\t\t\t\t\t\t<TD>5.619089419622688</TD>\n\t\t\t\t\t\t<TD>24</TD>\n\t\t\t\t\t\t<TD>149.86179917076024</TD>\n\t\t\t\t\t\t<TD>6.188169892017175</TD>\n\t\t\t\t\t\t<TD>23</TD>\n\t\t\t\t\t\t<TD>-0.44635</TD>\n\t\t\t\t\t\t<TD>-0.36509362</TD>\n\t\t\t\t\t\t<TD></TD>\n\t\t\t\t\t\t<TD></TD>\n\t\t\t\t\t\t<TD>1491528944</TD>\n\t\t\t\t\t\t<TD>-0.20736238</TD>\n\t\t\t\t\t\t<TD>0.29442832</TD>\n\t\t\t\t\t\t<TD>-0.5358309</TD>\n\t\t\t\t\t\t<TD>2015.5</TD>\n\t\t\t\t\t\t<TD></TD>\n\t\t\t\t\t\t<TD>13</TD>\n\t\t\t\t\t</TR>\n\t\t\t\t\t<TR>\n\t\t\t\t\t\t<TD>3469547664872917888</TD>\n\t\t\t\t\t\t<TD>Gaia
+        DR2 3469547664872917888</TD>\n\t\t\t\t\t\t<TD>185.42279855567205</TD>\n\t\t\t\t\t\t<TD>-31.991424868259163</TD>\n\t\t\t\t\t\t<TD>295.61563577702566</TD>\n\t\t\t\t\t\t<TD>198.60782103506514</TD>\n\t\t\t\t\t\t<TD>-27.012981622185453</TD>\n\t\t\t\t\t\t<TD>0.5386113837429449</TD>\n\t\t\t\t\t\t<TD>-3.3604067942534575</TD>\n\t\t\t\t\t\t<TD>-2.254360932541165</TD>\n\t\t\t\t\t\t<TD>20.354973</TD>\n\t\t\t\t\t\t<TD>20.712912</TD>\n\t\t\t\t\t\t<TD>19.429981</TD>\n\t\t\t\t\t\t<TD>0.7142431929316593</TD>\n\t\t\t\t\t\t<TD>0.8539227393958158</TD>\n\t\t\t\t\t\t<TD>0.8521532425023117</TD>\n\t\t\t\t\t\t<TD>1.313279024315378</TD>\n\t\t\t\t\t\t<TD>1.2698389177636662</TD>\n\t\t\t\t\t\t<TD>0.0</TD>\n\t\t\t\t\t\t<TD>1.5178467</TD>\n\t\t\t\t\t\t<TD>0.35793877</TD>\n\t\t\t\t\t\t<TD>1.2829304</TD>\n\t\t\t\t\t\t<TD>-0.3913325</TD>\n\t\t\t\t\t\t<TD>-0.91290444</TD>\n\t\t\t\t\t\t<TD>0.3123733</TD>\n\t\t\t\t\t\t<TD>0.9249916</TD>\n\t\t\t\t\t\t<TD></TD>\n\t\t\t\t\t\t<TD>0.43079418</TD>\n\t\t\t\t\t\t<TD>-0.039145134</TD>\n\t\t\t\t\t\t<TD>71.6787252581719</TD>\n\t\t\t\t\t\t<TD>8.024180003985974</TD>\n\t\t\t\t\t\t<TD>24</TD>\n\t\t\t\t\t\t<TD>135.7612295259082</TD>\n\t\t\t\t\t\t<TD>9.328665509889888</TD>\n\t\t\t\t\t\t<TD>22</TD>\n\t\t\t\t\t\t<TD>-0.3417011</TD>\n\t\t\t\t\t\t<TD>-0.2981557</TD>\n\t\t\t\t\t\t<TD></TD>\n\t\t\t\t\t\t<TD></TD>\n\t\t\t\t\t\t<TD>276657922</TD>\n\t\t\t\t\t\t<TD>-0.18808985</TD>\n\t\t\t\t\t\t<TD>0.25094196</TD>\n\t\t\t\t\t\t<TD>-0.5436763</TD>\n\t\t\t\t\t\t<TD>2015.5</TD>\n\t\t\t\t\t\t<TD></TD>\n\t\t\t\t\t\t<TD>12</TD>\n\t\t\t\t\t</TR>\n\t\t\t\t\t<TR>\n\t\t\t\t\t\t<TD>3469547669167838976</TD>\n\t\t\t\t\t\t<TD>Gaia
+        DR2 3469547669167838976</TD>\n\t\t\t\t\t\t<TD>185.4270621554909</TD>\n\t\t\t\t\t\t<TD>-31.986108100498818</TD>\n\t\t\t\t\t\t<TD>295.61896932584915</TD>\n\t\t\t\t\t\t<TD>198.6088044750511</TD>\n\t\t\t\t\t\t<TD>-27.00661160657768</TD>\n\t\t\t\t\t\t<TD>-1.1124941278852516</TD>\n\t\t\t\t\t\t<TD>-2.0641671694497186</TD>\n\t\t\t\t\t\t<TD>1.1584452897117536</TD>\n\t\t\t\t\t\t<TD>20.877092</TD>\n\t\t\t\t\t\t<TD>21.282352</TD>\n\t\t\t\t\t\t<TD>20.221392</TD>\n\t\t\t\t\t\t<TD>1.4058381529466957</TD>\n\t\t\t\t\t\t<TD>2.0828744537232886</TD>\n\t\t\t\t\t\t<TD>1.6710110606587223</TD>\n\t\t\t\t\t\t<TD>2.5670281779019217</TD>\n\t\t\t\t\t\t<TD>4.10454336214124</TD>\n\t\t\t\t\t\t<TD>0.0</TD>\n\t\t\t\t\t\t<TD>-2.5115342</TD>\n\t\t\t\t\t\t<TD>0.4052601</TD>\n\t\t\t\t\t\t<TD>1.0609608</TD>\n\t\t\t\t\t\t<TD>-0.29022488</TD>\n\t\t\t\t\t\t<TD>-0.9181584</TD>\n\t\t\t\t\t\t<TD>0.61377853</TD>\n\t\t\t\t\t\t<TD>0.6557007</TD>\n\t\t\t\t\t\t<TD></TD>\n\t\t\t\t\t\t<TD>0.41635722</TD>\n\t\t\t\t\t\t<TD>-0.14633398</TD>\n\t\t\t\t\t\t<TD>42.42425468810601</TD>\n\t\t\t\t\t\t<TD>6.966447096829274</TD>\n\t\t\t\t\t\t<TD>12</TD>\n\t\t\t\t\t\t<TD>65.49542724286141</TD>\n\t\t\t\t\t\t<TD>9.73369676939854</TD>\n\t\t\t\t\t\t<TD>14</TD>\n\t\t\t\t\t\t<TD>-0.6410031</TD>\n\t\t\t\t\t\t<TD>-0.47127572</TD>\n\t\t\t\t\t\t<TD></TD>\n\t\t\t\t\t\t<TD></TD>\n\t\t\t\t\t\t<TD>1145828312</TD>\n\t\t\t\t\t\t<TD>-0.3546693</TD>\n\t\t\t\t\t\t<TD>0.36446425</TD>\n\t\t\t\t\t\t<TD>-0.54878926</TD>\n\t\t\t\t\t\t<TD>2015.5</TD>\n\t\t\t\t\t\t<TD></TD>\n\t\t\t\t\t\t<TD>10</TD>\n\t\t\t\t\t</TR>\n\t\t\t\t\t<TR>\n\t\t\t\t\t\t<TD>3469547669168091776</TD>\n\t\t\t\t\t\t<TD>Gaia
+        DR2 3469547669168091776</TD>\n\t\t\t\t\t\t<TD>185.42997085963532</TD>\n\t\t\t\t\t\t<TD>-31.992122686265276</TD>\n\t\t\t\t\t\t<TD>295.6227374741842</TD>\n\t\t\t\t\t\t<TD>198.61428547729125</TD>\n\t\t\t\t\t\t<TD>-27.010902932668234</TD>\n\t\t\t\t\t\t<TD>0.2770874759765232</TD>\n\t\t\t\t\t\t<TD>-1.8799983543986716</TD>\n\t\t\t\t\t\t<TD>-0.040194553921367386</TD>\n\t\t\t\t\t\t<TD>20.743853</TD>\n\t\t\t\t\t\t<TD>20.995298</TD>\n\t\t\t\t\t\t<TD>19.929235</TD>\n\t\t\t\t\t\t<TD>1.5733260909441782</TD>\n\t\t\t\t\t\t<TD>1.29571774185968</TD>\n\t\t\t\t\t\t<TD>1.334538987005135</TD>\n\t\t\t\t\t\t<TD>3.724171246146051</TD>\n\t\t\t\t\t\t<TD>1.8958811902977313</TD>\n\t\t\t\t\t\t<TD>0.0</TD>\n\t\t\t\t\t\t<TD>0.790844</TD>\n\t\t\t\t\t\t<TD>0.25144577</TD>\n\t\t\t\t\t\t<TD>1.0660629</TD>\n\t\t\t\t\t\t<TD>-0.25693005</TD>\n\t\t\t\t\t\t<TD>-0.91809356</TD>\n\t\t\t\t\t\t<TD>0.1894785</TD>\n\t\t\t\t\t\t<TD>0.81461716</TD>\n\t\t\t\t\t\t<TD></TD>\n\t\t\t\t\t\t<TD>0.32147768</TD>\n\t\t\t\t\t\t<TD>-0.3893355</TD>\n\t\t\t\t\t\t<TD>55.26319260870952</TD>\n\t\t\t\t\t\t<TD>7.627133458139429</TD>\n\t\t\t\t\t\t<TD>17</TD>\n\t\t\t\t\t\t<TD>85.71841966947687</TD>\n\t\t\t\t\t\t<TD>9.412146509261985</TD>\n\t\t\t\t\t\t<TD>18</TD>\n\t\t\t\t\t\t<TD>-0.24158223</TD>\n\t\t\t\t\t\t<TD>-0.20353556</TD>\n\t\t\t\t\t\t<TD></TD>\n\t\t\t\t\t\t<TD></TD>\n\t\t\t\t\t\t<TD>1582400417</TD>\n\t\t\t\t\t\t<TD>0.24977311</TD>\n\t\t\t\t\t\t<TD>0.2143213</TD>\n\t\t\t\t\t\t<TD>-0.76456296</TD>\n\t\t\t\t\t\t<TD>2015.5</TD>\n\t\t\t\t\t\t<TD></TD>\n\t\t\t\t\t\t<TD>11</TD>\n\t\t\t\t\t</TR>\n\t\t\t\t\t<TR>\n\t\t\t\t\t\t<TD>3469547669167410432</TD>\n\t\t\t\t\t\t<TD>Gaia
+        DR2 3469547669167410432</TD>\n\t\t\t\t\t\t<TD>185.43079653267807</TD>\n\t\t\t\t\t\t<TD>-31.984854843381868</TD>\n\t\t\t\t\t\t<TD>295.6224170018915</TD>\n\t\t\t\t\t\t<TD>198.61136392276032</TD>\n\t\t\t\t\t\t<TD>-27.004081158290028</TD>\n\t\t\t\t\t\t<TD>1.0830947188798</TD>\n\t\t\t\t\t\t<TD>-28.396857057518545</TD>\n\t\t\t\t\t\t<TD>2.265286187092708</TD>\n\t\t\t\t\t\t<TD>20.165829</TD>\n\t\t\t\t\t\t<TD>20.555437</TD>\n\t\t\t\t\t\t<TD>18.882315</TD>\n\t\t\t\t\t\t<TD>0.7563944721404874</TD>\n\t\t\t\t\t\t<TD>0.7334242814231502</TD>\n\t\t\t\t\t\t<TD>0.876690310243723</TD>\n\t\t\t\t\t\t<TD>1.407389311441813</TD>\n\t\t\t\t\t\t<TD>1.1047015486589093</TD>\n\t\t\t\t\t\t<TD>2.1816693779733844</TD>\n\t\t\t\t\t\t<TD>5.330312</TD>\n\t\t\t\t\t\t<TD>0.38960838</TD>\n\t\t\t\t\t\t<TD>1.6731224</TD>\n\t\t\t\t\t\t<TD>-0.17949165</TD>\n\t\t\t\t\t\t<TD>-0.84091246</TD>\n\t\t\t\t\t\t<TD>0.44075868</TD>\n\t\t\t\t\t\t<TD>1.283514</TD>\n\t\t\t\t\t\t<TD></TD>\n\t\t\t\t\t\t<TD>0.2965281</TD>\n\t\t\t\t\t\t<TD>-0.01731144</TD>\n\t\t\t\t\t\t<TD>82.86683399102537</TD>\n\t\t\t\t\t\t<TD>18.546979545290956</TD>\n\t\t\t\t\t\t<TD>13</TD>\n\t\t\t\t\t\t<TD>224.8237447362781</TD>\n\t\t\t\t\t\t<TD>7.612383056387217</TD>\n\t\t\t\t\t\t<TD>21</TD>\n\t\t\t\t\t\t<TD>-0.48931962</TD>\n\t\t\t\t\t\t<TD>-0.44105768</TD>\n\t\t\t\t\t\t<TD></TD>\n\t\t\t\t\t\t<TD></TD>\n\t\t\t\t\t\t<TD>1587475704</TD>\n\t\t\t\t\t\t<TD>-0.23022646</TD>\n\t\t\t\t\t\t<TD>0.35719034</TD>\n\t\t\t\t\t\t<TD>-0.5746797</TD>\n\t\t\t\t\t\t<TD>2015.5</TD>\n\t\t\t\t\t\t<TD></TD>\n\t\t\t\t\t\t<TD>13</TD>\n\t\t\t\t\t</TR>\n\t\t\t\t\t<TR>\n\t\t\t\t\t\t<TD>3469547669167548672</TD>\n\t\t\t\t\t\t<TD>Gaia
+        DR2 3469547669167548672</TD>\n\t\t\t\t\t\t<TD>185.42394952510327</TD>\n\t\t\t\t\t\t<TD>-31.986033457658042</TD>\n\t\t\t\t\t\t<TD>295.61592234154097</TD>\n\t\t\t\t\t\t<TD>198.60611281434944</TD>\n\t\t\t\t\t\t<TD>-27.007718153449076</TD>\n\t\t\t\t\t\t<TD>1.0621678326850792</TD>\n\t\t\t\t\t\t<TD>-3.5719117613321067</TD>\n\t\t\t\t\t\t<TD>1.5299554503366415</TD>\n\t\t\t\t\t\t<TD>20.251305</TD>\n\t\t\t\t\t\t<TD>20.737404</TD>\n\t\t\t\t\t\t<TD>19.579956</TD>\n\t\t\t\t\t\t<TD>0.6623261450003816</TD>\n\t\t\t\t\t\t<TD>0.7070748869342288</TD>\n\t\t\t\t\t\t<TD>0.7732684926196642</TD>\n\t\t\t\t\t\t<TD>1.234421736594885</TD>\n\t\t\t\t\t\t<TD>1.0695914503032835</TD>\n\t\t\t\t\t\t<TD>0.4151164644051178</TD>\n\t\t\t\t\t\t<TD>0.3779516</TD>\n\t\t\t\t\t\t<TD>0.48609924</TD>\n\t\t\t\t\t\t<TD>1.1574478</TD>\n\t\t\t\t\t\t<TD>-0.35107794</TD>\n\t\t\t\t\t\t<TD>-0.88743156</TD>\n\t\t\t\t\t\t<TD>0.34723505</TD>\n\t\t\t\t\t\t<TD>0.6713486</TD>\n\t\t\t\t\t\t<TD></TD>\n\t\t\t\t\t\t<TD>0.4064583</TD>\n\t\t\t\t\t\t<TD>-0.052473858</TD>\n\t\t\t\t\t\t<TD>70.0799722455327</TD>\n\t\t\t\t\t\t<TD>4.824266692974263</TD>\n\t\t\t\t\t\t<TD>24</TD>\n\t\t\t\t\t\t<TD>118.24585086973208</TD>\n\t\t\t\t\t\t<TD>6.344720591090337</TD>\n\t\t\t\t\t\t<TD>25</TD>\n\t\t\t\t\t\t<TD>-0.3853196</TD>\n\t\t\t\t\t\t<TD>-0.32031366</TD>\n\t\t\t\t\t\t<TD></TD>\n\t\t\t\t\t\t<TD></TD>\n\t\t\t\t\t\t<TD>850862531</TD>\n\t\t\t\t\t\t<TD>-0.18620794</TD>\n\t\t\t\t\t\t<TD>0.26569656</TD>\n\t\t\t\t\t\t<TD>-0.55143136</TD>\n\t\t\t\t\t\t<TD>2015.5</TD>\n\t\t\t\t\t\t<TD></TD>\n\t\t\t\t\t\t<TD>13</TD>\n\t\t\t\t\t</TR>\n\t\t\t\t</TABLEDATA>\n\t\t\t</DATA>\n\t\t</TABLE>\n\t</RESOURCE>\n\t<RESOURCE
+        type=\"meta\" utype=\"adhoc:service\" name=\"Datalink_GaiaDR2\">\n\t\t<DESCRIPTION>Get
+        all the related resources of the specified Gaia-DR2 source ID.</DESCRIPTION>\n\t\t<PARAM
+        arraysize=\"52\" datatype=\"char\" name=\"accessURL\" ucd=\"meta.ref.url\"
+        value=\"https://gaia.ari.uni-heidelberg.de/datalink/gaiadr2\">\n\t\t\t<DESCRIPTION>URL
+        to invoke the service.</DESCRIPTION>\n\t\t</PARAM>\n\t\t<GROUP name=\"inputParams\">\n\t\t\t<PARAM
+        name=\"sourceid\" datatype=\"long\" ref=\"source_id\" value=\"\" />\n\t\t</GROUP>\n\t</RESOURCE>\n</VOTABLE>\n"
+    headers:
+      Connection:
+      - Keep-Alive
+      Content-Disposition:
+      - attachment; filename="Cone_gaiadr2.gaia_source_[185.43,-31.99]_0.01.vot"
+      Content-Type:
+      - application/x-votable+xml; serialization=tabledata;charset=UTF-8
+      Date:
+      - Thu, 04 Jun 2026 15:02:31 GMT
+      Keep-Alive:
+      - timeout=5, max=100
+      Server:
+      - Apache
+      Transfer-Encoding:
+      - chunked
+    status:
+      code: 200
+      message: '200'
+version: 1
