@@ -86,8 +86,10 @@ def test_resource_tier_parquet_roundtrips():
     t = _table(5_000)
     out = shape_table(t, archive="datalab", maxrec=10_000)
     uuid = out["resource_uri"].rsplit("/", 1)[-1].removesuffix(".parquet")
-    payload = result_store.get(uuid)
-    assert payload is not None
+    entry = result_store.get(uuid)
+    assert entry is not None
+    payload, mime = entry
+    assert mime == "application/vnd.apache.parquet"
     reader = pq.read_table(io.BytesIO(payload))
     assert reader.num_rows == 5_000
     assert set(reader.column_names) == {"ra", "dec"}
