@@ -6,7 +6,7 @@ from pydantic import Field
 from astro_archives_mcp._archive_label import archive_label
 from astro_archives_mcp.backends.sia import SiaClient
 from astro_archives_mcp.errors import wrap_tool_errors
-from astro_archives_mcp.shaper import shape_inline_table
+from astro_archives_mcp.shaper import shape_table
 from astro_archives_mcp.tools._constants import _ERROR_DOCSTRING
 
 _sia: SiaClient | None = None
@@ -70,7 +70,7 @@ def vo_sia_search(
         endpoint=endpoint, ra=ra, dec=dec, size_deg=size_deg,
         band=band, fmt=fmt, maxrec=maxrec,
     )
-    return shape_inline_table(table, archive=archive_label(endpoint), maxrec=maxrec)
+    return shape_table(table, archive=archive_label(endpoint), maxrec=maxrec)
 
 
 vo_sia_search.__doc__ = (vo_sia_search.__doc__ or "") + _ERROR_DOCSTRING
