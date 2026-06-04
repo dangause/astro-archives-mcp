@@ -1,0 +1,35 @@
+import logging
+
+import pyvo
+from astropy.table import Table
+from pyvo.dal.exceptions import DALAccessError, DALQueryError
+
+from astro_archives_mcp.errors import ArchiveError, TapQueryError
+
+log = logging.getLogger(__name__)
+
+
+class ConeSearchClient:
+    """Sync wrapper over pyvo.dal.SCSService.search()."""
+
+    def search(
+        self,
+        *,
+        endpoint: str,
+        ra: float,
+        dec: float,
+        radius_deg: float,
+        maxrec: int = 10_000,
+    ) -> Table:
+        try:
+            svc = pyvo.dal.SCSService(endpoint)
+            result = svc.search(pos=(ra, dec), radius=radius_deg)
+        except DALQueryError as e:
+            raise TapQueryError(message=str(e)) from e
+        except DALAccessError as e:
+            raise ArchiveError(message=str(e)) from e
+
+        table = result.to_table()
+        if len(table) > maxrec:
+            table = table[:maxrec]
+        return table
