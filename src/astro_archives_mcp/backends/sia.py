@@ -26,7 +26,7 @@ class SiaClient:
         try:
             svc = pyvo.dal.SIA2Service(endpoint)
             # pyvo SIA2 expects pos as (ra, dec, radius) for a CIRCLE region
-            kwargs: dict = {"pos": (ra, dec, size_deg)}
+            kwargs: dict = {"pos": (ra, dec, size_deg), "maxrec": maxrec}
             if band:
                 kwargs["band"] = band
             if fmt:
@@ -38,6 +38,7 @@ class SiaClient:
             raise ArchiveError(message=str(e)) from e
 
         table = result.to_table()
+        # Defensive cap — pyvo respects maxrec server-side, but verify locally.
         if len(table) > maxrec:
             table = table[:maxrec]
         return table
