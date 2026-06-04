@@ -2,7 +2,7 @@ import pytest
 from fastmcp import Client
 
 from astro_archives_mcp.errors import ArchiveError
-from astro_archives_mcp.tools import ivoa as ivoa_tools
+from astro_archives_mcp.tools import sia as ivoa_tools
 
 SIA_ENDPOINT = "https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/sia"
 

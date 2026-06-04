@@ -2,7 +2,7 @@ import pytest
 from fastmcp import Client
 
 from astro_archives_mcp.errors import ValidationError
-from astro_archives_mcp.tools import ivoa as ivoa_tools
+from astro_archives_mcp.tools import registry as ivoa_tools
 
 
 @pytest.mark.vcr

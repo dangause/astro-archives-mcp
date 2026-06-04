@@ -7,7 +7,7 @@ import pytest
 from fastmcp import Client
 
 from astro_archives_mcp.errors import DalQueryError, ValidationError
-from astro_archives_mcp.tools import ivoa as ivoa_tools
+from astro_archives_mcp.tools import tap as ivoa_tools
 
 
 @pytest.mark.vcr

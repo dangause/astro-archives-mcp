@@ -2,7 +2,7 @@ import pytest
 from fastmcp import Client
 
 from astro_archives_mcp.errors import DalQueryError
-from astro_archives_mcp.tools import ivoa as ivoa_tools
+from astro_archives_mcp.tools import cone as ivoa_tools
 
 SCS_ENDPOINT = "https://gaia.ari.uni-heidelberg.de/cone/gaiadr2?"
 
