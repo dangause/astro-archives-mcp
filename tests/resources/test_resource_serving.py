@@ -66,3 +66,19 @@ async def test_resource_mime_type_is_parquet(mcp_server):
         contents = await client.read_resource(uri)
         mime = getattr(contents[0], "mimeType", None) or getattr(contents[0], "mime_type", None)
         assert mime == "application/vnd.apache.parquet"
+
+
+@pytest.mark.asyncio
+async def test_resource_serves_fits_mime_when_stored_with_fits(mcp_server):
+    """Stored FITS bytes return image/fits MIME, not Parquet."""
+    uuid, _ = result_store.put(b"\x00\x01fake-fits-bytes", "image/fits")
+    # The URI shape depends on what FastMCP accepts (see probe in pre-flight).
+    # Try the .fits-extension form first; if your probe showed a different form
+    # is required, use that.
+    uri = f"resource://results/{uuid}.fits"
+
+    async with Client(mcp_server) as client:
+        contents = await client.read_resource(uri)
+        assert len(contents) == 1
+        mime = getattr(contents[0], "mimeType", None) or getattr(contents[0], "mime_type", None)
+        assert mime == "image/fits"
