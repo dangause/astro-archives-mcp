@@ -93,7 +93,7 @@ def _shape_resource(table: Table, *, archive: str, maxrec: int) -> dict[str, Any
     pa_table = pa.table({name: visible[name].data for name in visible.colnames})
     buf = io.BytesIO()
     pq.write_table(pa_table, buf)
-    uuid_hex, expires_at = result_store.put(buf.getvalue())
+    uuid_hex, expires_at = result_store.put(buf.getvalue(), "application/vnd.apache.parquet")
 
     # Reuse inline envelope shape for preview rows
     preview_envelope = shape_inline_table(

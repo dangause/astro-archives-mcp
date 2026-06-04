@@ -15,14 +15,18 @@ import threading
 import uuid as _uuid
 from datetime import UTC, datetime, timedelta
 
-_STORE: dict[str, tuple[bytes, datetime]] = {}
+_STORE: dict[str, tuple[bytes, str, datetime]] = {}
 _LOCK = threading.RLock()
 
 _DEFAULT_TTL_SECONDS = 1800  # 30 minutes
 
 
-def put(payload: bytes, ttl_seconds: float = _DEFAULT_TTL_SECONDS) -> tuple[str, datetime]:
-    """Store payload, return (uuid_hex, expires_at).
+def put(
+    payload: bytes,
+    mime_type: str,
+    ttl_seconds: float = _DEFAULT_TTL_SECONDS,
+) -> tuple[str, datetime]:
+    """Store payload with its MIME type, return (uuid_hex, expires_at).
 
     The uuid_hex is a 12-character hex prefix from uuid4 — short enough
     to log readably, long enough that collisions are vanishingly rare
@@ -31,26 +35,26 @@ def put(payload: bytes, ttl_seconds: float = _DEFAULT_TTL_SECONDS) -> tuple[str,
     uuid_hex = _uuid.uuid4().hex[:12]
     expires_at = datetime.now(UTC) + timedelta(seconds=ttl_seconds)
     with _LOCK:
-        _STORE[uuid_hex] = (payload, expires_at)
+        _STORE[uuid_hex] = (payload, mime_type, expires_at)
     return uuid_hex, expires_at
 
 
-def get(uuid_hex: str) -> bytes | None:
-    """Return payload if present and not expired. Evicts expired entries."""
+def get(uuid_hex: str) -> tuple[bytes, str] | None:
+    """Return (payload, mime_type) if present and not expired. Evicts expired entries."""
     with _LOCK:
         entry = _STORE.get(uuid_hex)
         if entry is None:
             return None
-        payload, expires_at = entry
+        payload, mime_type, expires_at = entry
         if datetime.now(UTC) >= expires_at:
             del _STORE[uuid_hex]
             return None
-        return payload
+        return payload, mime_type
 
 
 def size_estimate() -> dict[str, int]:
     """Surfaced on /health for ops visibility."""
     with _LOCK:
         entries = len(_STORE)
-        bytes_held = sum(len(payload) for payload, _ in _STORE.values())
+        bytes_held = sum(len(payload) for payload, _mime, _exp in _STORE.values())
     return {"entries": entries, "bytes": bytes_held}

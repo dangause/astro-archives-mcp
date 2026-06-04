@@ -18,7 +18,7 @@ def clear_store():
 @pytest.mark.asyncio
 async def test_resource_serves_stored_bytes(mcp_server):
     # Pre-load the store
-    uuid, _ = result_store.put(b"parquet-bytes-payload")
+    uuid, _ = result_store.put(b"parquet-bytes-payload", "application/vnd.apache.parquet")
     uri = f"resource://results/{uuid}.parquet"
 
     async with Client(mcp_server) as client:
@@ -50,7 +50,7 @@ async def test_resource_missing_uuid_raises(mcp_server):
 @pytest.mark.asyncio
 async def test_resource_expired_uuid_raises(mcp_server):
     # Store with a very short TTL, sleep past it, then read
-    uuid, _ = result_store.put(b"x", ttl_seconds=0.01)
+    uuid, _ = result_store.put(b"x", "application/vnd.apache.parquet", ttl_seconds=0.01)
     time.sleep(0.05)
     uri = f"resource://results/{uuid}.parquet"
     async with Client(mcp_server) as client:
@@ -60,7 +60,7 @@ async def test_resource_expired_uuid_raises(mcp_server):
 
 @pytest.mark.asyncio
 async def test_resource_mime_type_is_parquet(mcp_server):
-    uuid, _ = result_store.put(b"x")
+    uuid, _ = result_store.put(b"x", "application/vnd.apache.parquet")
     uri = f"resource://results/{uuid}.parquet"
     async with Client(mcp_server) as client:
         contents = await client.read_resource(uri)

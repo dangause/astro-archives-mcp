@@ -36,13 +36,14 @@ def register_resources(mcp: FastMCP) -> None:
         mime_type=PARQUET_MIME,
     )
     def serve_result(uuid: str) -> ResourceResult:
-        payload = result_store.get(uuid)
-        if payload is None:
+        entry = result_store.get(uuid)
+        if entry is None:
             log.warning("result_store: resource miss for %s (expired or never stored)", uuid)
             # FastMCP surfaces a missing-resource error to the client.
             # The exact exception type depends on the version; raising
             # ValueError is acceptable — FastMCP wraps it.
             raise ValueError(f"resource://results/{uuid}.parquet not found")
+        payload, _mime = entry
         return ResourceResult(
             contents=[ResourceContent(payload, mime_type=PARQUET_MIME)],
         )
