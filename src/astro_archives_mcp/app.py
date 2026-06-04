@@ -15,6 +15,7 @@ from astro_archives_mcp.tools import (
     vo_cone_search,
     vo_registry_describe,
     vo_registry_search,
+    vo_sia_fetch,
     vo_sia_search,
     vo_tap_query,
 )
@@ -54,6 +55,7 @@ def build_mcp() -> FastMCP:
     mcp.tool(vo_registry_describe)
     mcp.tool(vo_cone_search)
     mcp.tool(vo_sia_search)
+    mcp.tool(vo_sia_fetch)
     register_resources(mcp)
     return mcp
 
