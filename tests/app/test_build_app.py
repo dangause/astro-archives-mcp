@@ -35,7 +35,12 @@ async def test_health_endpoint_returns_version():
     async with _client_for(app) as client:
         r = await client.get("/health")
         assert r.status_code == 200
-        assert r.json() == {"status": "ok", "version": __version__}
+        data = r.json()
+        assert data["status"] == "ok"
+        assert data["version"] == __version__
+        assert "store" in data
+        assert data["store"]["entries"] >= 0
+        assert data["store"]["bytes"] >= 0
 
 
 async def test_ready_endpoint():
