@@ -5,7 +5,7 @@ from starlette.middleware import Middleware
 from starlette.responses import JSONResponse
 from starlette.routing import Mount, Route
 
-from astro_archives_mcp import __version__, result_store
+from astro_archives_mcp import __version__, job_store, result_store
 from astro_archives_mcp.observability import (
     current_request_id,
     new_request_id,
@@ -75,6 +75,7 @@ def build_app() -> Starlette:
             "status": "ok",
             "version": __version__,
             "store": result_store.size_estimate(),
+            "job_store": job_store.size_estimate(),
         })
 
     async def ready(_request):
