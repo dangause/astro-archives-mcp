@@ -85,12 +85,13 @@ def size_estimate() -> dict[str, int | float]:
 
     Returns entries (count) and oldest_age_seconds (float). bytes are not
     tracked here — job entries are tiny; entry count + age is the useful
-    operator signal.
+    operator signal. Count includes not-yet-evicted expired entries
+    (eviction is check-on-read, mirroring result_store's behavior).
     """
     with _LOCK:
         entries = len(_STORE)
         if entries == 0:
-            return {"entries": 0, "oldest_age_seconds": 0}
+            return {"entries": 0, "oldest_age_seconds": 0.0}
         now = datetime.now(UTC)
         oldest = min(e.created_at for e in _STORE.values())
         return {

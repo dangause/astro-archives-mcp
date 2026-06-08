@@ -17,9 +17,11 @@ from astro_archives_mcp import job_store
 def _clear_jobs():
     # Each test starts with an empty store. Modules are singletons so we
     # must reset between tests.
-    job_store._STORE.clear()
+    with job_store._LOCK:
+        job_store._STORE.clear()
     yield
-    job_store._STORE.clear()
+    with job_store._LOCK:
+        job_store._STORE.clear()
 
 
 def test_put_returns_12char_hex_id_and_future_expiry():
