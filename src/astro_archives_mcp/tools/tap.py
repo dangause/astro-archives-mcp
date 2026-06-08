@@ -199,3 +199,38 @@ def vo_tap_results(
 
 
 vo_tap_results.__doc__ = (vo_tap_results.__doc__ or "") + _ERROR_DOCSTRING
+
+
+@wrap_tool_errors
+def vo_tap_abort(
+    job_id: Annotated[
+        str,
+        Field(
+            description="Opaque 12-character job_id from vo_tap_query (async).",
+            min_length=12, max_length=12,
+        ),
+    ],
+) -> dict:
+    """Cancel a running async TAP job.
+
+    Sends UWS DELETE upstream and evicts the local JobStore entry.
+    Idempotent: aborting an already-deleted or expired job returns the
+    same {job_id, phase=ABORTED} shape rather than raising.
+    """
+    entry = job_store.get(job_id)
+    if entry is None:
+        return {
+            "job_id": job_id,
+            "phase": "ABORTED",
+            "archive": None,
+        }
+    _get_tap().abort_job(entry.job_url)
+    job_store.evict(job_id)
+    return {
+        "job_id": job_id,
+        "phase": "ABORTED",
+        "archive": archive_label(entry.endpoint),
+    }
+
+
+vo_tap_abort.__doc__ = (vo_tap_abort.__doc__ or "") + _ERROR_DOCSTRING

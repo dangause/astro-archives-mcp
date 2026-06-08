@@ -215,3 +215,38 @@ async def test_results_unknown_job_id_returns_validation_error(mcp_server, fake_
         payload = result.structured_content
         assert payload["error_class"] == "validation_error"
         assert payload["retry_strategy"] == "abandon"
+
+
+@pytest.mark.asyncio
+async def test_abort_evicts_job_and_returns_aborted(mcp_server, fake_tap):
+    job_id, _ = job_store.put(
+        job_url="https://datalab.noirlab.edu/tap/async/abc",
+        endpoint="https://datalab.noirlab.edu/tap",
+        adql="SELECT 1",
+    )
+
+    async with Client(mcp_server) as client:
+        result = await client.call_tool("vo_tap_abort", {"job_id": job_id})
+        payload = result.structured_content
+        assert payload["job_id"] == job_id
+        assert payload["phase"] == "ABORTED"
+        assert payload["archive"] == "datalab"
+
+    # JobStore entry is gone
+    assert job_store.get(job_id) is None
+    # Backend abort was called
+    assert fake_tap.job.deleted is True
+
+
+@pytest.mark.asyncio
+async def test_abort_is_idempotent_on_unknown_job(mcp_server, fake_tap):
+    async with Client(mcp_server) as client:
+        result = await client.call_tool(
+            "vo_tap_abort", {"job_id": "feedfacefeed"},
+        )
+        payload = result.structured_content
+        # Spec §2.4: aborting an unknown / already-evicted job returns
+        # the canonical aborted payload, not an error.
+        assert payload["phase"] == "ABORTED"
+        assert payload["job_id"] == "feedfacefeed"
+        assert payload["archive"] is None
