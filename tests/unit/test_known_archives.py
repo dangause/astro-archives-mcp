@@ -66,6 +66,11 @@ def test_nrao_entry_covers_full_instrument_suite():
             f"NRAO description must mention {instrument}; got: {nrao.description}"
         )
     assert nrao.waveband == "radio"
+    # TAP endpoint per NRAO scripted-access docs.
+    assert nrao.tap_url == "https://data-query.nrao.edu/tap"
+    # NRAO uses tap_schema.obscore (non-standard location); pin it so a
+    # future contributor doesn't silently "fix" it to ivoa.obscore.
+    assert "tap_schema.obscore" in nrao.notable_tables
 
 
 def test_nrao_label_resolves_to_nrao_not_alma_for_data_nrao_host():

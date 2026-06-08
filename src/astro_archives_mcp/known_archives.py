@@ -64,18 +64,20 @@ KNOWN_ARCHIVES: tuple[Archive, ...] = (
         # interfaces. `almascience.nrao.edu` is intentionally NOT listed
         # here — that traffic is labeled "alma" via the entry below.
         host_substrings=("data.nrao", "data-query.nrao", "archive.nrao"),
-        # tap_url left None: NRAO's first-party archive does not currently
-        # expose an IVOA-registered TAP service (only the ALMA-on-NRAO
-        # mirror is registered, see the `alma` entry). Update this once a
-        # canonical TAP endpoint is published or known internally.
+        # TAP service per NRAO scripted-access docs:
+        # https://science.nrao.edu/facilities/vla/archive/scripted-access-to-the-nrao-archive
+        # Note: obscore table lives under `tap_schema.obscore`, not the
+        # standard `ivoa.obscore` location used by ALMA/ESO.
+        tap_url="https://data-query.nrao.edu/tap",
         waveband="radio",
         description=(
             "NRAO's unified data archive — serves VLA (historical + Karl G. "
             "Jansky VLA), VLBA, GMVA, and GBT (2014–2020) observations, "
             "plus mirrors ALMA archival products. Radio interferometric "
-            "and single-dish data. Web/query interface at data.nrao.edu; "
-            "an IVOA TAP endpoint is not currently registered."
+            "and single-dish data. ObsCore-style metadata table at "
+            "tap_schema.obscore (NRAO uses a non-standard location for it)."
         ),
+        notable_tables=("tap_schema.obscore",),
     ),
     Archive(
         short_name="alma",
