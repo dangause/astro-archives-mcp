@@ -7,7 +7,9 @@ from typing import ClassVar, Literal
 
 from astro_archives_mcp.observability import current_request_id
 
-RetryStrategy = Literal["fix_and_retry", "wait_and_retry", "submit_async", "abandon"]
+RetryStrategy = Literal[
+    "fix_and_retry", "wait_and_retry", "submit_async", "abandon", "poll",
+]
 
 
 @dataclass
@@ -50,6 +52,17 @@ class DalQueryError(ToolExecutionError):
 
 # Backward-compat alias. Remove once no callers remain.
 TapQueryError = DalQueryError
+
+
+@dataclass
+class JobNotReadyError(ToolExecutionError):
+    """Raised by vo_tap_results when the job exists but hasn't finished yet.
+
+    The retry_strategy "poll" tells the LLM to call vo_tap_status in a
+    loop instead of retrying vo_tap_results immediately.
+    """
+    error_class: str = "job_not_ready"
+    retry_strategy: RetryStrategy = "poll"
 
 
 @dataclass
