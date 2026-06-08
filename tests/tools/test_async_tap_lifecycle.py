@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 import pytest
 from fastmcp import Client
 
-from astro_archives_mcp import job_store
+from astro_archives_mcp import _archive_label, job_store
 from astro_archives_mcp.tools import tap as tap_tools
 
 
@@ -65,6 +65,23 @@ def _clear_jobs():
     yield
     with job_store._LOCK:
         job_store._STORE.clear()
+
+
+@pytest.fixture(autouse=True)
+def _offline_archive_label(monkeypatch):
+    """Keep tests hermetic: unknown endpoints never call the RegTAP registry.
+
+    archive_label() falls through to pyvo.registry.search for endpoints
+    that aren't in the static substring map. We patch that fallback to
+    None so tests using example/synthetic endpoints don't hit the
+    network (which would be silent in --record-mode=none and brittle
+    in CI). Also wipes the in-memory cache so tests are order-
+    independent.
+    """
+    _archive_label._CACHE.clear()
+    monkeypatch.setattr(
+        _archive_label, "_registry_find_label", lambda _endpoint: None,
+    )
 
 
 @pytest.fixture
