@@ -6,7 +6,12 @@ from pydantic import Field
 from astro_archives_mcp import job_store
 from astro_archives_mcp._archive_label import archive_label
 from astro_archives_mcp.backends.tap import TapClient
-from astro_archives_mcp.errors import ValidationError, wrap_tool_errors
+from astro_archives_mcp.errors import (
+    DalQueryError,
+    JobNotReadyError,
+    ValidationError,
+    wrap_tool_errors,
+)
 from astro_archives_mcp.shaper import shape_table
 from astro_archives_mcp.tools._constants import _ERROR_DOCSTRING
 
@@ -138,3 +143,59 @@ def vo_tap_status(
 
 
 vo_tap_status.__doc__ = (vo_tap_status.__doc__ or "") + _ERROR_DOCSTRING
+
+
+@wrap_tool_errors
+def vo_tap_results(
+    job_id: Annotated[
+        str,
+        Field(
+            description="Opaque 12-character job_id from vo_tap_query (async).",
+            min_length=12, max_length=12,
+        ),
+    ],
+) -> dict:
+    """Fetch the result table for a COMPLETED async TAP job.
+
+    Returns the same envelope shape as a sync vo_tap_query: inline rows
+    for small results, Resource-tier (resource_uri) for large results.
+
+    If the job is not yet COMPLETED, raises job_not_ready (retry_strategy=poll).
+    If the job ended in ERROR, raises tap_query_error with the upstream
+    message.
+    """
+    entry = job_store.get(job_id)
+    if entry is None:
+        raise ValidationError(
+            message=(
+                f"Unknown or expired job_id '{job_id}'. Re-submit with "
+                "vo_tap_query."
+            ),
+            retry_strategy="abandon",
+        )
+
+    job = _get_tap().load_job(entry.job_url)
+    phase = job.phase
+
+    if phase == "ERROR":
+        es = getattr(job, "error_summary", None)
+        msg = getattr(es, "message", None) if es is not None else None
+        raise DalQueryError(message=msg or "Async TAP job ended in ERROR.")
+    if phase == "ABORTED":
+        raise ValidationError(
+            message=f"Job {job_id} was aborted; re-submit if you still want results.",
+            retry_strategy="abandon",
+        )
+    if phase != "COMPLETED":
+        raise JobNotReadyError(
+            message=f"Job is still {phase}.",
+            hint="Call vo_tap_status until phase is COMPLETED, then retry.",
+        )
+
+    table = job.fetch_result().to_table()
+    return shape_table(
+        table, archive=archive_label(entry.endpoint), maxrec=len(table),
+    )
+
+
+vo_tap_results.__doc__ = (vo_tap_results.__doc__ or "") + _ERROR_DOCSTRING

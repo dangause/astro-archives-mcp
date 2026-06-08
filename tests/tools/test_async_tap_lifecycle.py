@@ -3,6 +3,7 @@ through an in-memory FastMCP client. Backend is faked — no real HTTP."""
 from datetime import UTC, datetime
 
 import pytest
+from astropy.table import Table
 from fastmcp import Client
 
 from astro_archives_mcp import _archive_label, job_store
@@ -145,3 +146,72 @@ async def test_status_phase_error_surfaces_message(mcp_server, fake_tap):
         # and the message. results is where ERROR raises.
         assert payload["phase"] == "ERROR"
         assert "Syntax error" in payload["error_message"]
+
+
+@pytest.mark.asyncio
+async def test_results_when_completed_returns_inline_envelope(mcp_server, fake_tap):
+    job_id, _ = job_store.put(
+        job_url="https://datalab.noirlab.edu/tap/async/abc",
+        endpoint="https://datalab.noirlab.edu/tap",
+        adql="SELECT TOP 2 ra, dec FROM smash_dr2.object",
+    )
+    fake_tap.job = _FakeAsyncJob(
+        phase="COMPLETED",
+        table=Table({"ra": [1.0, 2.0], "dec": [3.0, 4.0]}),
+    )
+
+    async with Client(mcp_server) as client:
+        result = await client.call_tool("vo_tap_results", {"job_id": job_id})
+        payload = result.structured_content
+        assert payload["row_count"] == 2
+        assert [c["name"] for c in payload["columns"]] == ["ra", "dec"]
+        assert payload["rows"] == [[1.0, 3.0], [2.0, 4.0]]
+        assert payload["archive"] == "datalab"
+
+
+@pytest.mark.asyncio
+async def test_results_when_executing_returns_job_not_ready(mcp_server, fake_tap):
+    job_id, _ = job_store.put(
+        job_url="https://example.tap/async/abc",
+        endpoint="https://example.tap",
+        adql="SELECT 1",
+    )
+    fake_tap.job = _FakeAsyncJob(phase="EXECUTING")
+
+    async with Client(mcp_server) as client:
+        result = await client.call_tool("vo_tap_results", {"job_id": job_id})
+        payload = result.structured_content
+        assert payload["error_class"] == "job_not_ready"
+        assert payload["retry_strategy"] == "poll"
+
+
+@pytest.mark.asyncio
+async def test_results_when_error_phase_returns_tap_query_error(mcp_server, fake_tap):
+    job_id, _ = job_store.put(
+        job_url="https://example.tap/async/abc",
+        endpoint="https://example.tap",
+        adql="SELECT bogus",
+    )
+
+    class _ErrSummary:
+        message = "Bad syntax."
+
+    fake_tap.job = _FakeAsyncJob(phase="ERROR", error_summary=_ErrSummary())
+
+    async with Client(mcp_server) as client:
+        result = await client.call_tool("vo_tap_results", {"job_id": job_id})
+        payload = result.structured_content
+        assert payload["error_class"] == "tap_query_error"
+        assert payload["retry_strategy"] == "fix_and_retry"
+        assert "Bad syntax" in payload["message"]
+
+
+@pytest.mark.asyncio
+async def test_results_unknown_job_id_returns_validation_error(mcp_server, fake_tap):
+    async with Client(mcp_server) as client:
+        result = await client.call_tool(
+            "vo_tap_results", {"job_id": "deadbeef0000"},
+        )
+        payload = result.structured_content
+        assert payload["error_class"] == "validation_error"
+        assert payload["retry_strategy"] == "abandon"
