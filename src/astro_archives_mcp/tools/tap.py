@@ -14,6 +14,10 @@ from astro_archives_mcp.errors import (
     ValidationError,
     wrap_tool_errors,
 )
+from astro_archives_mcp.known_archives import (
+    tap_endpoint_description,
+    tap_endpoint_urls,
+)
 from astro_archives_mcp.shaper import shape_promotion, shape_table
 from astro_archives_mcp.tools._constants import _ERROR_DOCSTRING
 
@@ -50,16 +54,8 @@ def vo_tap_query(
     endpoint: Annotated[
         str,
         Field(
-            description=(
-                "Full TAP service URL. Example: "
-                "'https://datalab.noirlab.edu/tap' (NOIRLab Astro Data Lab) "
-                "or 'https://almascience.nrao.edu/tap' (ALMA Science Archive). "
-                "Discover services via vo_registry_search."
-            ),
-            examples=[
-                "https://datalab.noirlab.edu/tap",
-                "https://almascience.nrao.edu/tap",
-            ],
+            description=tap_endpoint_description(),
+            examples=tap_endpoint_urls()[:2],
         ),
     ],
     adql: Annotated[

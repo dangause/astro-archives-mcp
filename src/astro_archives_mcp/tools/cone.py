@@ -6,6 +6,10 @@ from pydantic import Field
 from astro_archives_mcp._archive_label import archive_label
 from astro_archives_mcp.backends.cone import ConeSearchClient
 from astro_archives_mcp.errors import wrap_tool_errors
+from astro_archives_mcp.known_archives import (
+    scs_endpoint_description,
+    scs_endpoint_urls,
+)
 from astro_archives_mcp.shaper import shape_table
 from astro_archives_mcp.tools._constants import _ERROR_DOCSTRING
 
@@ -25,13 +29,8 @@ def vo_cone_search(
     endpoint: Annotated[
         str,
         Field(
-            description=(
-                "Simple Cone Search endpoint URL. Example: "
-                "'https://gaia.ari.uni-heidelberg.de/cone/gaiadr2?'. Prefer "
-                "vo_tap_query for archives that expose a TAP endpoint — "
-                "vo_cone_search is here for SCS-only legacy services."
-            ),
-            examples=["https://gaia.ari.uni-heidelberg.de/cone/gaiadr2?"],
+            description=scs_endpoint_description(),
+            examples=scs_endpoint_urls()[:2],
         ),
     ],
     ra: Annotated[float, Field(description="Right ascension (ICRS), degrees.")],
