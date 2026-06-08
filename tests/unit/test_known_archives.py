@@ -54,6 +54,40 @@ def test_by_short_name_unknown_returns_none():
     assert by_short_name("not-an-archive") is None
 
 
+def test_nrao_entry_covers_full_instrument_suite():
+    """NRAO's first-party archive serves multiple instruments; the entry
+    should reflect that rather than being VLA-only."""
+    nrao = by_short_name("nrao")
+    assert nrao is not None
+    assert "data.nrao" in nrao.host_substrings
+    assert "data-query.nrao" in nrao.host_substrings
+    for instrument in ("VLA", "VLBA", "GMVA", "GBT"):
+        assert instrument in nrao.description, (
+            f"NRAO description must mention {instrument}; got: {nrao.description}"
+        )
+    assert nrao.waveband == "radio"
+
+
+def test_nrao_label_resolves_to_nrao_not_alma_for_data_nrao_host():
+    """almascience.nrao.edu must stay labeled 'alma'; data.nrao.edu and
+    data-query.nrao.edu must label as 'nrao'. The substring map must not
+    confuse the two."""
+    from astro_archives_mcp._archive_label import archive_label
+    assert archive_label("https://data.nrao.edu/foo") == "nrao"
+    assert archive_label("https://data-query.nrao.edu/foo") == "nrao"
+    assert archive_label("https://archive.nrao.edu/foo") == "nrao"
+    assert archive_label("https://almascience.nrao.edu/tap") == "alma"
+
+
+def test_nrao_appears_before_alma_in_known_archives():
+    """Priority ordering: NOIRLab and NRAO (primary collaborators) come
+    first; ALMA follows. The first TAP-having archives surface as the
+    schema examples shown to the LLM."""
+    order = [a.short_name for a in KNOWN_ARCHIVES]
+    assert order.index("datalab") < order.index("nrao")
+    assert order.index("nrao") < order.index("alma")
+
+
 def test_tap_endpoint_urls_has_alma_and_datalab():
     urls = tap_endpoint_urls()
     assert "https://datalab.noirlab.edu/tap" in urls
