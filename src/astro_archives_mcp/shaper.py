@@ -1,6 +1,7 @@
 import io
 import json
 import math
+from datetime import datetime
 from typing import Any
 
 import numpy as np
@@ -204,4 +205,30 @@ def shape_blob_fetch(
         "archive": archive,
         "next_steps": None,
         "hints": [],
+    }
+
+
+def shape_promotion(
+    *,
+    job_id: str,
+    archive: str,
+    phase: str,
+    submitted_at: datetime,
+) -> dict[str, Any]:
+    """Envelope returned when vo_tap_query goes async (explicit mode=async
+    or auto-mode timeout fallback).
+
+    Shape-disjoint from the inline/Resource tabular envelopes: there are
+    no rows yet. The LLM branches on the literal `mode: "async"`.
+    """
+    return {
+        "mode": "async",
+        "job_id": job_id,
+        "phase": phase,
+        "submitted_at": submitted_at.isoformat(),
+        "archive": archive,
+        "next_steps": [
+            "Poll vo_tap_status(job_id) until phase is COMPLETED or ERROR",
+            "Then call vo_tap_results(job_id) to fetch the data",
+        ],
     }

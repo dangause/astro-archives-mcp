@@ -1,0 +1,423 @@
+interactions:
+- request:
+    body: REQUEST=doQuery&LANG=ADQL&MAXREC=10&QUERY=SELECT+TOP+3+dp_id%2C+instrument_name+FROM+ivoa.ObsCore+WHERE+instrument_name+%3D+%27FORS2%27+ORDER+BY+dp_id
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '150'
+      Content-Type:
+      - application/x-www-form-urlencoded
+      User-Agent:
+      - python-requests/2.34.2
+    method: POST
+    uri: https://archive.eso.org/tap_obs/async
+  response:
+    body:
+      string: ''
+    headers:
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - Keep-Alive
+      Content-Type:
+      - application/x-www-form-urlencoded;charset=UTF-8
+      Date:
+      - Mon, 08 Jun 2026 15:33:54 GMT
+      Expires:
+      - '0'
+      Keep-Alive:
+      - timeout=5, max=100
+      Location:
+      - https://archive.eso.org/tap_obs/async/9e1c0c8c-0a9e-49db-a04d-db3ecebaf268
+      Pragma:
+      - no-cache
+      Server:
+      - ESO/TapServer-2.0 STIL-4.0.1 uwsLib-4.4 adqlLib-1.5
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Origin,Access-Control-Request-Method,Access-Control-Request-Headers
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 303
+      message: ''
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://archive.eso.org/tap_obs/async/9e1c0c8c-0a9e-49db-a04d-db3ecebaf268
+  response:
+    body:
+      string: "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<job version=\"1.1\" xmlns=\"http://www.ivoa.net/xml/UWS/v1.0\"
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\"
+        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.ivoa.net/xml/UWS/v1.0
+        http://www.ivoa.net/xml/UWS/v1.0 http://www.w3.org/1999/xlink http://www.w3.org/1999/xlink.xsd
+        http://www.w3.org/2001/XMLSchema http://www.w3.org/2001/XMLSchema.xsd\">\n\t<jobId>9e1c0c8c-0a9e-49db-a04d-db3ecebaf268</jobId>\n\t<ownerId>anonymous</ownerId>\n\t<phase>PENDING</phase>\n\t<quote
+        xsi:nil=\"true\" />\n\t<creationTime>2026-06-08T15:33:54Z</creationTime>\n\t<startTime
+        xsi:nil=\"true\" />\n\t<endTime xsi:nil=\"true\" />\n\t<executionDuration>60</executionDuration>\n\t<destruction>2026-06-09T15:33:54Z</destruction>\n\t<parameters>\n\t\t<parameter
+        id=\"QUERY\">SELECT TOP 3 dp_id, instrument_name FROM ivoa.ObsCore WHERE instrument_name
+        = 'FORS2' ORDER BY dp_id</parameter>\n\t\t<parameter id=\"RESPONSEFORMAT\">VOTABLE</parameter>\n\t\t<parameter
+        id=\"LANG\">ADQL</parameter>\n\t\t<parameter id=\"MAXREC\">10</parameter>\n\t</parameters>\n\t<results>\n\t</results>\n</job>"
+    headers:
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - Keep-Alive
+      Content-Type:
+      - text/xml;charset=UTF-8
+      Date:
+      - Mon, 08 Jun 2026 15:33:54 GMT
+      Expires:
+      - '0'
+      Keep-Alive:
+      - timeout=5, max=100
+      Pragma:
+      - no-cache
+      Server:
+      - ESO/TapServer-2.0 STIL-4.0.1 uwsLib-4.4 adqlLib-1.5
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Origin,Access-Control-Request-Method,Access-Control-Request-Headers
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: ''
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://archive.eso.org/tap_obs/async/9e1c0c8c-0a9e-49db-a04d-db3ecebaf268
+  response:
+    body:
+      string: "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<job version=\"1.1\" xmlns=\"http://www.ivoa.net/xml/UWS/v1.0\"
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\"
+        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.ivoa.net/xml/UWS/v1.0
+        http://www.ivoa.net/xml/UWS/v1.0 http://www.w3.org/1999/xlink http://www.w3.org/1999/xlink.xsd
+        http://www.w3.org/2001/XMLSchema http://www.w3.org/2001/XMLSchema.xsd\">\n\t<jobId>9e1c0c8c-0a9e-49db-a04d-db3ecebaf268</jobId>\n\t<ownerId>anonymous</ownerId>\n\t<phase>PENDING</phase>\n\t<quote
+        xsi:nil=\"true\" />\n\t<creationTime>2026-06-08T15:33:54Z</creationTime>\n\t<startTime
+        xsi:nil=\"true\" />\n\t<endTime xsi:nil=\"true\" />\n\t<executionDuration>60</executionDuration>\n\t<destruction>2026-06-09T15:33:54Z</destruction>\n\t<parameters>\n\t\t<parameter
+        id=\"QUERY\">SELECT TOP 3 dp_id, instrument_name FROM ivoa.ObsCore WHERE instrument_name
+        = 'FORS2' ORDER BY dp_id</parameter>\n\t\t<parameter id=\"RESPONSEFORMAT\">VOTABLE</parameter>\n\t\t<parameter
+        id=\"LANG\">ADQL</parameter>\n\t\t<parameter id=\"MAXREC\">10</parameter>\n\t</parameters>\n\t<results>\n\t</results>\n</job>"
+    headers:
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - Keep-Alive
+      Content-Type:
+      - text/xml;charset=UTF-8
+      Date:
+      - Mon, 08 Jun 2026 15:33:54 GMT
+      Expires:
+      - '0'
+      Keep-Alive:
+      - timeout=5, max=100
+      Pragma:
+      - no-cache
+      Server:
+      - ESO/TapServer-2.0 STIL-4.0.1 uwsLib-4.4 adqlLib-1.5
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Origin,Access-Control-Request-Method,Access-Control-Request-Headers
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: ''
+- request:
+    body: PHASE=RUN
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '9'
+      Content-Type:
+      - application/x-www-form-urlencoded
+      User-Agent:
+      - python-requests/2.34.2
+    method: POST
+    uri: https://archive.eso.org/tap_obs/async/9e1c0c8c-0a9e-49db-a04d-db3ecebaf268/phase
+  response:
+    body:
+      string: ''
+    headers:
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - Keep-Alive
+      Content-Type:
+      - application/x-www-form-urlencoded;charset=UTF-8
+      Date:
+      - Mon, 08 Jun 2026 15:33:56 GMT
+      Expires:
+      - '0'
+      Keep-Alive:
+      - timeout=5, max=100
+      Location:
+      - https://archive.eso.org/tap_obs/async/9e1c0c8c-0a9e-49db-a04d-db3ecebaf268
+      Pragma:
+      - no-cache
+      Server:
+      - ESO/TapServer-2.0 STIL-4.0.1 uwsLib-4.4 adqlLib-1.5
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Origin,Access-Control-Request-Method,Access-Control-Request-Headers
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 303
+      message: ''
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://archive.eso.org/tap_obs/async/9e1c0c8c-0a9e-49db-a04d-db3ecebaf268
+  response:
+    body:
+      string: "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<job version=\"1.1\" xmlns=\"http://www.ivoa.net/xml/UWS/v1.0\"
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\"
+        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.ivoa.net/xml/UWS/v1.0
+        http://www.ivoa.net/xml/UWS/v1.0 http://www.w3.org/1999/xlink http://www.w3.org/1999/xlink.xsd
+        http://www.w3.org/2001/XMLSchema http://www.w3.org/2001/XMLSchema.xsd\">\n\t<jobId>9e1c0c8c-0a9e-49db-a04d-db3ecebaf268</jobId>\n\t<ownerId>anonymous</ownerId>\n\t<phase>COMPLETED</phase>\n\t<quote
+        xsi:nil=\"true\" />\n\t<creationTime>2026-06-08T15:33:54Z</creationTime>\n\t<startTime>2026-06-08T15:33:56Z</startTime>\n\t<endTime>2026-06-08T15:33:56Z</endTime>\n\t<executionDuration>60</executionDuration>\n\t<destruction>2026-06-09T15:33:54Z</destruction>\n\t<parameters>\n\t\t<parameter
+        id=\"QUERY\">SELECT TOP 3 dp_id, instrument_name FROM ivoa.ObsCore WHERE instrument_name
+        = 'FORS2' ORDER BY dp_id</parameter>\n\t\t<parameter id=\"RESPONSEFORMAT\">VOTABLE</parameter>\n\t\t<parameter
+        id=\"LANG\">ADQL</parameter>\n\t\t<parameter id=\"MAXREC\">10</parameter>\n\t</parameters>\n\t<results>\n\t\t<result
+        id=\"result\" xlink:type=\"simple\" xlink:href=\"https://archive.eso.org/tap_obs/async/9e1c0c8c-0a9e-49db-a04d-db3ecebaf268/results/result\"
+        mime-type=\"application/x-votable+xml\" size=\"1392\" />\n\t</results>\n</job>"
+    headers:
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - Keep-Alive
+      Content-Type:
+      - text/xml;charset=UTF-8
+      Date:
+      - Mon, 08 Jun 2026 15:33:56 GMT
+      Expires:
+      - '0'
+      Keep-Alive:
+      - timeout=5, max=100
+      Pragma:
+      - no-cache
+      Server:
+      - ESO/TapServer-2.0 STIL-4.0.1 uwsLib-4.4 adqlLib-1.5
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Origin,Access-Control-Request-Method,Access-Control-Request-Headers
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: ''
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://archive.eso.org/tap_obs/async/9e1c0c8c-0a9e-49db-a04d-db3ecebaf268
+  response:
+    body:
+      string: "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<job version=\"1.1\" xmlns=\"http://www.ivoa.net/xml/UWS/v1.0\"
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\"
+        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.ivoa.net/xml/UWS/v1.0
+        http://www.ivoa.net/xml/UWS/v1.0 http://www.w3.org/1999/xlink http://www.w3.org/1999/xlink.xsd
+        http://www.w3.org/2001/XMLSchema http://www.w3.org/2001/XMLSchema.xsd\">\n\t<jobId>9e1c0c8c-0a9e-49db-a04d-db3ecebaf268</jobId>\n\t<ownerId>anonymous</ownerId>\n\t<phase>COMPLETED</phase>\n\t<quote
+        xsi:nil=\"true\" />\n\t<creationTime>2026-06-08T15:33:54Z</creationTime>\n\t<startTime>2026-06-08T15:33:56Z</startTime>\n\t<endTime>2026-06-08T15:33:56Z</endTime>\n\t<executionDuration>60</executionDuration>\n\t<destruction>2026-06-09T15:33:54Z</destruction>\n\t<parameters>\n\t\t<parameter
+        id=\"QUERY\">SELECT TOP 3 dp_id, instrument_name FROM ivoa.ObsCore WHERE instrument_name
+        = 'FORS2' ORDER BY dp_id</parameter>\n\t\t<parameter id=\"RESPONSEFORMAT\">VOTABLE</parameter>\n\t\t<parameter
+        id=\"LANG\">ADQL</parameter>\n\t\t<parameter id=\"MAXREC\">10</parameter>\n\t</parameters>\n\t<results>\n\t\t<result
+        id=\"result\" xlink:type=\"simple\" xlink:href=\"https://archive.eso.org/tap_obs/async/9e1c0c8c-0a9e-49db-a04d-db3ecebaf268/results/result\"
+        mime-type=\"application/x-votable+xml\" size=\"1392\" />\n\t</results>\n</job>"
+    headers:
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - Keep-Alive
+      Content-Type:
+      - text/xml;charset=UTF-8
+      Date:
+      - Mon, 08 Jun 2026 15:33:56 GMT
+      Expires:
+      - '0'
+      Keep-Alive:
+      - timeout=5, max=100
+      Pragma:
+      - no-cache
+      Server:
+      - ESO/TapServer-2.0 STIL-4.0.1 uwsLib-4.4 adqlLib-1.5
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Origin,Access-Control-Request-Method,Access-Control-Request-Headers
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: ''
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '0'
+      User-Agent:
+      - python-requests/2.34.2
+    method: DELETE
+    uri: https://archive.eso.org/tap_obs/async/9e1c0c8c-0a9e-49db-a04d-db3ecebaf268
+  response:
+    body:
+      string: ''
+    headers:
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - Keep-Alive
+      Date:
+      - Mon, 08 Jun 2026 15:33:57 GMT
+      Expires:
+      - '0'
+      Keep-Alive:
+      - timeout=5, max=100
+      Location:
+      - https://archive.eso.org/tap_obs/async
+      Pragma:
+      - no-cache
+      Server:
+      - ESO/TapServer-2.0 STIL-4.0.1 uwsLib-4.4 adqlLib-1.5
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Origin,Access-Control-Request-Method,Access-Control-Request-Headers
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 303
+      message: ''
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://archive.eso.org/tap_obs/async/9e1c0c8c-0a9e-49db-a04d-db3ecebaf268
+  response:
+    body:
+      string: "<?xml version=\"1.0\"?>\r\n<VOTABLE version=\"1.3\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"
+        xmlns=\"http://www.ivoa.net/xml/VOTable/v1.3\" >\r\n<RESOURCE type='results'>\r\n<INFO
+        name=\"QUERY_STATUS\" value=\"ERROR\">Incorrect job ID! The job &quot;9e1c0c8c-0a9e-49db-a04d-db3ecebaf268&quot;
+        does not exist in the jobs list &quot;async&quot;.</INFO></RESOURCE>\r\n</VOTABLE>\r\n"
+    headers:
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - Keep-Alive
+      Content-Length:
+      - '372'
+      Content-Type:
+      - application/xml;charset=UTF-8
+      Date:
+      - Mon, 08 Jun 2026 15:33:57 GMT
+      Expires:
+      - '0'
+      Keep-Alive:
+      - timeout=5, max=100
+      Pragma:
+      - no-cache
+      Server:
+      - ESO/TapServer-2.0 STIL-4.0.1 uwsLib-4.4 adqlLib-1.5
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 404
+      message: ''
+version: 1

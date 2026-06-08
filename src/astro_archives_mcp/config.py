@@ -17,3 +17,6 @@ class Settings(BaseSettings):
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
     # Slice-A: NoAuth only. BearerTokenProvider / OIDC arrive in later slices.
     auth_mode: Literal["none"] = "none"
+    # Slice 5: async TAP family.
+    tap_sync_timeout_seconds: float = 20.0
+    job_ttl_seconds: int = 3600
