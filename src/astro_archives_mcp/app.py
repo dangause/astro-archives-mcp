@@ -18,6 +18,7 @@ from astro_archives_mcp.tools import (
     vo_sia_fetch,
     vo_sia_search,
     vo_tap_query,
+    vo_tap_status,
 )
 
 
@@ -51,6 +52,7 @@ def build_mcp() -> FastMCP:
     """Construct the FastMCP server with all Slice-A tools registered."""
     mcp = FastMCP(name="astro-archives-mcp")
     mcp.tool(vo_tap_query)
+    mcp.tool(vo_tap_status)
     mcp.tool(vo_registry_search)
     mcp.tool(vo_registry_describe)
     mcp.tool(vo_cone_search)

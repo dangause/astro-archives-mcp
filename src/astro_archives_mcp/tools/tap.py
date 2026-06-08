@@ -3,9 +3,10 @@ from typing import Annotated
 
 from pydantic import Field
 
+from astro_archives_mcp import job_store
 from astro_archives_mcp._archive_label import archive_label
 from astro_archives_mcp.backends.tap import TapClient
-from astro_archives_mcp.errors import wrap_tool_errors
+from astro_archives_mcp.errors import ValidationError, wrap_tool_errors
 from astro_archives_mcp.shaper import shape_table
 from astro_archives_mcp.tools._constants import _ERROR_DOCSTRING
 
@@ -79,3 +80,61 @@ def vo_tap_query(
 
 
 vo_tap_query.__doc__ = (vo_tap_query.__doc__ or "") + _ERROR_DOCSTRING
+
+
+def _status_payload(*, job_id: str, job, endpoint: str) -> dict:
+    """Build the status response from a live AsyncTAPJob."""
+    error_message = None
+    if job.phase == "ERROR":
+        es = getattr(job, "error_summary", None)
+        if es is not None:
+            error_message = getattr(es, "message", None) or str(es)
+
+    started = getattr(job, "starttime", None)
+    ended = getattr(job, "endtime", None)
+    return {
+        "job_id": job_id,
+        "phase": job.phase,
+        "started_at": started.isoformat() if started else None,
+        "ended_at": ended.isoformat() if ended else None,
+        "error_message": error_message,
+        "archive": archive_label(endpoint),
+    }
+
+
+@wrap_tool_errors
+def vo_tap_status(
+    job_id: Annotated[
+        str,
+        Field(
+            description=(
+                "Opaque 12-character job_id returned by vo_tap_query "
+                "when it goes async (mode='async' or auto-promote)."
+            ),
+            min_length=12, max_length=12,
+        ),
+    ],
+) -> dict:
+    """Fetch the live UWS phase for an async TAP job.
+
+    Returns {job_id, phase, started_at, ended_at, error_message, archive}.
+    Phase is read live from the upstream service; no local caching.
+
+    Phases per UWS spec: PENDING, QUEUED, EXECUTING, COMPLETED, ERROR,
+    ABORTED, ARCHIVED, HELD, SUSPENDED, UNKNOWN. The LLM branches on
+    the string.
+    """
+    entry = job_store.get(job_id)
+    if entry is None:
+        raise ValidationError(
+            message=(
+                f"Unknown or expired job_id '{job_id}'. Re-submit with "
+                "vo_tap_query."
+            ),
+            retry_strategy="abandon",
+        )
+    job = _get_tap().load_job(entry.job_url)
+    return _status_payload(job_id=job_id, job=job, endpoint=entry.endpoint)
+
+
+vo_tap_status.__doc__ = (vo_tap_status.__doc__ or "") + _ERROR_DOCSTRING
