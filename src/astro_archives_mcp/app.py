@@ -5,7 +5,7 @@ from starlette.middleware import Middleware
 from starlette.responses import JSONResponse
 from starlette.routing import Mount, Route
 
-from astro_archives_mcp import __version__, result_store
+from astro_archives_mcp import __version__, job_store, result_store
 from astro_archives_mcp.observability import (
     current_request_id,
     new_request_id,
@@ -17,7 +17,10 @@ from astro_archives_mcp.tools import (
     vo_registry_search,
     vo_sia_fetch,
     vo_sia_search,
+    vo_tap_abort,
     vo_tap_query,
+    vo_tap_results,
+    vo_tap_status,
 )
 
 
@@ -51,6 +54,9 @@ def build_mcp() -> FastMCP:
     """Construct the FastMCP server with all Slice-A tools registered."""
     mcp = FastMCP(name="astro-archives-mcp")
     mcp.tool(vo_tap_query)
+    mcp.tool(vo_tap_status)
+    mcp.tool(vo_tap_results)
+    mcp.tool(vo_tap_abort)
     mcp.tool(vo_registry_search)
     mcp.tool(vo_registry_describe)
     mcp.tool(vo_cone_search)
@@ -69,6 +75,7 @@ def build_app() -> Starlette:
             "status": "ok",
             "version": __version__,
             "store": result_store.size_estimate(),
+            "job_store": job_store.size_estimate(),
         })
 
     async def ready(_request):

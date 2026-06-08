@@ -6,6 +6,10 @@ from pydantic import Field
 from astro_archives_mcp._archive_label import archive_label, is_known_archive_url
 from astro_archives_mcp.backends.sia import SiaClient
 from astro_archives_mcp.errors import ValidationError, wrap_tool_errors
+from astro_archives_mcp.known_archives import (
+    sia_endpoint_description,
+    sia_endpoint_urls,
+)
 from astro_archives_mcp.shaper import shape_blob_fetch, shape_table
 from astro_archives_mcp.tools._constants import _ERROR_DOCSTRING
 
@@ -25,13 +29,8 @@ def vo_sia_search(
     endpoint: Annotated[
         str,
         Field(
-            description=(
-                "SIA 2.0 endpoint URL. Example: "
-                "'https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/sia' (CADC). "
-                "Note: Data Lab is SIA v1; use SIA2-capable archives like "
-                "CADC or ESO. Discover with vo_registry_search(servicetype='sia')."
-            ),
-            examples=["https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/sia"],
+            description=sia_endpoint_description(),
+            examples=sia_endpoint_urls()[:2],
         ),
     ],
     ra: Annotated[float, Field(description="Right ascension (ICRS), degrees.")],
