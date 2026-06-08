@@ -1,29 +1,27 @@
 """Hybrid archive-label lookup.
 
 Three-step resolution:
-  1. Static substring map (no I/O, fast path)
+  1. Static substring map derived from `known_archives.KNOWN_ARCHIVES`
+     (no I/O, fast path)
   2. In-memory cache (process lifetime, no TTL)
   3. RegistryClient.find_label fallback (one RegTAP call, result cached)
 
 Cache is keyed by the full endpoint URL (not just hostname) so distinct
 services on the same host get distinct labels. Restart wipes it; archive
 identities don't churn.
+
+To add an archive to the static map, add it to `KNOWN_ARCHIVES` in
+`known_archives.py`. Both `archive_label` and `is_known_archive_url`
+pick it up automatically.
 """
 
 from urllib.parse import urlparse
 
-# (substring → label). Substring matched lowercase against the full URL.
-_STATIC_MAP: dict[str, str] = {
-    "datalab.noirlab": "datalab",
-    "almascience": "alma",
-    "data-query.nrao": "nrao_vla",
-    "archive.eso": "eso",
-    "gea.esac.esa": "gaia",
-    "gaia.ari.uni-heidelberg.de": "gaia_ari",
-    "cadc-ccda.hia-iha": "cadc",
-    "ws.cadc-ccda": "cadc",
-    "sdss.org": "sdss",
-}
+from astro_archives_mcp.known_archives import host_substring_to_short_name
+
+# (substring → short_name). Substring matched lowercase against the full URL.
+# Derived once at import from KNOWN_ARCHIVES; do not edit directly.
+_STATIC_MAP: dict[str, str] = host_substring_to_short_name()
 
 _CACHE: dict[str, str] = {}
 
