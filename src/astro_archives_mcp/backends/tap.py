@@ -24,10 +24,10 @@ class TapClient:
     """
 
     def __init__(self, *, sync_timeout_seconds: float = 20.0) -> None:
-        # A single Session shared by sync + async POSTs gives us
-        # consistent timeout discipline. Polling reuses a longer
-        # timeout because phase GETs should be sub-second; we keep
-        # the same session for connection reuse.
+        # Default timeout applied to every HTTP call pyvo makes through
+        # the session wrapper. Used for sync queries (the soft deadline
+        # the auto-promote path discriminates on) and async submit.
+        # AsyncTAPJob.wait(timeout=...) overrides this for polling.
         self._sync_timeout = sync_timeout_seconds
 
     def _session(self) -> requests.Session:
