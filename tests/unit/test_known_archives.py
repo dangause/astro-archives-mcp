@@ -73,6 +73,35 @@ def test_nrao_entry_covers_full_instrument_suite():
     assert "tap_schema.obscore" in nrao.notable_tables
 
 
+def test_nrao_usage_notes_capture_critical_gotchas():
+    """The usage_notes are the agent-facing knowledge base. NRAO's notes
+    must cover the friction we already learned about the hard way."""
+    nrao = by_short_name("nrao")
+    assert nrao is not None
+    notes_joined = " ".join(nrao.usage_notes).lower()
+    # Async-mode requirement (the /sync endpoint returns 5xx on data reads)
+    assert "async" in notes_joined
+    # Non-standard obscore location
+    assert "tap_schema.obscore" in notes_joined
+    # Scan-level row granularity hint
+    assert "scan" in notes_joined and "execution" in notes_joined.replace("execute", "")
+    # Target-name aliasing — Hydra-A → 3C218 was the live-demo friction.
+    assert "3c218" in notes_joined
+
+
+def test_each_primary_archive_has_at_least_one_usage_note():
+    """Primary collaborator and well-known archives should have at least
+    one usage_note. Empty notes = a knowledge gap waiting to bite us."""
+    must_have_notes = {"datalab", "nrao", "alma", "cadc", "gaia"}
+    for name in must_have_notes:
+        a = by_short_name(name)
+        assert a is not None, f"{name} not found in KNOWN_ARCHIVES"
+        assert len(a.usage_notes) >= 1, (
+            f"{name} has no usage_notes — populate from "
+            f"archive-documentation-findings.md or live-demo experience"
+        )
+
+
 def test_nrao_label_resolves_to_nrao_not_alma_for_data_nrao_host():
     """almascience.nrao.edu must stay labeled 'alma'; data.nrao.edu and
     data-query.nrao.edu must label as 'nrao'. The substring map must not
