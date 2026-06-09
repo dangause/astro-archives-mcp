@@ -39,6 +39,8 @@ class Archive:
 
 
 KNOWN_ARCHIVES: tuple[Archive, ...] = (
+    # Primary collaborator archives (NOIRLab + NRAO) come first so they
+    # take the top two slots in tool schema examples.
     Archive(
         short_name="datalab",
         display_name="NOIRLab Astro Data Lab",
@@ -56,6 +58,28 @@ KNOWN_ARCHIVES: tuple[Archive, ...] = (
         ),
     ),
     Archive(
+        short_name="nrao",
+        display_name="NRAO Science Data Archive",
+        # Multiple historical hostnames for the NRAO archive web/query
+        # interfaces. `almascience.nrao.edu` is intentionally NOT listed
+        # here — that traffic is labeled "alma" via the entry below.
+        host_substrings=("data.nrao", "data-query.nrao", "archive.nrao"),
+        # TAP service per NRAO scripted-access docs:
+        # https://science.nrao.edu/facilities/vla/archive/scripted-access-to-the-nrao-archive
+        # Note: obscore table lives under `tap_schema.obscore`, not the
+        # standard `ivoa.obscore` location used by ALMA/ESO.
+        tap_url="https://data-query.nrao.edu/tap",
+        waveband="radio",
+        description=(
+            "NRAO's unified data archive — serves VLA (historical + Karl G. "
+            "Jansky VLA), VLBA, GMVA, and GBT (2014–2020) observations, "
+            "plus mirrors ALMA archival products. Radio interferometric "
+            "and single-dish data. ObsCore-style metadata table at "
+            "tap_schema.obscore (NRAO uses a non-standard location for it)."
+        ),
+        notable_tables=("tap_schema.obscore",),
+    ),
+    Archive(
         short_name="alma",
         display_name="ALMA Science Archive",
         host_substrings=("almascience",),
@@ -63,7 +87,8 @@ KNOWN_ARCHIVES: tuple[Archive, ...] = (
         waveband="millimeter",
         description=(
             "Millimeter/submillimeter interferometric data from ALMA. "
-            "Schema follows ivoa.obscore."
+            "Mirrored at NRAO (almascience.nrao.edu) and ESO. Schema "
+            "follows ivoa.obscore."
         ),
         notable_tables=("ivoa.obscore",),
     ),
@@ -107,13 +132,6 @@ KNOWN_ARCHIVES: tuple[Archive, ...] = (
             "Heidelberg's Gaia mirror — exposes a Simple Cone Search "
             "endpoint for legacy clients."
         ),
-    ),
-    Archive(
-        short_name="nrao_vla",
-        display_name="NRAO Data Archive",
-        host_substrings=("data-query.nrao",),
-        waveband="radio",
-        description="VLA and other NRAO radio telescope archives.",
     ),
     Archive(
         short_name="sdss",
