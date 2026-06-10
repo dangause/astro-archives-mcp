@@ -65,12 +65,24 @@ KNOWN_ARCHIVES: tuple[Archive, ...] = (
             "decaps_dr2.object",
         ),
         usage_notes=(
+            "Data Lab hosts ~180 services across SCS / SIA / TAP / VOS, "
+            "spanning surveys including NSC DR1/DR2, SMASH DR1/DR2, "
+            "DES DR1/DR2 + SVA1, DECaPS DR1/DR2, Legacy Surveys DR8–DR10, "
+            "Gaia DR1/DR2/EDR3/DR3, SDSS DR12–DR17, SkyMapper DR1/2/4, "
+            "2MASS PSC/XSC, AllWISE, unWISE, UKIDSS DR11+, VHS DR5, "
+            "Hipparcos, Tycho-2, and Stripe82 cross-matches.",
+            "MOST services are NOT registered in the IVOA registry, so "
+            "vo_registry_search will miss them. For full discovery, use "
+            "vo_archive_list to learn that Data Lab exists, then query "
+            "its TAP `tap_schema.tables` directly to enumerate everything "
+            "available. The Data Lab Python SDK call "
+            "`dl.queryClient.services()` is the authoritative catalog.",
             "Each survey has its own schema namespace (smash_dr2, nsc_dr2, "
-            "des_dr2, decaps_dr2). Use vo_registry_describe on the TAP URL "
-            "to enumerate tables, or query `tap_schema.tables` directly.",
-            "Cone-search via SCS only works for some surveys — the SMASH "
-            "SCS endpoint returns 404 in particular. Prefer vo_tap_query "
-            "against the survey's object table.",
+            "des_dr2, decaps_dr2, etc.). Inside each schema, the main "
+            "table is usually `<schema>.object`.",
+            "SCS URL convention is `/scs/<dataset>/<table>` (e.g. "
+            "`/scs/nsc_dr2/object`), NOT `/scs/<dataset>`. The shorter "
+            "form returns 404.",
             "ADQL geometric functions (DISTANCE, POINT, CIRCLE, CONTAINS, "
             "INTERSECTS) are NOT translated by the Data Lab backend, "
             "despite being mandatory per TAP 1.1. Use bounding-box "
