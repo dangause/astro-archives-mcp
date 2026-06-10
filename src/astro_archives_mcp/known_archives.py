@@ -70,8 +70,18 @@ KNOWN_ARCHIVES: tuple[Archive, ...] = (
             "to enumerate tables, or query `tap_schema.tables` directly.",
             "Cone-search via SCS only works for some surveys — the SMASH "
             "SCS endpoint returns 404 in particular. Prefer vo_tap_query "
-            "with ADQL CIRCLE/CONTAINS predicates against the survey's "
-            "object table.",
+            "against the survey's object table.",
+            "ADQL geometric functions (DISTANCE, POINT, CIRCLE, CONTAINS, "
+            "INTERSECTS) are NOT translated by the Data Lab backend, "
+            "despite being mandatory per TAP 1.1. Use bounding-box "
+            "predicates instead: `ra BETWEEN <lo> AND <hi> AND dec BETWEEN "
+            "<lo> AND <hi>`. Trim to a true circle / compute separations "
+            "client-side after fetching.",
+            "Bright/extended sources in NSC DR2 (e.g. BCGs, large "
+            "galaxies) commonly carry blend flags (flags=3). Filtering "
+            "with flags=0 silently excludes them. When searching for "
+            "bright objects in dense regions (cluster cores, etc.), drop "
+            "the flag filter or post-filter client-side.",
         ),
     ),
     Archive(

@@ -102,6 +102,19 @@ def test_each_primary_archive_has_at_least_one_usage_note():
         )
 
 
+def test_datalab_usage_notes_cover_known_adql_quirks():
+    """Findings D-02/D-03/D-04: Data Lab doesn't translate ADQL
+    geometric functions, and NSC bright sources carry blend flags.
+    These are recurring patterns the LLM needs to know about."""
+    datalab = by_short_name("datalab")
+    assert datalab is not None
+    notes_joined = " ".join(datalab.usage_notes).lower()
+    # ADQL geometric function gap (D-02 + D-03)
+    assert "bounding-box" in notes_joined or "bounding box" in notes_joined
+    # NSC blend flags on bright sources (D-04)
+    assert "blend" in notes_joined or "flags" in notes_joined
+
+
 def test_nrao_label_resolves_to_nrao_not_alma_for_data_nrao_host():
     """almascience.nrao.edu must stay labeled 'alma'; data.nrao.edu and
     data-query.nrao.edu must label as 'nrao'. The substring map must not
