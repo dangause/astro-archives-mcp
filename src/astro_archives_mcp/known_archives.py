@@ -71,12 +71,11 @@ KNOWN_ARCHIVES: tuple[Archive, ...] = (
             "Gaia DR1/DR2/EDR3/DR3, SDSS DR12–DR17, SkyMapper DR1/2/4, "
             "2MASS PSC/XSC, AllWISE, unWISE, UKIDSS DR11+, VHS DR5, "
             "Hipparcos, Tycho-2, and Stripe82 cross-matches.",
-            "MOST services are NOT registered in the IVOA registry, so "
-            "vo_registry_search will miss them. For full discovery, use "
-            "vo_archive_list to learn that Data Lab exists, then query "
-            "its TAP `tap_schema.tables` directly to enumerate everything "
-            "available. The Data Lab Python SDK call "
-            "`dl.queryClient.services()` is the authoritative catalog.",
+            "Data Lab is fully registered in the IVOA registry under "
+            "`ivo://noirlab.edu/...` — vo_registry_search and "
+            "vo_registry_describe both work normally. The Data Lab "
+            "Python SDK call `dl.queryClient.services()` is an "
+            "equivalent vendor-specific catalog.",
             "Each survey has its own schema namespace (smash_dr2, nsc_dr2, "
             "des_dr2, decaps_dr2, etc.). Inside each schema, the main "
             "table is usually `<schema>.object`.",
