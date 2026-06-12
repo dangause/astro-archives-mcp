@@ -26,9 +26,13 @@ dev = [
     "pytest>=8.3",
     "pytest-asyncio>=0.24",
     "pytest-recording>=0.13",
+    "pytest-cov>=5.0",
     "vcrpy>=6.0",
     "inline-snapshot>=0.13",
     "ruff>=0.7",
+    "pandas>=3.0.3",
+    "astro-datalab>=2.24.0",
+    "pycurl>=7.46.0",
 ]
 
 [build-system]
@@ -42,6 +46,23 @@ packages = ["src/astro_archives_mcp"]
 asyncio_mode = "auto"
 testpaths = ["tests"]
 addopts = "-ra --strict-markers"
+
+[tool.coverage.run]
+source = ["src/astro_archives_mcp"]
+branch = true
+omit = [
+    "*/__main__.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
+show_missing = true
+skip_covered = true
 
 [tool.ruff]
 line-length = 100
