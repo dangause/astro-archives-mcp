@@ -8,20 +8,35 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v3
         with:
           version: "0.4.30"
           enable-cache: true
-      - name: Install Python 3.12
-        run: uv python install 3.12
+      - name: Install Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
       - name: Sync deps
-        run: uv sync
+        run: uv sync --python ${{ matrix.python-version }}
       - name: Lint
         run: uv run ruff check .
-      - name: Tests (replay-only)
-        run: uv run pytest --record-mode=none
+      - name: Tests (replay-only) with coverage
+        run: |
+          uv run pytest --record-mode=none \
+            --cov=astro_archives_mcp \
+            --cov-report=term-missing:skip-covered \
+            --cov-report=xml
+      - name: Upload coverage XML
+        if: matrix.python-version == '3.12'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
+          path: coverage.xml
+          if-no-files-found: warn
 
   container:
     runs-on: ubuntu-latest
