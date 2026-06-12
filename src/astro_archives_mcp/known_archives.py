@@ -139,6 +139,15 @@ KNOWN_ARCHIVES: tuple[Archive, ...] = (
             "beyond the standard ObsCore set — array configuration, project "
             "code, antenna count, spectral window setup. Inspect columns via "
             "vo_registry_describe.",
+            "VOSI endpoints are partially implemented and fail independently. "
+            "/availability and /tables return valid VOSI XML, but /capabilities "
+            "is a hard 404 (raw Tomcat HTML error page) — the endpoint is not "
+            "wired up, so it fails every time; don't retry. Practical "
+            "consequences: tap.tables works here, but tap.capabilities does not, "
+            "and ObsCore-by-datamodel discovery is impossible because there is "
+            "no capability document declaring the data model. The missing "
+            "endpoint returns text/html, not a clean error — validate "
+            "content-type is text/xml before trusting any VOSI body.",
         ),
     ),
     Archive(
