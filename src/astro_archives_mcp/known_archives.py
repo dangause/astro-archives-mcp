@@ -123,31 +123,57 @@ KNOWN_ARCHIVES: tuple[Archive, ...] = (
             "tap_schema.tables, tap_schema.columns work fine in sync.",
             "ObsCore is at `tap_schema.obscore`, NOT the standard "
             "`ivoa.obscore`. Queries against `ivoa.obscore` will fail.",
+            "Even in async mode, queries that lack a spatial predicate "
+            "tend to error out. ALWAYS include a CIRCLE/CONTAINS positional "
+            "filter on (s_ra, s_dec). Trivial SELECT DISTINCT or full-table "
+            "scans typically fail.",
+            "ADQL string functions LOWER() and UPPER() FAIL on NRAO (spec "
+            "violation). Use exact-case equality (`instrument_name = 'GBT'`) "
+            "or LIKE patterns. Enumerated case-sensitive values you'll need: "
+            "instrument_name ∈ {'EVLA', 'VLA', 'VLBA', 'GBT'}, "
+            "facility_name = 'NRAO' (uniformly — not the instrument).",
+            "The ObsCore standard column `dataproduct_subtype` is ABSENT "
+            "from NRAO's tap_schema.obscore. Don't reference it. The 41 "
+            "available columns are: standard ObsCore (minus subtype) plus "
+            "extensions (project_code, configuration, num_antennas, "
+            "max_uv_dist, spw_names, center_frequencies, bandwidths, "
+            "nums_channels, spectral_resolutions, aggregate_bandwidth, "
+            "scan_num, proprietary_status, qa_notes).",
+            "On phase=ERROR the UWS `error_summary` field is always empty "
+            "— no diagnostic message. Avoid speculating about what went "
+            "wrong; instead, isolate the offending clause by simplifying "
+            "the query and re-submitting. Common ERROR triggers: missing "
+            "spatial predicate, LOWER/UPPER in WHERE, non-existent column.",
             "Rows are scan-level, not execution-block-level. For "
-            "per-observation summaries, GROUP BY obs_collection (project "
-            "code, e.g. '13B-088', 'VLASS3.2') or obs_publisher_did.",
+            "per-observation summaries, GROUP BY project_code (e.g. "
+            "'13B-088', 'VLASS3.2') or obs_publisher_did.",
+            "VLASS `target_name` uses J2000 sexagesimal packed designation "
+            "(e.g. '1239540+023112' = RA 12h39m54.0s, Dec +02°31'12\"), NOT "
+            "source names like '3C 273'. Plain VLA observations use "
+            "proposer-supplied target strings. ALWAYS match cross-archive by "
+            "POSITION, not by target_name.",
             "Common radio sources are stored under their radio designations, "
             "not optical/popular names: Hydra-A → '3C218'; M87 → '3C274'; "
-            "Cygnus A → '3C405'; Centaurus A → 'NGC5128'. If a target_name "
-            "search returns nothing, try the radio designation or cone-search "
-            "by position.",
+            "Cygnus A → '3C405'; Centaurus A → 'NGC5128'. ALMA uses "
+            "calibrator names like 'J1229+0203' (3C 273). If a target_name "
+            "search returns nothing, prefer cone-search by position.",
             "ADQL aggregate support is partial. COUNT(DISTINCT ...) with "
             "CASE WHEN sometimes fails server-side. Prefer simpler aggregates "
             "(plain COUNT, MIN/MAX, GROUP BY) and assemble multi-aggregate "
             "results client-side.",
-            "VLA-specific extension columns are available on tap_schema.obscore "
-            "beyond the standard ObsCore set — array configuration, project "
-            "code, antenna count, spectral window setup. Inspect columns via "
+            "The `freq_min/freq_max` extension columns (in Hz) disagree "
+            "with `em_min/em_max` (standard ObsCore, in meters) by ~1% on "
+            "the same row. Don't trust either to better than that precision "
+            "without checking the spectral_resolutions column.",
+            "VLA-specific extension columns beyond standard ObsCore: "
+            "array configuration (A/B/C/D + hybrids), project code, antenna "
+            "count, spectral-window setup. Inspect columns via "
             "vo_registry_describe.",
-            "VOSI endpoints are partially implemented and fail independently. "
-            "/availability and /tables return valid VOSI XML, but /capabilities "
-            "is a hard 404 (raw Tomcat HTML error page) — the endpoint is not "
-            "wired up, so it fails every time; don't retry. Practical "
-            "consequences: tap.tables works here, but tap.capabilities does not, "
-            "and ObsCore-by-datamodel discovery is impossible because there is "
-            "no capability document declaring the data model. The missing "
-            "endpoint returns text/html, not a clean error — validate "
-            "content-type is text/xml before trusting any VOSI body.",
+            "VOSI endpoints are partially implemented. /availability and "
+            "/tables return valid VOSI XML, but /capabilities is a hard 404 "
+            "(raw Tomcat HTML). ObsCore-by-datamodel discovery is impossible "
+            "because no capability document declares the data model. Always "
+            "validate Content-Type is text/xml before trusting any VOSI body.",
         ),
     ),
     Archive(
@@ -199,10 +225,16 @@ KNOWN_ARCHIVES: tuple[Archive, ...] = (
         ),
         usage_notes=(
             "SIA2 results' `access_url` column points at a DataLink VOTable, "
-            "NOT directly at the FITS file. The DataLink response describes "
-            "where the actual image lives (often at MAST). Check the "
-            "`access_format` field — `application/x-votable+xml;content=datalink` "
-            "means you'll need to parse the VOTable to find the real URL.",
+            "NOT directly at the FITS file. Check `access_format` — if it "
+            "contains `content=datalink`, you must follow the indirection.",
+            "Datalink follow-through recipe (verified live): "
+            "(1) GET the access_url with Accept: application/x-votable+xml; "
+            "(2) parse the VOTable rows; "
+            "(3) find the row where semantics == '#this' — that's the "
+            "primary image; "
+            "(4) GET its access_url to get the real FITS bytes "
+            "(the destination may be on a different host like "
+            "mast.stsci.edu or S3 — follow redirects).",
             "Use `obs_collection` to filter by mission: 'TESS', 'JWST', "
             "'CFHT', 'HST', etc.",
         ),
