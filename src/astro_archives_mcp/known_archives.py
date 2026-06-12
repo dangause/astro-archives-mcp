@@ -225,10 +225,16 @@ KNOWN_ARCHIVES: tuple[Archive, ...] = (
         ),
         usage_notes=(
             "SIA2 results' `access_url` column points at a DataLink VOTable, "
-            "NOT directly at the FITS file. The DataLink response describes "
-            "where the actual image lives (often at MAST). Check the "
-            "`access_format` field — `application/x-votable+xml;content=datalink` "
-            "means you'll need to parse the VOTable to find the real URL.",
+            "NOT directly at the FITS file. Check `access_format` — if it "
+            "contains `content=datalink`, you must follow the indirection.",
+            "Datalink follow-through recipe (verified live): "
+            "(1) GET the access_url with Accept: application/x-votable+xml; "
+            "(2) parse the VOTable rows; "
+            "(3) find the row where semantics == '#this' — that's the "
+            "primary image; "
+            "(4) GET its access_url to get the real FITS bytes "
+            "(the destination may be on a different host like "
+            "mast.stsci.edu or S3 — follow redirects).",
             "Use `obs_collection` to filter by mission: 'TESS', 'JWST', "
             "'CFHT', 'HST', etc.",
         ),
