@@ -95,6 +95,12 @@ def vo_tap_query(
 ) -> dict:
     """Run an ADQL query against any IVOA-compliant TAP service.
 
+    BEFORE composing a query against an archive you don't already know
+    cold, call `vo_archive_list` first. It returns curated usage notes
+    for the well-known archives — non-standard table locations, required
+    mode='async' routing, ADQL quirks, target-name conventions — that
+    will save you trial-and-error here.
+
     Returns one of two envelope shapes depending on what happened:
 
     1. Sync result envelope (rows or resource_uri).

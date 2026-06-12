@@ -2,6 +2,7 @@ import logging
 import re
 from urllib.parse import urlparse
 
+import pyvo
 import pyvo.registry
 from pyvo.dal.exceptions import DALQueryError, DALServiceError
 
@@ -87,21 +88,57 @@ class RegistryClient:
         return _resource_to_describe_dict(results[0])
 
     def _describe_by_url(self, url: str) -> dict:
+        # First try RegTAP — gives us richer metadata (title, publisher,
+        # description) than direct introspection can.
         try:
             results = pyvo.registry.search(servicetype="tap")
-            match = None
             for r in results:
                 if _normalized_url(r.access_url) == _normalized_url(url):
-                    match = r
-                    break
-        except DALQueryError as e:
-            raise DalQueryError(message=str(e)) from e
-        except DALServiceError as e:
-            raise ArchiveError(message=str(e)) from e
+                    return _resource_to_describe_dict(r)
+        except (DALQueryError, DALServiceError) as e:
+            # Registry itself is down or slow. Don't give up — fall
+            # through to direct introspection.
+            log.warning(
+                "RegistryClient._describe_by_url: RegTAP lookup failed (%s); "
+                "falling back to direct TAP introspection",
+                e,
+            )
 
-        if match is None:
-            raise ArchiveError(message=f"No such service: {url}", retry_strategy="abandon")
-        return _resource_to_describe_dict(match)
+        # Fallback: the service either isn't IVOA-registered (e.g. NRAO's
+        # first-party archive) or registry was unreachable. Introspect
+        # the service's own TAP capability directly.
+        return self._describe_via_direct_tap(url)
+
+    def _describe_via_direct_tap(self, url: str) -> dict:
+        """Introspect a TAP service without going through the registry.
+
+        Used as a fallback when the IVOA registry doesn't know the
+        service. Output shape matches `_resource_to_describe_dict` for
+        consistency — `ivoid` and `title` are None because we only have
+        what the service publishes about itself.
+        """
+        try:
+            tap_svc = pyvo.dal.TAPService(url)
+            tables = [_table_to_dict(t) for t in tap_svc.tables.values()]
+        except (DALQueryError, DALServiceError) as e:
+            raise ArchiveError(
+                message=(
+                    f"Could not introspect TAP service at {url}: {e}. "
+                    "Service is not IVOA-registered and direct introspection "
+                    "failed — check the URL or try again later."
+                ),
+                retry_strategy="wait_and_retry",
+            ) from e
+
+        return {
+            "ivoid": None,
+            "title": None,
+            "description": (
+                f"Direct TAP introspection (not IVOA-registered): {url}"
+            ),
+            "capabilities": ["tap"],
+            "tables": tables,
+        }
 
 
 # ---------- pure helpers (module-level for unit-testability) ----------

@@ -25,6 +25,13 @@ class Archive:
     Fields are best-effort — most archives don't expose every protocol.
     `tap_url` / `sia_url` / `scs_url` are None when the archive doesn't
     have one we want to surface.
+
+    `usage_notes` is a tuple of short, agent-facing strings capturing
+    archive-specific gotchas — non-standard table locations, sync-vs-async
+    routing recommendations, ADQL quirks, target-name conventions. These
+    are surfaced to the LLM via the `vo_archive_list` tool and are the
+    early scaffolding for what will eventually become a richer knowledge
+    layer.
     """
 
     short_name: str
@@ -36,6 +43,7 @@ class Archive:
     waveband: str | None = None
     description: str = ""
     notable_tables: tuple[str, ...] = field(default_factory=tuple)
+    usage_notes: tuple[str, ...] = field(default_factory=tuple)
 
 
 KNOWN_ARCHIVES: tuple[Archive, ...] = (
@@ -55,6 +63,36 @@ KNOWN_ARCHIVES: tuple[Archive, ...] = (
             "smash_dr2.object",
             "des_dr2.main",
             "decaps_dr2.object",
+        ),
+        usage_notes=(
+            "Data Lab hosts ~180 services across SCS / SIA / TAP / VOS, "
+            "spanning surveys including NSC DR1/DR2, SMASH DR1/DR2, "
+            "DES DR1/DR2 + SVA1, DECaPS DR1/DR2, Legacy Surveys DR8–DR10, "
+            "Gaia DR1/DR2/EDR3/DR3, SDSS DR12–DR17, SkyMapper DR1/2/4, "
+            "2MASS PSC/XSC, AllWISE, unWISE, UKIDSS DR11+, VHS DR5, "
+            "Hipparcos, Tycho-2, and Stripe82 cross-matches.",
+            "Data Lab is fully registered in the IVOA registry under "
+            "`ivo://noirlab.edu/...` — vo_registry_search and "
+            "vo_registry_describe both work normally. The Data Lab "
+            "Python SDK call `dl.queryClient.services()` is an "
+            "equivalent vendor-specific catalog.",
+            "Each survey has its own schema namespace (smash_dr2, nsc_dr2, "
+            "des_dr2, decaps_dr2, etc.). Inside each schema, the main "
+            "table is usually `<schema>.object`.",
+            "SCS URL convention is `/scs/<dataset>/<table>` (e.g. "
+            "`/scs/nsc_dr2/object`), NOT `/scs/<dataset>`. The shorter "
+            "form returns 404.",
+            "ADQL geometric functions (DISTANCE, POINT, CIRCLE, CONTAINS, "
+            "INTERSECTS) are NOT translated by the Data Lab backend, "
+            "despite being mandatory per TAP 1.1. Use bounding-box "
+            "predicates instead: `ra BETWEEN <lo> AND <hi> AND dec BETWEEN "
+            "<lo> AND <hi>`. Trim to a true circle / compute separations "
+            "client-side after fetching.",
+            "Bright/extended sources in NSC DR2 (e.g. BCGs, large "
+            "galaxies) commonly carry blend flags (flags=3). Filtering "
+            "with flags=0 silently excludes them. When searching for "
+            "bright objects in dense regions (cluster cores, etc.), drop "
+            "the flag filter or post-filter client-side.",
         ),
     ),
     Archive(
@@ -78,6 +116,39 @@ KNOWN_ARCHIVES: tuple[Archive, ...] = (
             "tap_schema.obscore (NRAO uses a non-standard location for it)."
         ),
         notable_tables=("tap_schema.obscore",),
+        usage_notes=(
+            "USE mode='async' FOR ALL DATA QUERIES. The /sync TAP endpoint "
+            "returns 5xx errors on reads against tap_schema.obscore — even "
+            "for trivial `SELECT TOP 1 *`. Metadata queries against "
+            "tap_schema.tables, tap_schema.columns work fine in sync.",
+            "ObsCore is at `tap_schema.obscore`, NOT the standard "
+            "`ivoa.obscore`. Queries against `ivoa.obscore` will fail.",
+            "Rows are scan-level, not execution-block-level. For "
+            "per-observation summaries, GROUP BY obs_collection (project "
+            "code, e.g. '13B-088', 'VLASS3.2') or obs_publisher_did.",
+            "Common radio sources are stored under their radio designations, "
+            "not optical/popular names: Hydra-A → '3C218'; M87 → '3C274'; "
+            "Cygnus A → '3C405'; Centaurus A → 'NGC5128'. If a target_name "
+            "search returns nothing, try the radio designation or cone-search "
+            "by position.",
+            "ADQL aggregate support is partial. COUNT(DISTINCT ...) with "
+            "CASE WHEN sometimes fails server-side. Prefer simpler aggregates "
+            "(plain COUNT, MIN/MAX, GROUP BY) and assemble multi-aggregate "
+            "results client-side.",
+            "VLA-specific extension columns are available on tap_schema.obscore "
+            "beyond the standard ObsCore set — array configuration, project "
+            "code, antenna count, spectral window setup. Inspect columns via "
+            "vo_registry_describe.",
+            "VOSI endpoints are partially implemented and fail independently. "
+            "/availability and /tables return valid VOSI XML, but /capabilities "
+            "is a hard 404 (raw Tomcat HTML error page) — the endpoint is not "
+            "wired up, so it fails every time; don't retry. Practical "
+            "consequences: tap.tables works here, but tap.capabilities does not, "
+            "and ObsCore-by-datamodel discovery is impossible because there is "
+            "no capability document declaring the data model. The missing "
+            "endpoint returns text/html, not a clean error — validate "
+            "content-type is text/xml before trusting any VOSI body.",
+        ),
     ),
     Archive(
         short_name="alma",
@@ -91,6 +162,20 @@ KNOWN_ARCHIVES: tuple[Archive, ...] = (
             "follows ivoa.obscore."
         ),
         notable_tables=("ivoa.obscore",),
+        usage_notes=(
+            "Rows in ivoa.obscore are at the spectral-window / tuning "
+            "granularity, NOT execution-block. A single observing execution "
+            "produces multiple rows (one per spectral window). For "
+            "'N most recent epochs' style queries, GROUP BY t_min (or "
+            "obs_publisher_did) to collapse to distinct executions.",
+            "Geometry queries using CONTAINS(POINT('ICRS', s_ra, s_dec), "
+            "CIRCLE(...)) have been observed to fail or hit timeouts on "
+            "ALMA's obscore. Consider mode='async' or fall back to a "
+            "target_name LIKE filter when positional joins misbehave.",
+            "Mirrored at almascience.nrao.edu (NA), almascience.eso.org "
+            "(EU), and almascience.nao.ac.jp (EA). All three TAP endpoints "
+            "serve identical data.",
+        ),
     ),
     Archive(
         short_name="eso",
@@ -112,6 +197,15 @@ KNOWN_ARCHIVES: tuple[Archive, ...] = (
             "Multi-mission archive — TESS, JWST, CFHT, HST imaging "
             "available via SIA2."
         ),
+        usage_notes=(
+            "SIA2 results' `access_url` column points at a DataLink VOTable, "
+            "NOT directly at the FITS file. The DataLink response describes "
+            "where the actual image lives (often at MAST). Check the "
+            "`access_format` field — `application/x-votable+xml;content=datalink` "
+            "means you'll need to parse the VOTable to find the real URL.",
+            "Use `obs_collection` to filter by mission: 'TESS', 'JWST', "
+            "'CFHT', 'HST', etc.",
+        ),
     ),
     Archive(
         short_name="gaia",
@@ -121,6 +215,14 @@ KNOWN_ARCHIVES: tuple[Archive, ...] = (
         waveband="optical",
         description="Authoritative Gaia mission archive at ESAC.",
         notable_tables=("gaiadr3.gaia_source", "gaiadr2.gaia_source"),
+        usage_notes=(
+            "Each Gaia data release is a separate schema (gaiadr2.*, "
+            "gaiadr3.*, gaiaedr3.*, etc.). Newer releases supersede older "
+            "ones for most use cases — default to gaiadr3.gaia_source.",
+            "`source_id` is the canonical join key. Astrometric solutions, "
+            "photometry, and radial velocities are split across multiple "
+            "tables — JOIN to gaia_source on source_id.",
+        ),
     ),
     Archive(
         short_name="gaia_ari",
