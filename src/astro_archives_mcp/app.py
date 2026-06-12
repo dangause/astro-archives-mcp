@@ -12,6 +12,7 @@ from astro_archives_mcp.observability import (
 )
 from astro_archives_mcp.resources import register_resources
 from astro_archives_mcp.tools import (
+    vo_archive_list,
     vo_cone_search,
     vo_registry_describe,
     vo_registry_search,
@@ -51,8 +52,9 @@ class RequestIdMiddleware:
 
 
 def build_mcp() -> FastMCP:
-    """Construct the FastMCP server with all Slice-A tools registered."""
+    """Construct the FastMCP server with all tools registered."""
     mcp = FastMCP(name="astro-archives-mcp")
+    mcp.tool(vo_archive_list)
     mcp.tool(vo_tap_query)
     mcp.tool(vo_tap_status)
     mcp.tool(vo_tap_results)
