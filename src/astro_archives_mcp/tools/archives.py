@@ -12,25 +12,10 @@ layer. Today it surfaces `known_archives.KNOWN_ARCHIVES` directly;
 later it will be backed by something pluggable (RAG, structured KB,
 etc.) but the tool contract stays the same.
 """
-from dataclasses import asdict
-from typing import Any
-
+from astro_archives_mcp._serialization import dataclass_to_jsonable_dict
 from astro_archives_mcp.errors import wrap_tool_errors
 from astro_archives_mcp.known_archives import KNOWN_ARCHIVES
 from astro_archives_mcp.tools._constants import _ERROR_DOCSTRING
-
-
-def _archive_to_dict(a) -> dict[str, Any]:
-    """Convert an Archive dataclass to a JSON-friendly dict.
-
-    Tuples (host_substrings, notable_tables, usage_notes) become lists
-    so they serialize cleanly through MCP.
-    """
-    d = asdict(a)
-    for k in ("host_substrings", "notable_tables", "usage_notes"):
-        if k in d and isinstance(d[k], tuple):
-            d[k] = list(d[k])
-    return d
 
 
 @wrap_tool_errors
@@ -77,7 +62,7 @@ def vo_archive_list() -> dict:
           "count": N
         }
     """
-    archives = [_archive_to_dict(a) for a in KNOWN_ARCHIVES]
+    archives = [dataclass_to_jsonable_dict(a) for a in KNOWN_ARCHIVES]
     return {"archives": archives, "count": len(archives)}
 
 
