@@ -5,9 +5,12 @@ tuples (any nesting depth, including 2-tuples-in-a-tuple) into lists,
 MappingProxyType into plain dict, and date into ISO 8601 string.
 Everything else passes through unchanged.
 
-`dataclasses.asdict` alone is not enough: it preserves tuple-as-tuple
-and proxy-as-proxy, both of which serialize to JSON arrays at the edge
-but break callers that round-trip through Python.
+`dataclasses.asdict` is unusable here because its internal `deepcopy`
+call fails on `MappingProxyType` (the proxy isn't picklable). Walking
+`fields()` ourselves avoids the deepcopy and keeps the conversion
+explicit. The recursive `_jsonable` also preserves tuple-as-list and
+date-as-ISO-string semantics, both of which `asdict` gets wrong for
+our MCP envelope edge.
 """
 from dataclasses import fields, is_dataclass
 from datetime import date
@@ -16,13 +19,13 @@ from typing import Any
 
 
 def _jsonable(value: Any) -> Any:
-    if isinstance(value, MappingProxyType):
+    # MappingProxyType is matched before dict because it is NOT a
+    # subclass of dict (it's a collections.abc.Mapping). Keeping the
+    # check up here makes the proxy-handling intent explicit even
+    # though swapping the order wouldn't change behaviour.
+    if isinstance(value, (MappingProxyType, dict)):
         return {k: _jsonable(v) for k, v in value.items()}
-    if isinstance(value, dict):
-        return {k: _jsonable(v) for k, v in value.items()}
-    if isinstance(value, tuple):
-        return [_jsonable(v) for v in value]
-    if isinstance(value, list):
+    if isinstance(value, (tuple, list)):
         return [_jsonable(v) for v in value]
     if isinstance(value, date):
         return value.isoformat()

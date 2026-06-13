@@ -11,6 +11,8 @@ from dataclasses import dataclass, field
 from datetime import date
 from types import MappingProxyType
 
+import pytest
+
 from astro_archives_mcp._serialization import dataclass_to_jsonable_dict
 
 
@@ -56,3 +58,13 @@ def test_none_passes_through():
 def test_plain_string_passes_through():
     out = dataclass_to_jsonable_dict(_Sample(name="x"))
     assert out["name"] == "x"
+
+
+def test_non_dataclass_input_raises_type_error():
+    """Public contract: only dataclass instances are accepted."""
+    with pytest.raises(TypeError, match="dataclass instance"):
+        dataclass_to_jsonable_dict({"already": "a dict"})
+    with pytest.raises(TypeError, match="dataclass instance"):
+        dataclass_to_jsonable_dict("a string")
+    with pytest.raises(TypeError, match="dataclass instance"):
+        dataclass_to_jsonable_dict(_Sample)  # the class itself, not an instance
