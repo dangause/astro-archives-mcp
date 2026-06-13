@@ -39,7 +39,10 @@ def dataclass_to_jsonable_dict(obj: Any) -> dict[str, Any]:
     date → ISO string. Plain primitives pass through. `obj` MUST be a
     dataclass instance.
     """
-    if not is_dataclass(obj):
+    # `is_dataclass` returns True for both classes and instances; we
+    # explicitly require an instance so callers don't accidentally pass
+    # the class object.
+    if not is_dataclass(obj) or isinstance(obj, type):
         raise TypeError(
             f"dataclass_to_jsonable_dict expects a dataclass instance; got {type(obj).__name__}"
         )
