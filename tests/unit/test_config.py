@@ -36,14 +36,3 @@ def test_settings_env_override_for_sync_timeout(monkeypatch):
     assert s.tap_sync_timeout_seconds == 5.0
 
 
-def test_settings_has_schema_kb_staleness_days_default_90():
-    from astro_archives_mcp.config import Settings
-    s = Settings()
-    assert s.schema_kb_staleness_days == 90
-
-
-def test_settings_env_override_for_schema_kb_staleness_days(monkeypatch):
-    monkeypatch.setenv("STABLE_SCHEMA_KB_STALENESS_DAYS", "30")
-    from astro_archives_mcp.config import Settings
-    s = Settings()
-    assert s.schema_kb_staleness_days == 30

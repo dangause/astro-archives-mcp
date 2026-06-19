@@ -1,61 +1,24 @@
 """Schema dataclass + SCHEMA_KB contract tests."""
-from datetime import date
-from types import MappingProxyType
-
 import pytest
 
-from astro_archives_mcp.knowledge.schemas import (
+from astro_archives_mcp.known_archives import KNOWN_ARCHIVES
+from astro_archives_mcp.schema_kb import (
     SCHEMA_KB,
     Schema,
     lookup_schema,
 )
-from astro_archives_mcp.known_archives import KNOWN_ARCHIVES
 
 # ---------- Schema dataclass ----------
 
 def test_schema_is_frozen():
-    s = Schema(
-        archive="nrao", table="tap_schema.obscore",
-        last_verified=date(2026, 6, 13),
-    )
+    s = Schema(archive="nrao", table="tap_schema.obscore")
     with pytest.raises(AttributeError):  # FrozenInstanceError is a subclass
         s.archive = "mutated"  # type: ignore[misc]
-
-
-def test_schema_last_verified_is_required():
-    """No default — making it mandatory at the dataclass level forces
-    every seed entry to carry an honest date."""
-    with pytest.raises(TypeError):
-        Schema(archive="nrao", table="tap_schema.obscore")  # type: ignore[call-arg]
-
-
-def test_schema_value_enums_default_is_read_only():
-    s = Schema(
-        archive="nrao", table="tap_schema.obscore",
-        last_verified=date(2026, 6, 13),
-    )
-    assert isinstance(s.value_enums, MappingProxyType)
-    with pytest.raises(TypeError):
-        s.value_enums["x"] = ("y",)  # type: ignore[index]
-
-
-def test_schema_value_enums_passed_as_dict_is_wrapped_read_only():
-    """Seed entries use plain dict literals; __post_init__ wraps them."""
-    s = Schema(
-        archive="nrao", table="tap_schema.obscore",
-        last_verified=date(2026, 6, 13),
-        value_enums={"instrument_name": ("EVLA", "VLA", "VLBA", "GBT")},
-    )
-    assert isinstance(s.value_enums, MappingProxyType)
-    assert s.value_enums["instrument_name"] == ("EVLA", "VLA", "VLBA", "GBT")
-    with pytest.raises(TypeError):
-        s.value_enums["facility_name"] = ("NRAO",)  # type: ignore[index]
 
 
 def test_schema_cross_refs_is_nested_tuple_shape():
     s = Schema(
         archive="nrao", table="tap_schema.obscore",
-        last_verified=date(2026, 6, 13),
         cross_refs=(("alma", "ivoa.obscore"),),
     )
     assert s.cross_refs == (("alma", "ivoa.obscore"),)
@@ -64,7 +27,6 @@ def test_schema_cross_refs_is_nested_tuple_shape():
 # ---------- lookup ----------
 
 def test_lookup_schema_finds_known_entry():
-    """The Task-3 smoke entry — Task 4 fleshes the rest out."""
     s = lookup_schema(archive="nrao", table="tap_schema.obscore")
     assert s is not None
     assert s.archive == "nrao"
@@ -76,7 +38,6 @@ def test_lookup_schema_returns_none_for_unknown_pair():
 
 
 def test_lookup_schema_is_case_sensitive():
-    """No matching is exact per spec §3.3."""
     assert lookup_schema(archive="NRAO", table="tap_schema.obscore") is None
     assert lookup_schema(archive="nrao", table="TAP_SCHEMA.OBSCORE") is None
 
@@ -110,12 +71,3 @@ def test_every_cross_ref_resolves_to_another_schema_entry():
                 f"Schema({s.archive}, {s.table}).cross_refs references "
                 f"{(archive, table)} but no such entry exists in SCHEMA_KB"
             )
-
-
-def test_every_seed_entry_has_a_real_last_verified_date():
-    """Catches a regression where someone makes `last_verified` optional."""
-    for s in SCHEMA_KB:
-        assert isinstance(s.last_verified, date)
-        # Sanity bound: not in the future, not before the project existed.
-        assert s.last_verified <= date.today()
-        assert s.last_verified >= date(2026, 6, 1)

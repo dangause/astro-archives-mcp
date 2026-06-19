@@ -20,5 +20,3 @@ class Settings(BaseSettings):
     # Slice 5: async TAP family.
     tap_sync_timeout_seconds: float = 20.0
     job_ttl_seconds: int = 3600
-    # Slice D: schema knowledge.
-    schema_kb_staleness_days: int = 90
