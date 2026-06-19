@@ -34,3 +34,5 @@ def test_settings_env_override_for_sync_timeout(monkeypatch):
     from astro_archives_mcp.config import Settings
     s = Settings()
     assert s.tap_sync_timeout_seconds == 5.0
+
+
