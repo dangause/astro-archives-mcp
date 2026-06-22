@@ -8,6 +8,7 @@ Pins that the resolver → positional-query handoff works and that the
 coordinates flow through correctly. ConeSearchClient is faked; no network.
 """
 import pytest
+from astropy.table import Table
 from fastmcp import Client
 
 from astro_archives_mcp.tools import cone as cone_tools
@@ -21,21 +22,22 @@ M87_DEC = 12.39112
 
 
 class _FakeResolver:
-    def resolve(self, name: str) -> tuple[float, float]:
+    def resolve(self, name: str) -> tuple[float, float] | None:
         return M87_RA, M87_DEC
 
 
 class _FakeConeClient:
     def __init__(self):
+        self.last_endpoint: str | None = None
         self.last_ra: float | None = None
         self.last_dec: float | None = None
         self.last_radius: float | None = None
 
     def search(self, *, endpoint, ra, dec, radius_deg, maxrec):
+        self.last_endpoint = endpoint
         self.last_ra = ra
         self.last_dec = dec
         self.last_radius = radius_deg
-        from astropy.table import Table
         return Table({"ra": [ra], "dec": [dec]})
 
 
@@ -76,7 +78,8 @@ async def test_resolve_then_cone_search(mcp_server, fake_resolver, fake_cone):
         )
         cp = cone_result.structured_content
 
-    assert cp.get("error_class") is None, f"Unexpected error: {cp}"
+    assert cp["row_count"] == 1, f"Expected 1 row from fake; got: {cp}"
+    assert fake_cone.last_endpoint == SCS_ENDPOINT
     assert fake_cone.last_ra == pytest.approx(M87_RA)
     assert fake_cone.last_dec == pytest.approx(M87_DEC)
     assert fake_cone.last_radius == pytest.approx(0.1)
