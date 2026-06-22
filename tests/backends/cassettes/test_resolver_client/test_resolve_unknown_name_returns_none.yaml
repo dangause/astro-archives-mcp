@@ -1,0 +1,36 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Connection:
+      - close
+      Host:
+      - cds.unistra.fr
+      User-Agent:
+      - astropy
+    method: GET
+    uri: https://cds.unistra.fr/cgi-bin/nph-sesame/SNV?XYZZY_NOT_A_REAL_OBJECT_99999
+  response:
+    body:
+      string: "# XYZZY NOT A REAL OBJECT 99999\t#Q4253060\n#! *** NNNothing found
+        *** \n\n#****Total of 1 crashes\n<!-- Configuration tested: /run/sesame.conf
+        -->\n"
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - close
+      Content-Type:
+      - text/plain
+      Date:
+      - Fri, 19 Jun 2026 12:23:22 GMT
+      Server:
+      - Apache/2.4.66 (Unix)
+      Transfer-Encoding:
+      - chunked
+    status:
+      code: 200
+      message: OK
+version: 1
