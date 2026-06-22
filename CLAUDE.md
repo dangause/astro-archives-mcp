@@ -6,7 +6,7 @@ MCP server exposing IVOA-compliant astronomical archives (NOIRLab Astro Data Lab
 
 ```bash
 uv sync                                  # install deps + dev deps
-uv run pytest --record-mode=none         # 262 tests, offline replay
+uv run pytest --record-mode=none         # 270 tests, offline replay
 uv run pytest --record-mode=once -k <t>  # re-record one cassette (needs net)
 uv run ruff check .                      # lint
 uv run python -m astro_archives_mcp      # boot server on :8000 (STABLE_PORT to override)
@@ -21,12 +21,13 @@ Settings env vars are `STABLE_*` (Pydantic Settings, `extra="ignore"`). See `.en
 ```
 src/astro_archives_mcp/
 ├── auth/              # CallerContext, AuthProvider Protocol, NoAuthProvider
-├── backends/          # TapClient, SiaClient, ConeClient, RegistryClient
-│                      # (typed pyvo/httpx wrappers — tools never import pyvo directly)
+├── backends/          # TapClient, SiaClient, ConeClient, RegistryClient, ResolverClient
+│                      # (typed pyvo/httpx/astropy wrappers — tools never import pyvo directly)
 ├── tools/
 │   ├── tap.py         # vo_tap_query, vo_tap_status, vo_tap_results, vo_tap_abort
 │   ├── archives.py    # vo_archive_list
 │   ├── schema.py      # vo_schema_describe
+│   ├── resolver.py    # vo_target_resolve
 │   ├── registry.py    # vo_registry_search, vo_registry_describe
 │   ├── cone.py        # vo_cone_search
 │   └── sia.py         # vo_sia_search, vo_sia_fetch

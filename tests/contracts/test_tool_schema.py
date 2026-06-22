@@ -31,6 +31,7 @@ from astro_archives_mcp.tools import (
     vo_tap_query,
     vo_tap_results,
     vo_tap_status,
+    vo_target_resolve,
 )
 
 ALL_TOOLS = (
@@ -45,6 +46,7 @@ ALL_TOOLS = (
     vo_tap_query,
     vo_tap_results,
     vo_tap_status,
+    vo_target_resolve,
 )
 
 

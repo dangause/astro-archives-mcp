@@ -8,6 +8,7 @@ MCP server exposing IVOA-compliant astronomical archives (NOIRLab Astro Data Lab
 |---|---|---|
 | `vo_archive_list` | — | List known archives with endpoint URLs and usage notes |
 | `vo_schema_describe` | — | Curated per-table schema facts (missing columns, enum values, spatial index hints) |
+| `vo_target_resolve` | Sesame | Resolve an object name (e.g. "M87", "Cygnus A") to RA/Dec coordinates |
 | `vo_tap_query` | TAP | Submit sync or async ADQL queries; returns inline or promoted results |
 | `vo_tap_status` | TAP | Poll an async job by ID |
 | `vo_tap_results` | TAP | Fetch completed async job results |
@@ -18,17 +19,18 @@ MCP server exposing IVOA-compliant astronomical archives (NOIRLab Astro Data Lab
 | `vo_sia_search` | SIA 2.0 | Search for images by position and waveband |
 | `vo_sia_fetch` | SIA 2.0 | Download an image by access URL |
 
-The recommended LLM workflow for a new archive:
-1. `vo_archive_list` — discover the archive and its endpoint
-2. `vo_schema_describe` — get table-specific quirks before writing ADQL
-3. `vo_registry_describe` — live column introspection
-4. `vo_tap_query` (mode=`async` for data reads) — run the query
+The recommended LLM workflow for a positional query:
+1. `vo_target_resolve` — get RA/Dec for a named object
+2. `vo_archive_list` — discover the archive and its endpoint
+3. `vo_schema_describe` — get table-specific quirks before writing ADQL
+4. `vo_registry_describe` — live column introspection
+5. `vo_tap_query` (mode=`async` for data reads) — run the query
 
 ## Quickstart
 
 ```bash
 uv sync
-uv run pytest --record-mode=none        # 262 tests, offline replay
+uv run pytest --record-mode=none        # 270 tests, offline replay
 uv run python -m astro_archives_mcp     # server on http://localhost:8000
 ```
 
