@@ -1,4 +1,5 @@
 """End-to-end tests for vo_target_resolve through an in-memory MCP client."""
+
 import pytest
 from fastmcp import Client
 
@@ -15,16 +16,12 @@ class _FakeResolver:
 
 @pytest.fixture
 def patch_resolve_found(monkeypatch):
-    monkeypatch.setattr(
-        resolver_mod, "_get_resolver", lambda: _FakeResolver((187.70593, 12.39112))
-    )
+    monkeypatch.setattr(resolver_mod, "_get_resolver", lambda: _FakeResolver((187.70593, 12.39112)))
 
 
 @pytest.fixture
 def patch_resolve_not_found(monkeypatch):
-    monkeypatch.setattr(
-        resolver_mod, "_get_resolver", lambda: _FakeResolver(None)
-    )
+    monkeypatch.setattr(resolver_mod, "_get_resolver", lambda: _FakeResolver(None))
 
 
 @pytest.mark.asyncio

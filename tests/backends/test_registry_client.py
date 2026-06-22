@@ -24,8 +24,17 @@ def test_search_by_keyword_returns_services():
     assert len(out) >= 1
     assert any("smash" in (s.get("title") or "").lower() for s in out)
     first = out[0]
-    for key in ("ivoid", "title", "description", "publisher",
-                "tap_url", "sia_url", "scs_url", "ssa_url", "waveband"):
+    for key in (
+        "ivoid",
+        "title",
+        "description",
+        "publisher",
+        "tap_url",
+        "sia_url",
+        "scs_url",
+        "ssa_url",
+        "waveband",
+    ):
         assert key in first
 
 
@@ -95,7 +104,9 @@ def test_describe_by_url_falls_back_to_direct_tap_when_not_registered(
 
     # Make RegTAP claim no services exist for this URL.
     monkeypatch.setattr(
-        registry_module.pyvo.registry, "search", lambda **_kw: iter([]),
+        registry_module.pyvo.registry,
+        "search",
+        lambda **_kw: iter([]),
     )
 
     # Mock the direct-TAP introspection so the test stays hermetic.
@@ -117,7 +128,9 @@ def test_describe_by_url_falls_back_to_direct_tap_when_not_registered(
             }
 
     monkeypatch.setattr(
-        registry_module.pyvo.dal, "TAPService", _FakeTAPService,
+        registry_module.pyvo.dal,
+        "TAPService",
+        _FakeTAPService,
     )
 
     client = RegistryClient()
@@ -129,7 +142,8 @@ def test_describe_by_url_falls_back_to_direct_tap_when_not_registered(
     assert "data-query.nrao.edu/tap" in out["description"]
     assert out["capabilities"] == ["tap"]
     assert {t["name"] for t in out["tables"]} == {
-        "tap_schema.obscore", "tap_schema.tables",
+        "tap_schema.obscore",
+        "tap_schema.tables",
     }
 
 
@@ -143,7 +157,9 @@ def test_describe_by_url_propagates_direct_introspection_failure(monkeypatch):
     from astro_archives_mcp.errors import ArchiveError
 
     monkeypatch.setattr(
-        registry_module.pyvo.registry, "search", lambda **_kw: iter([]),
+        registry_module.pyvo.registry,
+        "search",
+        lambda **_kw: iter([]),
     )
 
     class _DeadTAPService:
@@ -151,7 +167,9 @@ def test_describe_by_url_propagates_direct_introspection_failure(monkeypatch):
             raise DALServiceError("connect: refused")
 
     monkeypatch.setattr(
-        registry_module.pyvo.dal, "TAPService", _DeadTAPService,
+        registry_module.pyvo.dal,
+        "TAPService",
+        _DeadTAPService,
     )
 
     client = RegistryClient()

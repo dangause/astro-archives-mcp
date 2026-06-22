@@ -3,6 +3,7 @@
 This module is the ONLY place that imports pyvo. Tools work in terms of
 job_url strings and astropy.Table — they do not touch AsyncTAPJob.
 """
+
 import logging
 
 import pyvo
@@ -68,7 +69,11 @@ class TapClient:
         return result.to_table()
 
     def submit_async(
-        self, *, endpoint: str, adql: str, maxrec: int = 10_000,
+        self,
+        *,
+        endpoint: str,
+        adql: str,
+        maxrec: int = 10_000,
     ) -> str:
         """Submit a TAP query as an async UWS job and start execution.
 

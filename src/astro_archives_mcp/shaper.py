@@ -37,13 +37,15 @@ def shape_inline_table(
     columns: list[dict[str, Any]] = []
     for name in table.colnames:
         col = table[name]
-        columns.append({
-            "name": name,
-            "type": str(col.dtype),
-            "unit": (str(col.unit) if col.unit and str(col.unit) else None),
-            "ucd": _column_ucd(col),
-            "description": col.description or None,
-        })
+        columns.append(
+            {
+                "name": name,
+                "type": str(col.dtype),
+                "unit": (str(col.unit) if col.unit and str(col.unit) else None),
+                "ucd": _column_ucd(col),
+                "description": col.description or None,
+            }
+        )
 
     rows: list[list[Any]] = []
     for row in table:
@@ -98,20 +100,24 @@ def _shape_resource(table: Table, *, archive: str, maxrec: int) -> dict[str, Any
 
     # Reuse inline envelope shape for preview rows
     preview_envelope = shape_inline_table(
-        visible[:50], archive=archive, maxrec=maxrec,
+        visible[:50],
+        archive=archive,
+        maxrec=maxrec,
     )
 
     hints: list[dict[str, Any]] = []
     if truncated:
-        hints.append({
-            "kind": "tip",
-            "text": (
-                f"{RESOURCE_ROW_LIMIT} of {true_count} rows available at the "
-                "resource URI. For full results, narrow the query or use "
-                "MyDB-staged storage (Slice C)."
-            ),
-            "source": None,
-        })
+        hints.append(
+            {
+                "kind": "tip",
+                "text": (
+                    f"{RESOURCE_ROW_LIMIT} of {true_count} rows available at the "
+                    "resource URI. For full results, narrow the query or use "
+                    "MyDB-staged storage (Slice C)."
+                ),
+                "source": None,
+            }
+        )
 
     return {
         "row_count": true_count,

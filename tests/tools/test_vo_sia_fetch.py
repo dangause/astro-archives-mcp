@@ -4,6 +4,7 @@ The backend is mocked (no real HTTP). The test exercises the end-to-end
 envelope shape including the resource_uri round-trip via the FastMCP
 Resource layer.
 """
+
 import base64
 
 import pytest

@@ -1,4 +1,5 @@
 """Name resolver backend — wraps CDS Sesame via astropy.coordinates."""
+
 import logging
 
 from astropy.coordinates import SkyCoord

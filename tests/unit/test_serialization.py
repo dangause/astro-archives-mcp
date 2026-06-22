@@ -6,6 +6,7 @@ Covers the conversions the MCP envelope edge needs:
 - date → ISO string
 - None / primitives pass through unchanged
 """
+
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import date

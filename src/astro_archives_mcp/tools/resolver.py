@@ -5,6 +5,7 @@ returns RA/Dec in ICRS decimal degrees, ready for ADQL CIRCLE predicates or
 ``vo_cone_search``. Soft-fails with ``resolved: false`` when the name is
 unknown so the LLM can try an alternate designation.
 """
+
 from typing import Annotated
 
 from pydantic import Field

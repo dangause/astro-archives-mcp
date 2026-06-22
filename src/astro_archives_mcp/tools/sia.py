@@ -1,4 +1,5 @@
 """Tools for IVOA Simple Image Access."""
+
 from typing import Annotated
 
 from pydantic import Field
@@ -53,7 +54,9 @@ def vo_sia_search(
             examples=["image/fits"],
         ),
     ] = None,
-    maxrec: Annotated[int, Field(ge=1, le=10_000, description="Hard cap on rows returned. Default 1_000.")] = 1_000,
+    maxrec: Annotated[
+        int, Field(ge=1, le=10_000, description="Hard cap on rows returned. Default 1_000.")
+    ] = 1_000,
 ) -> dict:
     """Discover images at a sky position via Simple Image Access (SIA 2.0).
 
@@ -66,8 +69,13 @@ def vo_sia_search(
     servicetype='sia'.
     """
     table = _get_sia().search(
-        endpoint=endpoint, ra=ra, dec=dec, size_deg=size_deg,
-        band=band, fmt=fmt, maxrec=maxrec,
+        endpoint=endpoint,
+        ra=ra,
+        dec=dec,
+        size_deg=size_deg,
+        band=band,
+        fmt=fmt,
+        maxrec=maxrec,
     )
     return shape_table(table, archive=archive_label(endpoint), maxrec=maxrec)
 

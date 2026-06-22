@@ -31,7 +31,8 @@ class _FakeRegistry:
 
 def test_vo_registry_describe_validation_error(monkeypatch):
     monkeypatch.setattr(
-        ivoa_tools, "_get_registry",
+        ivoa_tools,
+        "_get_registry",
         lambda: _FakeRegistry(exc=ValidationError(message="bad input")),
     )
     out = ivoa_tools.vo_registry_describe(ivoid_or_url="garbage")

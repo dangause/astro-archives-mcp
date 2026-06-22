@@ -4,6 +4,7 @@ These tests lock down the derived-lookup contract so that downstream
 modules (`_archive_label`, the tool Field examples, tests) stay
 consistent with the canonical archive list.
 """
+
 from dataclasses import FrozenInstanceError
 
 import pytest
@@ -120,6 +121,7 @@ def test_nrao_label_resolves_to_nrao_not_alma_for_data_nrao_host():
     data-query.nrao.edu must label as 'nrao'. The substring map must not
     confuse the two."""
     from astro_archives_mcp._archive_label import archive_label
+
     assert archive_label("https://data.nrao.edu/foo") == "nrao"
     assert archive_label("https://data-query.nrao.edu/foo") == "nrao"
     assert archive_label("https://archive.nrao.edu/foo") == "nrao"

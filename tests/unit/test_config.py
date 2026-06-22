@@ -19,12 +19,14 @@ def test_settings_env_override(monkeypatch):
 
 def test_settings_has_tap_sync_timeout_default_20s():
     from astro_archives_mcp.config import Settings
+
     s = Settings()
     assert s.tap_sync_timeout_seconds == 20.0
 
 
 def test_settings_has_job_ttl_default_1h():
     from astro_archives_mcp.config import Settings
+
     s = Settings()
     assert s.job_ttl_seconds == 3600
 
@@ -32,7 +34,6 @@ def test_settings_has_job_ttl_default_1h():
 def test_settings_env_override_for_sync_timeout(monkeypatch):
     monkeypatch.setenv("STABLE_TAP_SYNC_TIMEOUT_SECONDS", "5")
     from astro_archives_mcp.config import Settings
+
     s = Settings()
     assert s.tap_sync_timeout_seconds == 5.0
-
-

@@ -1,4 +1,5 @@
 """Compose the FastMCP server and mount it under Starlette with health probes."""
+
 from fastmcp import FastMCP
 from starlette.applications import Starlette
 from starlette.middleware import Middleware
@@ -77,12 +78,14 @@ def build_app() -> Starlette:
     mcp_app = mcp.http_app(path="/")
 
     async def health(_request):
-        return JSONResponse({
-            "status": "ok",
-            "version": __version__,
-            "store": result_store.size_estimate(),
-            "job_store": job_store.size_estimate(),
-        })
+        return JSONResponse(
+            {
+                "status": "ok",
+                "version": __version__,
+                "store": result_store.size_estimate(),
+                "job_store": job_store.size_estimate(),
+            }
+        )
 
     async def ready(_request):
         # Slice A: no backend pre-warm. Later slices ping a known TAP endpoint.

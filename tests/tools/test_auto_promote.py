@@ -1,4 +1,5 @@
 """vo_tap_query mode parameter + auto-promote behavior."""
+
 import pytest
 from astropy.table import Table
 from fastmcp import Client
@@ -30,6 +31,7 @@ class _FakeTapClient:
             starttime = None
             endtime = None
             error_summary = None
+
         return _J()
 
     def abort_job(self, job_url):
@@ -50,7 +52,9 @@ def _offline_archive_label(monkeypatch):
     """Keep tests hermetic — unknown endpoints don't call RegTAP."""
     _archive_label._CACHE.clear()
     monkeypatch.setattr(
-        _archive_label, "_registry_find_label", lambda _endpoint: None,
+        _archive_label,
+        "_registry_find_label",
+        lambda _endpoint: None,
     )
 
 
@@ -101,9 +105,7 @@ async def test_mode_auto_fast_returns_inline_no_promotion(mcp_server, fake_tap):
 
 @pytest.mark.asyncio
 async def test_mode_auto_promotes_on_timeout(mcp_server, fake_tap):
-    fake_tap.query_raises = ArchiveError(
-        message="TAP sync request timed out: read timeout"
-    )
+    fake_tap.query_raises = ArchiveError(message="TAP sync request timed out: read timeout")
 
     async with Client(mcp_server) as client:
         result = await client.call_tool(
@@ -127,6 +129,7 @@ async def test_mode_auto_promotes_on_timeout(mcp_server, fake_tap):
 @pytest.mark.asyncio
 async def test_mode_auto_does_not_promote_on_syntax_error(mcp_server, fake_tap):
     from astro_archives_mcp.errors import DalQueryError
+
     fake_tap.query_raises = DalQueryError(message="Bad ADQL syntax.")
 
     async with Client(mcp_server) as client:

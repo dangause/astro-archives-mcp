@@ -11,6 +11,7 @@ These tests enforce conventions every registered tool must follow:
 When a new tool gets added or an existing one gets edited, these tests
 catch drift before the LLM sees it.
 """
+
 import inspect
 from typing import Annotated, get_args, get_origin, get_type_hints
 
@@ -70,9 +71,11 @@ def _extract_field_info(annotation) -> FieldInfo | None:
 
 # ---------- registration completeness ----------
 
+
 def _registered_tool_names() -> set[str]:
     """Enumerate the tools FastMCP actually exposes."""
     import asyncio
+
     mcp = build_mcp()
     tools = asyncio.run(mcp.list_tools())
     return {t.name for t in tools}
@@ -93,12 +96,11 @@ def test_every_tool_in_dunder_all_is_registered_in_build_mcp():
 def test_all_registered_tools_use_vo_prefix():
     """Project convention: every tool name starts with `vo_`."""
     for name in _registered_tool_names():
-        assert name.startswith("vo_"), (
-            f"Tool {name!r} does not follow the vo_* naming convention"
-        )
+        assert name.startswith("vo_"), f"Tool {name!r} does not follow the vo_* naming convention"
 
 
 # ---------- docstring presence ----------
+
 
 @pytest.mark.parametrize("tool", ALL_TOOLS, ids=lambda t: t.__name__)
 def test_tool_has_non_empty_docstring(tool):
@@ -107,12 +109,12 @@ def test_tool_has_non_empty_docstring(tool):
     raw = _unwrap(tool)
     doc = (raw.__doc__ or "").strip()
     assert len(doc) >= 30, (
-        f"{tool.__name__} has a {len(doc)}-char docstring; need at least 30 "
-        f"to be useful to the LLM"
+        f"{tool.__name__} has a {len(doc)}-char docstring; need at least 30 to be useful to the LLM"
     )
 
 
 # ---------- parameter field info ----------
+
 
 @pytest.mark.parametrize("tool", ALL_TOOLS, ids=lambda t: t.__name__)
 def test_every_parameter_has_a_field_description(tool):
@@ -130,16 +132,13 @@ def test_every_parameter_has_a_field_description(tool):
             continue
         info = _extract_field_info(ann)
         if info is None:
-            failures.append(
-                f"{param_name}: type annotation must be Annotated[T, Field(...)]"
-            )
+            failures.append(f"{param_name}: type annotation must be Annotated[T, Field(...)]")
             continue
         desc = (info.description or "").strip()
         if not desc:
             failures.append(f"{param_name}: Field has empty description")
-    assert not failures, (
-        f"{tool.__name__} parameter contract violations:\n  " +
-        "\n  ".join(failures)
+    assert not failures, f"{tool.__name__} parameter contract violations:\n  " + "\n  ".join(
+        failures
     )
 
 
@@ -172,6 +171,5 @@ def test_url_fields_have_at_least_one_example(tool):
                 "nothing concrete to ground on"
             )
     assert not failures, (
-        f"{tool.__name__} URL-field example contract violations:\n  " +
-        "\n  ".join(failures)
+        f"{tool.__name__} URL-field example contract violations:\n  " + "\n  ".join(failures)
     )

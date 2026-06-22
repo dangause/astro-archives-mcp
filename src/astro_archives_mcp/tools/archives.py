@@ -12,6 +12,7 @@ layer. Today it surfaces `known_archives.KNOWN_ARCHIVES` directly;
 later it will be backed by something pluggable (RAG, structured KB,
 etc.) but the tool contract stays the same.
 """
+
 from astro_archives_mcp._serialization import dataclass_to_jsonable_dict
 from astro_archives_mcp.errors import wrap_tool_errors
 from astro_archives_mcp.known_archives import KNOWN_ARCHIVES

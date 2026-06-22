@@ -3,6 +3,7 @@
 Record cassettes with:
     uv run pytest tests/backends/test_resolver_client.py --record-mode=once
 """
+
 import pytest
 
 from astro_archives_mcp.backends.resolver import ResolverClient
@@ -29,6 +30,7 @@ def test_resolve_unknown_name_returns_none():
 
 def test_resolve_network_failure_raises_archive_error(monkeypatch):
     """OSError (e.g. connection refused) surfaces as ArchiveError, not NameResolveError."""
+
     def _boom(name, cache=False):
         raise OSError("connection refused")
 
