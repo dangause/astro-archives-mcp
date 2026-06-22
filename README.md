@@ -39,6 +39,25 @@ Smoke test with MCP Inspector:
 npx -y @modelcontextprotocol/inspector --cli http://localhost:8000/mcp --method tools/list
 ```
 
+## Development
+
+```bash
+uv sync                        # install runtime + dev deps
+uv run pre-commit install      # enable git pre-commit hooks (once per clone)
+
+uv run ruff check .            # lint
+uv run ruff format .           # format
+uv run pyright                 # type check (src/, basic mode)
+uv run pre-commit run --all-files   # run every hook over the whole tree
+```
+
+Pre-commit runs ruff (lint + format), file-hygiene checks, and pyright on each
+commit; the full test suite runs in CI, not at commit time.
+
+Branch flow (see `CLAUDE.md` for detail): feature branches `<initials>/<name>`
+branch off `dev` and PR into `dev`; `dev` is promoted to `main` via PR. `main`
+is protected — it only advances through PRs with passing CI.
+
 ## Configuration
 
 All settings are optional — defaults work for local dev. Set via environment variables prefixed `STABLE_` or in a `.env` file:

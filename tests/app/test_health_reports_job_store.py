@@ -1,4 +1,5 @@
 """/health surfaces job_store metrics for ops visibility."""
+
 import pytest
 from httpx import ASGITransport, AsyncClient
 

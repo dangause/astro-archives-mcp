@@ -7,6 +7,7 @@ and log records. In-memory MCP client tests bypass the HTTP stack, so the
 ContextVar will return ``None`` there — that is expected and the tools tolerate
 it.
 """
+
 import contextvars
 import json
 import logging

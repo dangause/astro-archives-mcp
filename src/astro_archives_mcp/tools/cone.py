@@ -1,4 +1,5 @@
 """Tools for IVOA Simple Cone Search."""
+
 from typing import Annotated
 
 from pydantic import Field
@@ -39,7 +40,9 @@ def vo_cone_search(
         float,
         Field(ge=0.0001, le=10.0, description="Cone radius in degrees."),
     ],
-    maxrec: Annotated[int, Field(ge=1, le=100_000, description="Hard cap on rows returned. Default 10_000.")] = 10_000,
+    maxrec: Annotated[
+        int, Field(ge=1, le=100_000, description="Hard cap on rows returned. Default 10_000.")
+    ] = 10_000,
 ) -> dict:
     """Run a Simple Cone Search (SCS) against a catalog endpoint.
 
@@ -48,7 +51,11 @@ def vo_cone_search(
     only expose the legacy protocol.
     """
     table = _get_cone().search(
-        endpoint=endpoint, ra=ra, dec=dec, radius_deg=radius_deg, maxrec=maxrec,
+        endpoint=endpoint,
+        ra=ra,
+        dec=dec,
+        radius_deg=radius_deg,
+        maxrec=maxrec,
     )
     return shape_table(table, archive=archive_label(endpoint), maxrec=maxrec)
 

@@ -15,6 +15,7 @@ No other file needs to be touched.
 
 To add a new entry: append a Schema(...) to SCHEMA_KB.
 """
+
 from dataclasses import dataclass, field
 
 from astro_archives_mcp._serialization import dataclass_to_jsonable_dict
@@ -61,9 +62,7 @@ SCHEMA_KB: tuple[Schema, ...] = (
             "SCS URL is https://datalab.noirlab.edu/scs/smash_dr2/object, "
             "NOT /scs/smash_dr2. The dataset-only path returns 404.",
         ),
-        cross_refs=(
-            ("datalab", "nsc_dr2.object"),
-        ),
+        cross_refs=(("datalab", "nsc_dr2.object"),),
     ),
     Schema(
         archive="datalab",

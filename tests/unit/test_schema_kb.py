@@ -1,4 +1,5 @@
 """Schema dataclass + SCHEMA_KB contract tests."""
+
 import pytest
 
 from astro_archives_mcp.known_archives import KNOWN_ARCHIVES
@@ -10,6 +11,7 @@ from astro_archives_mcp.schema_kb import (
 
 # ---------- Schema dataclass ----------
 
+
 def test_schema_is_frozen():
     s = Schema(archive="nrao", table="tap_schema.obscore")
     with pytest.raises(AttributeError):  # FrozenInstanceError is a subclass
@@ -18,13 +20,15 @@ def test_schema_is_frozen():
 
 def test_schema_cross_refs_is_nested_tuple_shape():
     s = Schema(
-        archive="nrao", table="tap_schema.obscore",
+        archive="nrao",
+        table="tap_schema.obscore",
         cross_refs=(("alma", "ivoa.obscore"),),
     )
     assert s.cross_refs == (("alma", "ivoa.obscore"),)
 
 
 # ---------- lookup ----------
+
 
 def test_lookup_schema_finds_known_entry():
     s = lookup_schema(archive="nrao", table="tap_schema.obscore")
@@ -44,6 +48,7 @@ def test_lookup_schema_is_case_sensitive():
 
 # ---------- SCHEMA_KB integrity ----------
 
+
 def test_every_schema_archive_is_a_known_archive_short_name():
     valid_short_names = {a.short_name for a in KNOWN_ARCHIVES}
     for s in SCHEMA_KB:
@@ -57,9 +62,7 @@ def test_no_two_schemas_share_an_archive_table_pair():
     seen: set[tuple[str, str]] = set()
     for s in SCHEMA_KB:
         key = (s.archive, s.table)
-        assert key not in seen, (
-            f"Duplicate Schema entry for {key}; collapse the duplicates"
-        )
+        assert key not in seen, f"Duplicate Schema entry for {key}; collapse the duplicates"
         seen.add(key)
 
 

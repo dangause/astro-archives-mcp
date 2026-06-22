@@ -127,14 +127,19 @@ def test_no_unit_no_description_no_ucd_all_none():
 
 def test_shape_registry_search_result_basic():
     from astro_archives_mcp.shaper import shape_registry_search_result
+
     services = [
-        {"ivoid": "ivo://datalab/smash_dr2",
-         "title": "SMASH DR2",
-         "description": "...",
-         "publisher": "NOIRLab",
-         "waveband": "optical",
-         "tap_url": "https://datalab.noirlab.edu/tap",
-         "sia_url": None, "scs_url": None, "ssa_url": None},
+        {
+            "ivoid": "ivo://datalab/smash_dr2",
+            "title": "SMASH DR2",
+            "description": "...",
+            "publisher": "NOIRLab",
+            "waveband": "optical",
+            "tap_url": "https://datalab.noirlab.edu/tap",
+            "sia_url": None,
+            "scs_url": None,
+            "ssa_url": None,
+        },
     ]
     out = shape_registry_search_result(services, maxrec=10)
     assert out["row_count"] == 1
@@ -146,14 +151,21 @@ def test_shape_registry_search_result_basic():
 
 def test_shape_registry_search_result_truncates():
     from astro_archives_mcp.shaper import shape_registry_search_result
-    services = [{"ivoid": f"ivo://x/{i}",
-                 "title": str(i),
-                 "description": "",
-                 "publisher": "",
-                 "waveband": None,
-                 "tap_url": None, "sia_url": None,
-                 "scs_url": None, "ssa_url": None}
-                for i in range(5)]
+
+    services = [
+        {
+            "ivoid": f"ivo://x/{i}",
+            "title": str(i),
+            "description": "",
+            "publisher": "",
+            "waveband": None,
+            "tap_url": None,
+            "sia_url": None,
+            "scs_url": None,
+            "ssa_url": None,
+        }
+        for i in range(5)
+    ]
     out = shape_registry_search_result(services, maxrec=2)
     assert out["row_count"] == 2
     assert out["truncated"] is True
@@ -162,15 +174,27 @@ def test_shape_registry_search_result_truncates():
 
 def test_shape_registry_describe_result_passes_through():
     from astro_archives_mcp.shaper import shape_registry_describe_result
+
     described = {
         "ivoid": "ivo://datalab/smash_dr2",
         "title": "SMASH DR2",
         "description": "...",
         "capabilities": ["tap", "scs"],
-        "tables": [{"name": "smash_dr2.object", "description": "...",
-                    "columns": [{"name": "ra", "type": "double",
-                                 "unit": "deg", "ucd": "pos.eq.ra",
-                                 "description": "..."}]}],
+        "tables": [
+            {
+                "name": "smash_dr2.object",
+                "description": "...",
+                "columns": [
+                    {
+                        "name": "ra",
+                        "type": "double",
+                        "unit": "deg",
+                        "ucd": "pos.eq.ra",
+                        "description": "...",
+                    }
+                ],
+            }
+        ],
     }
     out = shape_registry_describe_result(described)
     assert out["ivoid"] == "ivo://datalab/smash_dr2"

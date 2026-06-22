@@ -3,6 +3,7 @@
 Verifies that the curated KNOWN_ARCHIVES registry — particularly the
 usage_notes — surfaces correctly to the LLM via the tool layer.
 """
+
 import pytest
 from fastmcp import Client
 
@@ -66,12 +67,18 @@ async def test_vo_archive_list_includes_capabilities_for_each_archive(mcp_server
         payload = result.structured_content
 
     required_keys = {
-        "short_name", "display_name", "host_substrings",
-        "tap_url", "sia_url", "scs_url",
-        "waveband", "description", "notable_tables", "usage_notes",
+        "short_name",
+        "display_name",
+        "host_substrings",
+        "tap_url",
+        "sia_url",
+        "scs_url",
+        "waveband",
+        "description",
+        "notable_tables",
+        "usage_notes",
     }
     for entry in payload["archives"]:
         assert required_keys.issubset(entry.keys()), (
-            f"archive {entry.get('short_name')} missing keys: "
-            f"{required_keys - entry.keys()}"
+            f"archive {entry.get('short_name')} missing keys: {required_keys - entry.keys()}"
         )

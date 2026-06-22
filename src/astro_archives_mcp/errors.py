@@ -8,7 +8,11 @@ from typing import ClassVar, Literal
 from astro_archives_mcp.observability import current_request_id
 
 RetryStrategy = Literal[
-    "fix_and_retry", "wait_and_retry", "submit_async", "abandon", "poll",
+    "fix_and_retry",
+    "wait_and_retry",
+    "submit_async",
+    "abandon",
+    "poll",
 ]
 
 
@@ -61,6 +65,7 @@ class JobNotReadyError(ToolExecutionError):
     The retry_strategy "poll" tells the LLM to call vo_tap_status in a
     loop instead of retrying vo_tap_results immediately.
     """
+
     error_class: str = "job_not_ready"
     retry_strategy: RetryStrategy = "poll"
 
@@ -75,9 +80,7 @@ class InternalError(ToolExecutionError):
 _INTERNAL_GENERIC_MESSAGE = "Internal server error. Contact ops with request_id."
 
 
-def error_to_payload(
-    err: Exception, *, request_id: str | None = None
-) -> dict:
+def error_to_payload(err: Exception, *, request_id: str | None = None) -> dict:
     """Convert any error into the LLM-facing payload shape.
 
     Unknown exceptions (anything not a ToolExecutionError) are coerced into
@@ -94,9 +97,7 @@ def error_to_payload(
 
     payload: dict = {
         "error_class": err.error_class,
-        "message": (
-            _INTERNAL_GENERIC_MESSAGE if err.redact_message else err.message
-        ),
+        "message": (_INTERNAL_GENERIC_MESSAGE if err.redact_message else err.message),
         "retry_strategy": err.retry_strategy,
         "request_id": err.request_id or request_id,
     }

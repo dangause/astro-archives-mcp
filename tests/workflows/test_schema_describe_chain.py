@@ -9,6 +9,7 @@ Simulates the LLM action:
 Pins that the KB → query handoff works and that the value flows
 through correctly. TapClient is faked; no network.
 """
+
 import pytest
 from fastmcp import Client
 
@@ -32,6 +33,7 @@ class _FakeTapClient:
             starttime = None
             endtime = None
             error_summary = None
+
         return _J()
 
     def abort_job(self, job_url):
@@ -54,7 +56,9 @@ def _clear_jobs():
 def _offline_archive_label(monkeypatch):
     _archive_label._CACHE.clear()
     monkeypatch.setattr(
-        _archive_label, "_registry_find_label", lambda _endpoint: None,
+        _archive_label,
+        "_registry_find_label",
+        lambda _endpoint: None,
     )
 
 

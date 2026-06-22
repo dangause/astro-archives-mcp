@@ -15,6 +15,7 @@ The LLM relies on a fixed shape: `error_class`, `message`, `retry_strategy`,
 When a new error subclass is added, just appending it to
 `ALL_ERROR_SUBCLASSES` brings it under coverage.
 """
+
 import re
 from typing import get_args
 
@@ -55,10 +56,9 @@ def test_contract_test_covers_every_subclass_in_errors_module():
     must also add it to ALL_ERROR_SUBCLASSES above. This test fails
     when those drift apart."""
     in_module = {
-        v for v in vars(errors_module).values()
-        if isinstance(v, type)
-        and issubclass(v, ToolExecutionError)
-        and v is not ToolExecutionError
+        v
+        for v in vars(errors_module).values()
+        if isinstance(v, type) and issubclass(v, ToolExecutionError) and v is not ToolExecutionError
     }
     covered = set(ALL_ERROR_SUBCLASSES)
     missing = in_module - covered
@@ -74,8 +74,7 @@ def test_error_class_string_is_snake_case_nonempty(cls):
     err = cls(message="x")
     assert err.error_class, f"{cls.__name__} has empty error_class"
     assert re.fullmatch(r"[a-z][a-z0-9_]*", err.error_class), (
-        f"{cls.__name__}.error_class = {err.error_class!r} is not "
-        "lowercase snake_case"
+        f"{cls.__name__}.error_class = {err.error_class!r} is not lowercase snake_case"
     )
 
 
@@ -94,8 +93,7 @@ def test_payload_has_all_required_keys(cls):
     payload = error_to_payload(err, request_id="req-abc")
     missing = REQUIRED_PAYLOAD_KEYS - payload.keys()
     assert not missing, (
-        f"{cls.__name__} payload missing required keys: {missing}; "
-        f"got {sorted(payload.keys())}"
+        f"{cls.__name__} payload missing required keys: {missing}; got {sorted(payload.keys())}"
     )
 
 
@@ -117,9 +115,7 @@ def test_optional_keys_omitted_when_unset(cls):
     they cost tokens in the LLM-facing payload."""
     err = cls(message="boom")  # no hint, no retry_after_seconds
     payload = error_to_payload(err, request_id="req-abc")
-    assert "hint" not in payload, (
-        f"{cls.__name__}: hint key present when unset"
-    )
+    assert "hint" not in payload, f"{cls.__name__}: hint key present when unset"
     assert "retry_after_seconds" not in payload, (
         f"{cls.__name__}: retry_after_seconds key present when unset"
     )
@@ -144,9 +140,11 @@ def test_internal_error_message_is_redacted():
 def test_unknown_exception_coerced_to_internal_error_redacted():
     """Plain Exception coming through wrap_tool_errors must end up
     redacted, not leaked as a raw message."""
+
     @wrap_tool_errors
     def explodes():
         raise ValueError("SECRET sql=DROP TABLE users")
+
     payload = explodes()
     assert payload["error_class"] == "internal_error"
     assert "SECRET" not in payload["message"]
@@ -172,8 +170,10 @@ def test_error_request_id_wins_over_argument():
 
 def test_wrap_tool_errors_rejects_async_callables():
     """The decorator is sync-only; documented in the docstring."""
+
     async def asyncy():
         pass
+
     with pytest.raises(TypeError, match="sync-only"):
         wrap_tool_errors(asyncy)
 

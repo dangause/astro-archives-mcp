@@ -12,13 +12,14 @@ The JobStore is a directory, not a cache: it does NOT hold the result
 bytes or the live phase. The bytes (after fetch) live in result_store;
 the phase is always live-fetched from the upstream UWS.
 """
+
 import threading
 import uuid as _uuid
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 
 _DEFAULT_TTL_SECONDS = 3600  # 1 hour — longer than result_store's 30 min
-                              # because async jobs themselves run for minutes.
+# because async jobs themselves run for minutes.
 
 
 @dataclass(frozen=True)

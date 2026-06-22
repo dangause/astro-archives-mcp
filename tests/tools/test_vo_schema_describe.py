@@ -1,4 +1,5 @@
 """End-to-end test for vo_schema_describe through an in-memory MCP client."""
+
 import pytest
 from fastmcp import Client
 
@@ -19,7 +20,10 @@ async def test_known_entry_returns_envelope_with_curated_fields(mcp_server):
     assert payload["table"] == "tap_schema.obscore"
     assert "dataproduct_subtype" in payload["missing_standard_columns"]
     assert payload["value_enums"]["instrument_name"] == [
-        "EVLA", "VLA", "VLBA", "GBT",
+        "EVLA",
+        "VLA",
+        "VLBA",
+        "GBT",
     ]
     assert payload["value_enums"]["facility_name"] == ["NRAO"]
 

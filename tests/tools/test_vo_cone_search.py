@@ -39,11 +39,15 @@ class _FakeCone:
 
 def test_vo_cone_search_error_path(monkeypatch):
     monkeypatch.setattr(
-        ivoa_tools, "_get_cone",
+        ivoa_tools,
+        "_get_cone",
         lambda: _FakeCone(exc=DalQueryError(message="bad cone request")),
     )
     out = ivoa_tools.vo_cone_search(
         endpoint=SCS_ENDPOINT,
-        ra=185.0, dec=-31.0, radius_deg=0.1, maxrec=10,
+        ra=185.0,
+        dec=-31.0,
+        radius_deg=0.1,
+        maxrec=10,
     )
     assert out["error_class"] == "tap_query_error"

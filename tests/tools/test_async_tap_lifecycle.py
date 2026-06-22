@@ -1,5 +1,6 @@
 """Lifecycle tests for vo_tap_status / vo_tap_results / vo_tap_abort
 through an in-memory FastMCP client. Backend is faked — no real HTTP."""
+
 from datetime import UTC, datetime
 
 import pytest
@@ -13,8 +14,9 @@ from astro_archives_mcp.tools import tap as tap_tools
 class _FakeAsyncJob:
     """Minimal AsyncTAPJob stand-in for test purposes."""
 
-    def __init__(self, phase="EXECUTING", started_at=None, ended_at=None,
-                 error_summary=None, table=None):
+    def __init__(
+        self, phase="EXECUTING", started_at=None, ended_at=None, error_summary=None, table=None
+    ):
         self.phase = phase
         self.starttime = started_at
         self.endtime = ended_at
@@ -30,8 +32,10 @@ class _FakeAsyncJob:
         class _Result:
             def __init__(self, table):
                 self._table = table
+
             def to_table(self):
                 return self._table
+
         return _Result(self._table)
 
     def delete(self):
@@ -81,7 +85,9 @@ def _offline_archive_label(monkeypatch):
     """
     _archive_label._CACHE.clear()
     monkeypatch.setattr(
-        _archive_label, "_registry_find_label", lambda _endpoint: None,
+        _archive_label,
+        "_registry_find_label",
+        lambda _endpoint: None,
     )
 
 
@@ -119,7 +125,8 @@ async def test_status_returns_phase_and_archive(mcp_server, fake_tap):
 async def test_status_unknown_job_id_returns_validation_error(mcp_server, fake_tap):
     async with Client(mcp_server) as client:
         result = await client.call_tool(
-            "vo_tap_status", {"job_id": "ffffffffffff"},
+            "vo_tap_status",
+            {"job_id": "ffffffffffff"},
         )
         payload = result.structured_content
         assert payload["error_class"] == "validation_error"
@@ -210,7 +217,8 @@ async def test_results_when_error_phase_returns_tap_query_error(mcp_server, fake
 async def test_results_unknown_job_id_returns_validation_error(mcp_server, fake_tap):
     async with Client(mcp_server) as client:
         result = await client.call_tool(
-            "vo_tap_results", {"job_id": "deadbeef0000"},
+            "vo_tap_results",
+            {"job_id": "deadbeef0000"},
         )
         payload = result.structured_content
         assert payload["error_class"] == "validation_error"
@@ -242,7 +250,8 @@ async def test_abort_evicts_job_and_returns_aborted(mcp_server, fake_tap):
 async def test_abort_is_idempotent_on_unknown_job(mcp_server, fake_tap):
     async with Client(mcp_server) as client:
         result = await client.call_tool(
-            "vo_tap_abort", {"job_id": "feedfacefeed"},
+            "vo_tap_abort",
+            {"job_id": "feedfacefeed"},
         )
         payload = result.structured_content
         # Spec §2.4: aborting an unknown / already-evicted job returns

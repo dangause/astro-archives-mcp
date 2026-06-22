@@ -47,6 +47,7 @@ def _registry_find_label(endpoint: str) -> str | None:
     # Lazy import to avoid pulling pyvo into modules that don't need it
     # (and to keep _archive_label cheap to import at module load).
     from astro_archives_mcp.backends.registry import RegistryClient
+
     return RegistryClient().find_label(endpoint)
 
 

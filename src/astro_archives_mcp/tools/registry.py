@@ -1,4 +1,5 @@
 """Tools for IVOA Registry."""
+
 from typing import Annotated
 
 from pydantic import Field

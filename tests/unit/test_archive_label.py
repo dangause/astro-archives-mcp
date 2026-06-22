@@ -43,7 +43,9 @@ def test_registry_not_found_caches_other_no_retry():
 
 
 def test_static_hits_skip_registry_entirely():
-    with patch.object(_archive_label, "_registry_find_label", return_value="should-not-fire") as mock_find:
+    with patch.object(
+        _archive_label, "_registry_find_label", return_value="should-not-fire"
+    ) as mock_find:
         assert archive_label("https://datalab.noirlab.edu/tap") == "datalab"
     assert mock_find.call_count == 0
 
@@ -51,9 +53,12 @@ def test_static_hits_skip_registry_entirely():
 def test_is_known_archive_url_known_host():
     assert _archive_label.is_known_archive_url("https://datalab.noirlab.edu/sia/x") is True
     assert _archive_label.is_known_archive_url("https://archive.eso.org/sia/y") is True
-    assert _archive_label.is_known_archive_url(
-        "https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/data/pub/z"
-    ) is True
+    assert (
+        _archive_label.is_known_archive_url(
+            "https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/data/pub/z"
+        )
+        is True
+    )
 
 
 def test_is_known_archive_url_unknown_host():
@@ -80,6 +85,4 @@ def test_is_known_archive_url_malformed_url():
 
 def test_is_known_archive_url_heidelberg_gaia_is_allowed():
     """Slice 2 cassettes use this host; Slice 4 must allow it for fetch too."""
-    assert _archive_label.is_known_archive_url(
-        "https://gaia.ari.uni-heidelberg.de/cone/x"
-    ) is True
+    assert _archive_label.is_known_archive_url("https://gaia.ari.uni-heidelberg.de/cone/x") is True

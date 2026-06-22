@@ -8,6 +8,7 @@ the agent can use before composing an ADQL query. Archive-level quirks
 Soft-fails on miss (returns `known: false`) so the LLM cleanly falls
 back to `vo_registry_describe` for archives/tables not yet curated.
 """
+
 from typing import Annotated
 
 from pydantic import Field

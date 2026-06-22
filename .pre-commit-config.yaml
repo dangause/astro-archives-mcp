@@ -1,0 +1,32 @@
+# Pre-commit hooks. Install once per clone: `uv run pre-commit install`
+# Run on demand across the repo: `uv run pre-commit run --all-files`
+# Tests are NOT run here (too slow for commit-time) — they run in CI.
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.15  # keep in sync with the ruff pin in pyproject.toml dev deps
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: mixed-line-ending
+
+  # pyright runs in the project venv so imports resolve (the upstream
+  # pyright-python hook uses an isolated env that mis-resolves deps).
+  - repo: local
+    hooks:
+      - id: pyright
+        name: pyright
+        entry: uv run pyright
+        language: system
+        types: [python]
+        pass_filenames: false

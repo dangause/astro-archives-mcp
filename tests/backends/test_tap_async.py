@@ -7,6 +7,7 @@ records all of them; replay is offline.
 To re-record: uv run pytest tests/backends/test_tap_async.py -k <name>
 --record-mode=once  (requires network).
 """
+
 import pytest
 
 from astro_archives_mcp.backends.tap import TapClient
@@ -22,7 +23,9 @@ SHORT_ADQL = (
 def test_submit_async_returns_job_url():
     client = TapClient()
     job_url = client.submit_async(
-        endpoint=ESO_TAP, adql=SHORT_ADQL, maxrec=10,
+        endpoint=ESO_TAP,
+        adql=SHORT_ADQL,
+        maxrec=10,
     )
     assert isinstance(job_url, str)
     assert job_url.startswith(ESO_TAP)
@@ -33,12 +36,17 @@ def test_submit_async_returns_job_url():
 def test_load_job_phase_is_valid_uws_phase():
     client = TapClient()
     job_url = client.submit_async(
-        endpoint=ESO_TAP, adql=SHORT_ADQL, maxrec=10,
+        endpoint=ESO_TAP,
+        adql=SHORT_ADQL,
+        maxrec=10,
     )
     job = client.load_job(job_url)
     # Phase right after submit+run() is one of these depending on server scheduling.
     assert job.phase in {
-        "PENDING", "QUEUED", "EXECUTING", "COMPLETED",
+        "PENDING",
+        "QUEUED",
+        "EXECUTING",
+        "COMPLETED",
     }
 
 
@@ -46,7 +54,9 @@ def test_load_job_phase_is_valid_uws_phase():
 def test_fetch_completed_result_returns_astropy_table():
     client = TapClient()
     job_url = client.submit_async(
-        endpoint=ESO_TAP, adql=SHORT_ADQL, maxrec=10,
+        endpoint=ESO_TAP,
+        adql=SHORT_ADQL,
+        maxrec=10,
     )
     job = client.load_job(job_url)
     job.wait(phases={"COMPLETED", "ERROR", "ABORTED"}, timeout=60)
@@ -60,7 +70,9 @@ def test_fetch_completed_result_returns_astropy_table():
 def test_abort_job_then_delete_idempotent():
     client = TapClient()
     job_url = client.submit_async(
-        endpoint=ESO_TAP, adql=SHORT_ADQL, maxrec=10,
+        endpoint=ESO_TAP,
+        adql=SHORT_ADQL,
+        maxrec=10,
     )
     client.abort_job(job_url)  # first call
     client.abort_job(job_url)  # second call must not raise

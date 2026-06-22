@@ -1,4 +1,5 @@
 """Tools for IVOA TAP."""
+
 from datetime import UTC, datetime
 from typing import Annotated, Literal
 
@@ -76,7 +77,8 @@ def vo_tap_query(
     maxrec: Annotated[
         int,
         Field(
-            ge=1, le=100_000,
+            ge=1,
+            le=100_000,
             description="Hard cap on rows returned. Default 10_000.",
         ),
     ] = 10_000,
@@ -135,9 +137,7 @@ def vo_tap_query(
                 return _promote_async(endpoint=endpoint, adql=adql, maxrec=maxrec)
             except ArchiveError as submit_err:
                 raise ArchiveError(
-                    message=(
-                        f"auto-promote submission failed: {submit_err.message}"
-                    ),
+                    message=(f"auto-promote submission failed: {submit_err.message}"),
                     retry_strategy="wait_and_retry",
                 ) from submit_err
         raise
@@ -176,7 +176,8 @@ def vo_tap_status(
                 "Opaque 12-character job_id returned by vo_tap_query "
                 "when it goes async (mode='async' or auto-promote)."
             ),
-            min_length=12, max_length=12,
+            min_length=12,
+            max_length=12,
         ),
     ],
 ) -> dict:
@@ -192,10 +193,7 @@ def vo_tap_status(
     entry = job_store.get(job_id)
     if entry is None:
         raise ValidationError(
-            message=(
-                f"Unknown or expired job_id '{job_id}'. Re-submit with "
-                "vo_tap_query."
-            ),
+            message=(f"Unknown or expired job_id '{job_id}'. Re-submit with vo_tap_query."),
             retry_strategy="abandon",
         )
     job = _get_tap().load_job(entry.job_url)
@@ -211,7 +209,8 @@ def vo_tap_results(
         str,
         Field(
             description="Opaque 12-character job_id from vo_tap_query (async).",
-            min_length=12, max_length=12,
+            min_length=12,
+            max_length=12,
         ),
     ],
 ) -> dict:
@@ -227,10 +226,7 @@ def vo_tap_results(
     entry = job_store.get(job_id)
     if entry is None:
         raise ValidationError(
-            message=(
-                f"Unknown or expired job_id '{job_id}'. Re-submit with "
-                "vo_tap_query."
-            ),
+            message=(f"Unknown or expired job_id '{job_id}'. Re-submit with vo_tap_query."),
             retry_strategy="abandon",
         )
 
@@ -254,7 +250,9 @@ def vo_tap_results(
 
     table = job.fetch_result().to_table()
     return shape_table(
-        table, archive=archive_label(entry.endpoint), maxrec=len(table),
+        table,
+        archive=archive_label(entry.endpoint),
+        maxrec=len(table),
     )
 
 
@@ -267,7 +265,8 @@ def vo_tap_abort(
         str,
         Field(
             description="Opaque 12-character job_id from vo_tap_query (async).",
-            min_length=12, max_length=12,
+            min_length=12,
+            max_length=12,
         ),
     ],
 ) -> dict:

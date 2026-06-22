@@ -12,6 +12,7 @@ explicit. The recursive `_jsonable` also preserves tuple-as-list and
 date-as-ISO-string semantics, both of which `asdict` gets wrong for
 our MCP envelope edge.
 """
+
 from dataclasses import fields, is_dataclass
 from datetime import date
 from types import MappingProxyType
