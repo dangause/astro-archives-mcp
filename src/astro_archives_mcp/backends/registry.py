@@ -66,8 +66,9 @@ class RegistryClient:
         try:
             results = pyvo.registry.search(servicetype="tap")
             for r in results:
-                if _normalized_url(r.access_url) == _normalized_url(endpoint_url):
-                    return r.short_name or None
+                # pyvo's RegistryResource attrs aren't in the Record stub.
+                if _normalized_url(r.access_url) == _normalized_url(endpoint_url):  # pyright: ignore[reportAttributeAccessIssue]
+                    return r.short_name or None  # pyright: ignore[reportAttributeAccessIssue]
         except (DALQueryError, DALServiceError):
             log.warning("RegistryClient.find_label: registry lookup failed; returning None")
         return None
@@ -92,7 +93,7 @@ class RegistryClient:
         try:
             results = pyvo.registry.search(servicetype="tap")
             for r in results:
-                if _normalized_url(r.access_url) == _normalized_url(url):
+                if _normalized_url(r.access_url) == _normalized_url(url):  # pyright: ignore[reportAttributeAccessIssue]
                     return _resource_to_describe_dict(r)
         except (DALQueryError, DALServiceError) as e:
             # Registry itself is down or slow. Don't give up — fall

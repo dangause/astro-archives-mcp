@@ -30,6 +30,8 @@ dev = [
     "vcrpy>=6.0",
     "inline-snapshot>=0.13",
     "ruff>=0.7",
+    "pyright>=1.1.380",
+    "pre-commit>=3.7",
     "pandas>=3.0.3",
     "astro-datalab>=2.24.0",
     "pycurl>=7.46.0",
@@ -63,6 +65,16 @@ exclude_lines = [
 ]
 show_missing = true
 skip_covered = true
+
+[tool.pyright]
+# Scoped to library code for now. tests/ has ~165 Optional-subscript findings
+# from the in-memory MCP Client result pattern — clean those up before adding.
+include = ["src"]
+pythonVersion = "3.12"
+venvPath = "."
+venv = ".venv"
+# Permissive start — ratchet to "standard"/"strict" as annotations improve.
+typeCheckingMode = "basic"
 
 [tool.ruff]
 line-length = 100

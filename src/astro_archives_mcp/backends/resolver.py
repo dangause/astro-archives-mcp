@@ -22,7 +22,8 @@ class ResolverClient:
         """
         try:
             coord = SkyCoord.from_name(name, cache=False)
-            return coord.ra.deg, coord.dec.deg
+            # astropy stubs type .ra/.dec as Optional; they are always present here.
+            return coord.ra.deg, coord.dec.deg  # pyright: ignore[reportOptionalMemberAccess, reportReturnType]
         except NameResolveError:
             log.debug("Sesame: name not found: %s", name)
             return None

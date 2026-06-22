@@ -2,12 +2,12 @@ import io
 import json
 import math
 from datetime import datetime
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
-from astropy.table import Table
+from astropy.table import Column, Table
 
 from astro_archives_mcp import result_store
 
@@ -32,11 +32,13 @@ def shape_inline_table(
     n_in = len(table)
     truncated = n_in > maxrec
     if truncated:
-        table = table[:maxrec]
+        # astropy stubs type Table slicing as TableColumns | Row | Table.
+        table = cast(Table, table[:maxrec])
 
     columns: list[dict[str, Any]] = []
     for name in table.colnames:
-        col = table[name]
+        # String indexing returns a Column; astropy stubs widen it to a union.
+        col = cast(Column, table[name])
         columns.append(
             {
                 "name": name,
@@ -89,18 +91,18 @@ def _estimate_payload_bytes(envelope: dict) -> int:
 def _shape_resource(table: Table, *, archive: str, maxrec: int) -> dict[str, Any]:
     """Build the Resource-tier envelope: preview + Parquet via MCP Resource URI."""
     true_count = len(table)
-    visible = table[:RESOURCE_ROW_LIMIT]
+    visible = cast(Table, table[:RESOURCE_ROW_LIMIT])
     truncated = true_count > RESOURCE_ROW_LIMIT
 
     # astropy.Table -> pyarrow.Table -> Parquet bytes (no pandas dep)
-    pa_table = pa.table({name: visible[name].data for name in visible.colnames})
+    pa_table = pa.table({name: cast(Column, visible[name]).data for name in visible.colnames})
     buf = io.BytesIO()
     pq.write_table(pa_table, buf)
     uuid_hex, expires_at = result_store.put(buf.getvalue(), "application/vnd.apache.parquet")
 
     # Reuse inline envelope shape for preview rows
     preview_envelope = shape_inline_table(
-        visible[:50],
+        cast(Table, visible[:50]),
         archive=archive,
         maxrec=maxrec,
     )

@@ -22,8 +22,12 @@ jobs:
         run: uv python install ${{ matrix.python-version }}
       - name: Sync deps
         run: uv sync --python ${{ matrix.python-version }}
-      - name: Lint
-        run: uv run ruff check .
+      - name: Lint + format check
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
+      - name: Type check
+        run: uv run pyright
       - name: Tests (replay-only) with coverage
         run: |
           uv run pytest --record-mode=none \
