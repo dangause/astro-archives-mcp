@@ -5,7 +5,7 @@ from astropy.table import Table
 from fastmcp import Client
 
 from astro_archives_mcp import _archive_label, job_store
-from astro_archives_mcp.errors import ArchiveError
+from astro_archives_mcp.errors import ArchiveError, TimeoutArchiveError
 from astro_archives_mcp.tools import tap as tap_tools
 
 
@@ -105,7 +105,7 @@ async def test_mode_auto_fast_returns_inline_no_promotion(mcp_server, fake_tap):
 
 @pytest.mark.asyncio
 async def test_mode_auto_promotes_on_timeout(mcp_server, fake_tap):
-    fake_tap.query_raises = ArchiveError(message="TAP sync request timed out: read timeout")
+    fake_tap.query_raises = TimeoutArchiveError(message="TAP sync request timed out: read timeout")
 
     async with Client(mcp_server) as client:
         result = await client.call_tool(
@@ -146,6 +146,30 @@ async def test_mode_auto_does_not_promote_on_syntax_error(mcp_server, fake_tap):
         # only fires for the timeout failure mode.
         assert payload["error_class"] == "tap_query_error"
         assert fake_tap.submit_calls == 0
+
+
+@pytest.mark.asyncio
+async def test_mode_auto_does_not_promote_on_generic_archive_error(mcp_server, fake_tap):
+    # A plain ArchiveError whose message happens to contain "timed out"
+    # must NOT promote: the discriminator is the exception TYPE, not the
+    # message text. Only TimeoutArchiveError (a real sync timeout) promotes.
+    fake_tap.query_raises = ArchiveError(message="upstream 503; service timed out internally")
+
+    async with Client(mcp_server) as client:
+        result = await client.call_tool(
+            "vo_tap_query",
+            {
+                "endpoint": "https://datalab.noirlab.edu/tap",
+                "adql": "SELECT 1",
+                "mode": "auto",
+            },
+        )
+        payload = result.structured_content
+        assert payload["error_class"] == "archive_error"
+        assert "mode" not in payload
+
+    assert fake_tap.submit_calls == 0
+    assert job_store.size_estimate()["entries"] == 0
 
 
 @pytest.mark.asyncio

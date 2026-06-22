@@ -12,7 +12,7 @@ from astropy.table import Table
 from pyvo.dal import AsyncTAPJob
 from pyvo.dal.exceptions import DALQueryError, DALServiceError
 
-from astro_archives_mcp.errors import ArchiveError, DalQueryError
+from astro_archives_mcp.errors import ArchiveError, DalQueryError, TimeoutArchiveError
 
 log = logging.getLogger(__name__)
 
@@ -65,7 +65,7 @@ class TapClient:
         except DALServiceError as e:
             raise ArchiveError(message=str(e)) from e
         except requests.exceptions.Timeout as e:
-            raise ArchiveError(message=f"TAP sync request timed out: {e}") from e
+            raise TimeoutArchiveError(message=f"TAP sync request timed out: {e}") from e
         return result.to_table()
 
     def submit_async(

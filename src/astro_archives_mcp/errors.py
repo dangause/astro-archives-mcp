@@ -49,6 +49,17 @@ class ArchiveError(ToolExecutionError):
 
 
 @dataclass
+class TimeoutArchiveError(ArchiveError):
+    """A sync request that exceeded the client timeout.
+
+    Distinct Python type so vo_tap_query's auto-promote path can branch on
+    the failure mode directly, instead of substring-matching the error
+    message. The wire contract is unchanged: error_class stays
+    'archive_error' and a sync-mode caller sees an ordinary archive_error.
+    """
+
+
+@dataclass
 class DalQueryError(ToolExecutionError):
     error_class: str = "tap_query_error"
     retry_strategy: RetryStrategy = "fix_and_retry"

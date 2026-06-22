@@ -3,14 +3,14 @@ import sys
 import uvicorn
 
 from astro_archives_mcp.app import build_app, build_mcp
-from astro_archives_mcp.config import Settings
+from astro_archives_mcp.config import get_settings
 from astro_archives_mcp.observability import configure_logging
 
 
 def main() -> None:
     stdio = "--stdio" in sys.argv
 
-    settings = Settings()
+    settings = get_settings()
     configure_logging(settings.log_level)
 
     if stdio:

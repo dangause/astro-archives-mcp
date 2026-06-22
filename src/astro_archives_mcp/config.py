@@ -1,3 +1,4 @@
+from functools import lru_cache
 from typing import Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -20,3 +21,15 @@ class Settings(BaseSettings):
     # Slice 5: async TAP family.
     tap_sync_timeout_seconds: float = 20.0
     job_ttl_seconds: int = 3600
+
+
+@lru_cache(maxsize=1)
+def get_settings() -> Settings:
+    """Process-wide Settings singleton.
+
+    Cached so runtime consumers (the lazy backend accessors, job_store
+    writes) read environment / .env once rather than re-parsing per call.
+    Tests that mutate the environment must call ``get_settings.cache_clear()``
+    to force a re-read.
+    """
+    return Settings()

@@ -28,6 +28,7 @@ from astro_archives_mcp.errors import (
     InternalError,
     JobNotReadyError,
     RetryStrategy,
+    TimeoutArchiveError,
     ToolExecutionError,
     ValidationError,
     error_to_payload,
@@ -43,6 +44,7 @@ ALL_ERROR_SUBCLASSES = (
     DalQueryError,
     JobNotReadyError,
     InternalError,
+    TimeoutArchiveError,
 )
 
 VALID_RETRY_STRATEGIES = set(get_args(RetryStrategy))
@@ -188,6 +190,13 @@ def test_tool_execution_error_subclasses_each_have_unique_error_class():
             # InternalError shares "internal_error" with the base — that's
             # the redaction sentinel. Other subclasses must be unique.
             assert instance.error_class == "internal_error"
+            continue
+        if cls is TimeoutArchiveError:
+            # Deliberately shares "archive_error" with its parent: the wire
+            # contract is unchanged, only the Python type differs (so the
+            # auto-promote path can branch on a timeout without string
+            # matching). The LLM still sees a plain archive_error.
+            assert instance.error_class == "archive_error"
             continue
         ec = instance.error_class
         assert ec not in seen, (
