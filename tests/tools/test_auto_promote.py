@@ -4,7 +4,7 @@ import pytest
 from astropy.table import Table
 from fastmcp import Client
 
-from astro_archives_mcp import _archive_label, job_store
+from astro_archives_mcp import job_store
 from astro_archives_mcp.errors import ArchiveError, TimeoutArchiveError
 from astro_archives_mcp.tools import tap as tap_tools
 
@@ -45,17 +45,6 @@ def _clear_jobs():
     yield
     with job_store._LOCK:
         job_store._STORE.clear()
-
-
-@pytest.fixture(autouse=True)
-def _offline_archive_label(monkeypatch):
-    """Keep tests hermetic — unknown endpoints don't call RegTAP."""
-    _archive_label._CACHE.clear()
-    monkeypatch.setattr(
-        _archive_label,
-        "_registry_find_label",
-        lambda _endpoint: None,
-    )
 
 
 @pytest.fixture

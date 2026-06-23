@@ -13,7 +13,7 @@ through correctly. TapClient is faked; no network.
 import pytest
 from fastmcp import Client
 
-from astro_archives_mcp import _archive_label, job_store
+from astro_archives_mcp import job_store
 from astro_archives_mcp.tools import tap as tap_tools
 
 
@@ -50,16 +50,6 @@ def _clear_jobs():
     yield
     with job_store._LOCK:
         job_store._STORE.clear()
-
-
-@pytest.fixture(autouse=True)
-def _offline_archive_label(monkeypatch):
-    _archive_label._CACHE.clear()
-    monkeypatch.setattr(
-        _archive_label,
-        "_registry_find_label",
-        lambda _endpoint: None,
-    )
 
 
 @pytest.fixture
