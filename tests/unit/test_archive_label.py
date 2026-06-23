@@ -1,14 +1,8 @@
-import pytest
-
 from astro_archives_mcp import _archive_label
 from astro_archives_mcp._archive_label import _CACHE, archive_label
 
-
-@pytest.fixture(autouse=True)
-def clear_cache():
-    _CACHE.clear()
-    yield
-    _CACHE.clear()
+# Cache isolation is handled globally by the autouse _clear_archive_label_cache
+# fixture in tests/conftest.py.
 
 
 def test_static_fastpath_hit_datalab():

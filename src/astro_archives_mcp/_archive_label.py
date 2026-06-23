@@ -59,13 +59,16 @@ _MULTI_LABEL_SUFFIXES: frozenset[str] = frozenset(
 
 def archive_label(endpoint: str) -> str:
     """Resolve an endpoint URL to a short archive label (no network)."""
+    # Cache first: an O(1) hit skips the static-map scan on repeat calls to
+    # the same endpoint (the common case across a multi-turn session). Only
+    # non-static URLs are ever cached — static hits return before the write.
+    if endpoint in _CACHE:
+        return _CACHE[endpoint]
+
     low = endpoint.lower()
     for needle, label in _STATIC_MAP.items():
         if needle in low:
             return label
-
-    if endpoint in _CACHE:
-        return _CACHE[endpoint]
 
     host = urlparse(endpoint).hostname or ""
     label = _label_from_host(host) or "other"
