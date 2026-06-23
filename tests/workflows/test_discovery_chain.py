@@ -62,13 +62,9 @@ def _clear_jobs():
 
 
 @pytest.fixture(autouse=True)
-def _offline_archive_label(monkeypatch):
+def _offline_archive_label():
+    # archive_label is network-free; clear the cache for order-independence.
     _archive_label._CACHE.clear()
-    monkeypatch.setattr(
-        _archive_label,
-        "_registry_find_label",
-        lambda _endpoint: None,
-    )
 
 
 @pytest.fixture

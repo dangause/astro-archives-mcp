@@ -73,22 +73,11 @@ def _clear_jobs():
 
 
 @pytest.fixture(autouse=True)
-def _offline_archive_label(monkeypatch):
-    """Keep tests hermetic: unknown endpoints never call the RegTAP registry.
-
-    archive_label() falls through to pyvo.registry.search for endpoints
-    that aren't in the static substring map. We patch that fallback to
-    None so tests using example/synthetic endpoints don't hit the
-    network (which would be silent in --record-mode=none and brittle
-    in CI). Also wipes the in-memory cache so tests are order-
-    independent.
-    """
+def _offline_archive_label():
+    """archive_label is network-free (labels are derived from the
+    hostname), so the only thing to manage is the in-memory cache —
+    wipe it so tests stay order-independent."""
     _archive_label._CACHE.clear()
-    monkeypatch.setattr(
-        _archive_label,
-        "_registry_find_label",
-        lambda _endpoint: None,
-    )
 
 
 @pytest.fixture

@@ -20,7 +20,8 @@ class RegistryClient:
     Three operations:
       * search(keywords/servicetype/waveband) -> list of service dicts
       * describe(ivoid_or_url) -> service dict with capabilities + tables
-      * find_label(endpoint_url) -> short_name | None (powers _archive_label)
+      * find_label(endpoint_url) -> short_name | None (registry short-name
+        lookup; available for explicit use — NOT on the response hot path)
     """
 
     def search(

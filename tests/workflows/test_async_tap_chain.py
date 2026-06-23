@@ -80,14 +80,10 @@ def _clear_jobs():
 
 
 @pytest.fixture(autouse=True)
-def _offline_archive_label(monkeypatch):
-    """Keep tests hermetic: unknown endpoints don't call RegTAP."""
+def _offline_archive_label():
+    """archive_label is network-free; just clear the label cache so tests
+    stay order-independent."""
     _archive_label._CACHE.clear()
-    monkeypatch.setattr(
-        _archive_label,
-        "_registry_find_label",
-        lambda _endpoint: None,
-    )
 
 
 @pytest.fixture
