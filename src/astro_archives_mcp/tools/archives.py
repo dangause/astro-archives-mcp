@@ -13,6 +13,10 @@ later it will be backed by something pluggable (RAG, structured KB,
 etc.) but the tool contract stays the same.
 """
 
+from typing import Annotated
+
+from pydantic import Field
+
 from astro_archives_mcp._serialization import dataclass_to_jsonable_dict
 from astro_archives_mcp.errors import wrap_tool_errors
 from astro_archives_mcp.known_archives import KNOWN_ARCHIVES
@@ -20,7 +24,32 @@ from astro_archives_mcp.tools._constants import _ERROR_DOCSTRING
 
 
 @wrap_tool_errors
-def vo_archive_list() -> dict:
+def vo_archive_list(
+    short_name: Annotated[
+        str | None,
+        Field(
+            description=(
+                "Optional. Return only the archive with this short_name "
+                "(case-insensitive), e.g. 'nrao'. Use this when you already "
+                "know which archive you want — it returns a single entry "
+                "instead of the full set, saving context. Unknown names "
+                "return an empty list (count: 0)."
+            ),
+            examples=["nrao", "datalab", "alma"],
+        ),
+    ] = None,
+    waveband: Annotated[
+        str | None,
+        Field(
+            description=(
+                "Optional. Return only archives in this waveband "
+                "(case-insensitive), e.g. 'radio', 'optical', 'millimeter'. "
+                "Combines with short_name (both must match)."
+            ),
+            examples=["radio", "optical", "millimeter"],
+        ),
+    ] = None,
+) -> dict:
     """List the IVOA archives this server has first-class knowledge of.
 
     Each entry includes the archive's endpoint URLs (TAP / SIA / SCS),
@@ -33,6 +62,10 @@ def vo_archive_list() -> dict:
     behavior you don't already know — it'll save you the trial-and-error
     of discovering quirks through failed queries. The notes are curated
     based on real friction encountered while building the server.
+
+    Pass `short_name` and/or `waveband` to narrow the result. With no
+    arguments it returns every known archive (the usage_notes are verbose,
+    so prefer `short_name` once you know which archive you need).
 
     Archives not listed here still work via `vo_registry_search` followed
     by `vo_registry_describe` / `vo_tap_query` — this tool only covers the
@@ -63,7 +96,15 @@ def vo_archive_list() -> dict:
           "count": N
         }
     """
-    archives = [dataclass_to_jsonable_dict(a) for a in KNOWN_ARCHIVES]
+    selected = KNOWN_ARCHIVES
+    if short_name is not None:
+        sn = short_name.strip().lower()
+        selected = tuple(a for a in selected if a.short_name.lower() == sn)
+    if waveband is not None:
+        wb = waveband.strip().lower()
+        selected = tuple(a for a in selected if (a.waveband or "").lower() == wb)
+
+    archives = [dataclass_to_jsonable_dict(a) for a in selected]
     return {"archives": archives, "count": len(archives)}
 
 
