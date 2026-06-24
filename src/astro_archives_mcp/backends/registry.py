@@ -17,11 +17,9 @@ _IVOID_RE = re.compile(r"^ivo://", re.IGNORECASE)
 class RegistryClient:
     """Sync wrapper over pyvo.registry. No async.
 
-    Three operations:
+    Two operations:
       * search(keywords/servicetype/waveband) -> list of service dicts
       * describe(ivoid_or_url) -> service dict with capabilities + tables
-      * find_label(endpoint_url) -> short_name | None (registry short-name
-        lookup; available for explicit use — NOT on the response hot path)
     """
 
     def search(
@@ -61,18 +59,6 @@ class RegistryClient:
                 f"Expected an IVOID (e.g. 'ivo://...') or a TAP service URL. Got: {ivoid_or_url!r}"
             ),
         )
-
-    def find_label(self, endpoint_url: str) -> str | None:
-        """Look up the IVOA short name for a TAP service by its access URL."""
-        try:
-            results = pyvo.registry.search(servicetype="tap")
-            for r in results:
-                # pyvo's RegistryResource attrs aren't in the Record stub.
-                if _normalized_url(r.access_url) == _normalized_url(endpoint_url):  # pyright: ignore[reportAttributeAccessIssue]
-                    return r.short_name or None  # pyright: ignore[reportAttributeAccessIssue]
-        except (DALQueryError, DALServiceError):
-            log.warning("RegistryClient.find_label: registry lookup failed; returning None")
-        return None
 
     # ---------- internals ----------
 
