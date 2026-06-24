@@ -15,6 +15,7 @@ The backend is faked. The interesting things to pin:
 - The Resource layer round-trips the bytes (base64 vs raw vs text).
 - MIME type is preserved end-to-end.
 """
+
 import base64
 
 import pytest
@@ -32,16 +33,18 @@ class _FakeSiaClient:
 
     def __init__(self):
         # A minimal SIA2 result with the columns the LLM would actually use.
-        self._search_table = Table({
-            "obs_id": ["test-1", "test-2"],
-            "target_name": ["NGC 4258", "NGC 4258"],
-            "instrument_name": ["TESS-cam", "TESS-cam"],
-            "access_url": [
-                f"{CADC_SIA}/file/test-1.fits",
-                f"{CADC_SIA}/file/test-2.fits",
-            ],
-            "access_format": ["image/fits", "image/fits"],
-        })
+        self._search_table = Table(
+            {
+                "obs_id": ["test-1", "test-2"],
+                "target_name": ["NGC 4258", "NGC 4258"],
+                "instrument_name": ["TESS-cam", "TESS-cam"],
+                "access_url": [
+                    f"{CADC_SIA}/file/test-1.fits",
+                    f"{CADC_SIA}/file/test-2.fits",
+                ],
+                "access_format": ["image/fits", "image/fits"],
+            }
+        )
         # Map of access_url → (bytes, mime_type).
         self._files = {
             f"{CADC_SIA}/file/test-1.fits": (
@@ -97,13 +100,12 @@ async def test_search_then_fetch_then_read_resource(mcp_server, fake_sia):
 
         # Step 3: fetch
         fetch = await client.call_tool(
-            "vo_sia_fetch", {"access_url": first_access_url},
+            "vo_sia_fetch",
+            {"access_url": first_access_url},
         )
         fp = fetch.structured_content
         assert fp["mime_type"] == "image/fits"
-        assert fp["bytes_fetched"] == len(
-            b"SIMPLE  =                    T / minimal fake FITS"
-        )
+        assert fp["bytes_fetched"] == len(b"SIMPLE  =                    T / minimal fake FITS")
         assert fp["source_url"] == first_access_url
         resource_uri = fp["resource_uri"]
         assert resource_uri.startswith("resource://results/")

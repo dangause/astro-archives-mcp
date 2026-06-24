@@ -1,10 +1,11 @@
 """vo_tap_query mode parameter + auto-promote behavior."""
+
 import pytest
 from astropy.table import Table
 from fastmcp import Client
 
-from astro_archives_mcp import _archive_label, job_store
-from astro_archives_mcp.errors import ArchiveError
+from astro_archives_mcp import job_store
+from astro_archives_mcp.errors import ArchiveError, TimeoutArchiveError
 from astro_archives_mcp.tools import tap as tap_tools
 
 
@@ -30,6 +31,7 @@ class _FakeTapClient:
             starttime = None
             endtime = None
             error_summary = None
+
         return _J()
 
     def abort_job(self, job_url):
@@ -43,15 +45,6 @@ def _clear_jobs():
     yield
     with job_store._LOCK:
         job_store._STORE.clear()
-
-
-@pytest.fixture(autouse=True)
-def _offline_archive_label(monkeypatch):
-    """Keep tests hermetic — unknown endpoints don't call RegTAP."""
-    _archive_label._CACHE.clear()
-    monkeypatch.setattr(
-        _archive_label, "_registry_find_label", lambda _endpoint: None,
-    )
 
 
 @pytest.fixture
@@ -101,9 +94,7 @@ async def test_mode_auto_fast_returns_inline_no_promotion(mcp_server, fake_tap):
 
 @pytest.mark.asyncio
 async def test_mode_auto_promotes_on_timeout(mcp_server, fake_tap):
-    fake_tap.query_raises = ArchiveError(
-        message="TAP sync request timed out: read timeout"
-    )
+    fake_tap.query_raises = TimeoutArchiveError(message="TAP sync request timed out: read timeout")
 
     async with Client(mcp_server) as client:
         result = await client.call_tool(
@@ -127,6 +118,7 @@ async def test_mode_auto_promotes_on_timeout(mcp_server, fake_tap):
 @pytest.mark.asyncio
 async def test_mode_auto_does_not_promote_on_syntax_error(mcp_server, fake_tap):
     from astro_archives_mcp.errors import DalQueryError
+
     fake_tap.query_raises = DalQueryError(message="Bad ADQL syntax.")
 
     async with Client(mcp_server) as client:
@@ -143,6 +135,30 @@ async def test_mode_auto_does_not_promote_on_syntax_error(mcp_server, fake_tap):
         # only fires for the timeout failure mode.
         assert payload["error_class"] == "tap_query_error"
         assert fake_tap.submit_calls == 0
+
+
+@pytest.mark.asyncio
+async def test_mode_auto_does_not_promote_on_generic_archive_error(mcp_server, fake_tap):
+    # A plain ArchiveError whose message happens to contain "timed out"
+    # must NOT promote: the discriminator is the exception TYPE, not the
+    # message text. Only TimeoutArchiveError (a real sync timeout) promotes.
+    fake_tap.query_raises = ArchiveError(message="upstream 503; service timed out internally")
+
+    async with Client(mcp_server) as client:
+        result = await client.call_tool(
+            "vo_tap_query",
+            {
+                "endpoint": "https://datalab.noirlab.edu/tap",
+                "adql": "SELECT 1",
+                "mode": "auto",
+            },
+        )
+        payload = result.structured_content
+        assert payload["error_class"] == "archive_error"
+        assert "mode" not in payload
+
+    assert fake_tap.submit_calls == 0
+    assert job_store.size_estimate()["entries"] == 0
 
 
 @pytest.mark.asyncio

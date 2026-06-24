@@ -17,10 +17,9 @@ _IVOID_RE = re.compile(r"^ivo://", re.IGNORECASE)
 class RegistryClient:
     """Sync wrapper over pyvo.registry. No async.
 
-    Three operations:
+    Two operations:
       * search(keywords/servicetype/waveband) -> list of service dicts
       * describe(ivoid_or_url) -> service dict with capabilities + tables
-      * find_label(endpoint_url) -> short_name | None (powers _archive_label)
     """
 
     def search(
@@ -57,21 +56,9 @@ class RegistryClient:
             return self._describe_by_url(ivoid_or_url)
         raise ValidationError(
             message=(
-                "Expected an IVOID (e.g. 'ivo://...') or a TAP service URL. "
-                f"Got: {ivoid_or_url!r}"
+                f"Expected an IVOID (e.g. 'ivo://...') or a TAP service URL. Got: {ivoid_or_url!r}"
             ),
         )
-
-    def find_label(self, endpoint_url: str) -> str | None:
-        """Look up the IVOA short name for a TAP service by its access URL."""
-        try:
-            results = pyvo.registry.search(servicetype="tap")
-            for r in results:
-                if _normalized_url(r.access_url) == _normalized_url(endpoint_url):
-                    return r.short_name or None
-        except (DALQueryError, DALServiceError):
-            log.warning("RegistryClient.find_label: registry lookup failed; returning None")
-        return None
 
     # ---------- internals ----------
 
@@ -93,7 +80,7 @@ class RegistryClient:
         try:
             results = pyvo.registry.search(servicetype="tap")
             for r in results:
-                if _normalized_url(r.access_url) == _normalized_url(url):
+                if _normalized_url(r.access_url) == _normalized_url(url):  # pyright: ignore[reportAttributeAccessIssue]
                     return _resource_to_describe_dict(r)
         except (DALQueryError, DALServiceError) as e:
             # Registry itself is down or slow. Don't give up — fall
@@ -133,9 +120,7 @@ class RegistryClient:
         return {
             "ivoid": None,
             "title": None,
-            "description": (
-                f"Direct TAP introspection (not IVOA-registered): {url}"
-            ),
+            "description": (f"Direct TAP introspection (not IVOA-registered): {url}"),
             "capabilities": ["tap"],
             "tables": tables,
         }
@@ -187,7 +172,8 @@ def _resource_to_dict(resource) -> dict:
         "ivoid": getattr(resource, "ivoid", None),
         "title": getattr(resource, "res_title", None) or getattr(resource, "short_name", None),
         "description": getattr(resource, "res_description", None),
-        "publisher": getattr(resource, "publisher", None) or getattr(resource, "creator_name", None),
+        "publisher": getattr(resource, "publisher", None)
+        or getattr(resource, "creator_name", None),
         "waveband": getattr(resource, "waveband", None),
         **caps,
     }
@@ -219,13 +205,15 @@ def _resource_to_describe_dict(resource) -> dict:
 def _table_to_dict(table) -> dict:
     cols = []
     for c in getattr(table, "columns", []) or []:
-        cols.append({
-            "name": getattr(c, "name", None),
-            "type": str(getattr(c, "datatype", "") or ""),
-            "unit": getattr(c, "unit", None) or None,
-            "ucd": getattr(c, "ucd", None) or None,
-            "description": getattr(c, "description", None) or None,
-        })
+        cols.append(
+            {
+                "name": getattr(c, "name", None),
+                "type": str(getattr(c, "datatype", "") or ""),
+                "unit": getattr(c, "unit", None) or None,
+                "ucd": getattr(c, "ucd", None) or None,
+                "description": getattr(c, "description", None) or None,
+            }
+        )
     return {
         "name": getattr(table, "name", None),
         "description": getattr(table, "description", None) or None,

@@ -61,19 +61,18 @@ class SiaClient:
                 timeout=_FETCH_TIMEOUT_SECONDS,
             ) as response:
                 response.raise_for_status()
-                content_type = response.headers.get(
-                    "content-type", "application/octet-stream"
-                ).split(";")[0].strip()
+                content_type = (
+                    response.headers.get("content-type", "application/octet-stream")
+                    .split(";")[0]
+                    .strip()
+                )
                 buf = bytearray()
                 for chunk in response.iter_bytes(chunk_size=65536):
                     buf.extend(chunk)
                     if len(buf) > _FETCH_BYTE_CAP:
                         # Abort mid-stream; do NOT drain the rest.
                         raise ArchiveError(
-                            message=(
-                                "Image exceeds 10 MB cap; reduce size_deg "
-                                "in vo_sia_search"
-                            ),
+                            message=("Image exceeds 10 MB cap; reduce size_deg in vo_sia_search"),
                             retry_strategy="abandon",
                         )
                 return bytes(buf), content_type

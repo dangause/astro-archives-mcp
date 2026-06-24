@@ -1,4 +1,5 @@
 """Compose the FastMCP server and mount it under Starlette with health probes."""
+
 from fastmcp import FastMCP
 from starlette.applications import Starlette
 from starlette.middleware import Middleware
@@ -16,12 +17,14 @@ from astro_archives_mcp.tools import (
     vo_cone_search,
     vo_registry_describe,
     vo_registry_search,
+    vo_schema_describe,
     vo_sia_fetch,
     vo_sia_search,
     vo_tap_abort,
     vo_tap_query,
     vo_tap_results,
     vo_tap_status,
+    vo_target_resolve,
 )
 
 
@@ -61,6 +64,8 @@ def build_mcp() -> FastMCP:
     mcp.tool(vo_tap_abort)
     mcp.tool(vo_registry_search)
     mcp.tool(vo_registry_describe)
+    mcp.tool(vo_schema_describe)
+    mcp.tool(vo_target_resolve)
     mcp.tool(vo_cone_search)
     mcp.tool(vo_sia_search)
     mcp.tool(vo_sia_fetch)
@@ -73,12 +78,14 @@ def build_app() -> Starlette:
     mcp_app = mcp.http_app(path="/")
 
     async def health(_request):
-        return JSONResponse({
-            "status": "ok",
-            "version": __version__,
-            "store": result_store.size_estimate(),
-            "job_store": job_store.size_estimate(),
-        })
+        return JSONResponse(
+            {
+                "status": "ok",
+                "version": __version__,
+                "store": result_store.size_estimate(),
+                "job_store": job_store.size_estimate(),
+            }
+        )
 
     async def ready(_request):
         # Slice A: no backend pre-warm. Later slices ping a known TAP endpoint.

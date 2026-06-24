@@ -37,11 +37,17 @@ class _FakeSia:
 
 def test_vo_sia_search_error_path(monkeypatch):
     monkeypatch.setattr(
-        ivoa_tools, "_get_sia",
+        ivoa_tools,
+        "_get_sia",
         lambda: _FakeSia(exc=ArchiveError(message="sia down")),
     )
     out = ivoa_tools.vo_sia_search(
         endpoint=SIA_ENDPOINT,
-        ra=185.0, dec=-31.0, size_deg=0.05, band=None, fmt=None, maxrec=5,
+        ra=185.0,
+        dec=-31.0,
+        size_deg=0.05,
+        band=None,
+        fmt=None,
+        maxrec=5,
     )
     assert out["error_class"] == "archive_error"

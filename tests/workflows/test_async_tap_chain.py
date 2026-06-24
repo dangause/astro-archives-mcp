@@ -14,11 +14,12 @@ final envelope shape matches what the LLM was promised by the promotion.
 
 The TapClient backend is faked so this stays hermetic + fast.
 """
+
 import pytest
 from astropy.table import Table
 from fastmcp import Client
 
-from astro_archives_mcp import _archive_label, job_store
+from astro_archives_mcp import job_store
 from astro_archives_mcp.tools import tap as tap_tools
 
 
@@ -40,8 +41,10 @@ class _FakeAsyncJob:
         class _Result:
             def __init__(self, table):
                 self._table = table
+
             def to_table(self):
                 return self._table
+
         return _Result(self._table)
 
     def delete(self):
@@ -74,15 +77,6 @@ def _clear_jobs():
     yield
     with job_store._LOCK:
         job_store._STORE.clear()
-
-
-@pytest.fixture(autouse=True)
-def _offline_archive_label(monkeypatch):
-    """Keep tests hermetic: unknown endpoints don't call RegTAP."""
-    _archive_label._CACHE.clear()
-    monkeypatch.setattr(
-        _archive_label, "_registry_find_label", lambda _endpoint: None,
-    )
 
 
 @pytest.fixture
@@ -126,9 +120,11 @@ async def test_full_lifecycle_promotion_status_results(mcp_server, fake_tap):
 
         # Step 4: backend completes the job
         fake_tap.job.phase = "COMPLETED"
-        fake_tap.job._table = Table({
-            "obs_publisher_did": ["A", "B", "C"],
-        })
+        fake_tap.job._table = Table(
+            {
+                "obs_publisher_did": ["A", "B", "C"],
+            }
+        )
 
         # Step 5: status reports COMPLETED
         status = await client.call_tool("vo_tap_status", {"job_id": job_id})
@@ -185,6 +181,7 @@ async def test_chain_handles_phase_error_with_message(mcp_server, fake_tap):
         # Upstream completes with ERROR + message
         class _ErrSummary:
             message = "Syntax error: unexpected token BAD"
+
         fake_tap.job.phase = "ERROR"
         fake_tap.job._error_summary = _ErrSummary()
 

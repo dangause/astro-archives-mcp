@@ -2,12 +2,12 @@ import io
 import json
 import math
 from datetime import datetime
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
-from astropy.table import Table
+from astropy.table import Column, Table
 
 from astro_archives_mcp import result_store
 
@@ -26,24 +26,28 @@ def shape_inline_table(
 ) -> dict[str, Any]:
     """Convert an astropy.Table into the inline-tier response envelope.
 
-    Inline tier only. Resource / MyDB tiers handled by other functions
-    once result sizes warrant them.
+    Inline tier only. The Resource tier is handled by _shape_resource
+    once result sizes warrant it.
     """
     n_in = len(table)
     truncated = n_in > maxrec
     if truncated:
-        table = table[:maxrec]
+        # astropy stubs type Table slicing as TableColumns | Row | Table.
+        table = cast(Table, table[:maxrec])
 
     columns: list[dict[str, Any]] = []
     for name in table.colnames:
-        col = table[name]
-        columns.append({
-            "name": name,
-            "type": str(col.dtype),
-            "unit": (str(col.unit) if col.unit and str(col.unit) else None),
-            "ucd": _column_ucd(col),
-            "description": col.description or None,
-        })
+        # String indexing returns a Column; astropy stubs widen it to a union.
+        col = cast(Column, table[name])
+        columns.append(
+            {
+                "name": name,
+                "type": str(col.dtype),
+                "unit": (str(col.unit) if col.unit and str(col.unit) else None),
+                "ucd": _column_ucd(col),
+                "description": col.description or None,
+            }
+        )
 
     rows: list[list[Any]] = []
     for row in table:
@@ -55,7 +59,6 @@ def shape_inline_table(
         "rows": rows,
         "preview": None,
         "resource_uri": None,
-        "mydb_table": None,
         "truncated": truncated,
         "truncation_reason": "maxrec_exceeded" if truncated else None,
         "archive": archive,
@@ -87,31 +90,34 @@ def _estimate_payload_bytes(envelope: dict) -> int:
 def _shape_resource(table: Table, *, archive: str, maxrec: int) -> dict[str, Any]:
     """Build the Resource-tier envelope: preview + Parquet via MCP Resource URI."""
     true_count = len(table)
-    visible = table[:RESOURCE_ROW_LIMIT]
+    visible = cast(Table, table[:RESOURCE_ROW_LIMIT])
     truncated = true_count > RESOURCE_ROW_LIMIT
 
     # astropy.Table -> pyarrow.Table -> Parquet bytes (no pandas dep)
-    pa_table = pa.table({name: visible[name].data for name in visible.colnames})
+    pa_table = pa.table({name: cast(Column, visible[name]).data for name in visible.colnames})
     buf = io.BytesIO()
     pq.write_table(pa_table, buf)
     uuid_hex, expires_at = result_store.put(buf.getvalue(), "application/vnd.apache.parquet")
 
     # Reuse inline envelope shape for preview rows
     preview_envelope = shape_inline_table(
-        visible[:50], archive=archive, maxrec=maxrec,
+        cast(Table, visible[:50]),
+        archive=archive,
+        maxrec=maxrec,
     )
 
     hints: list[dict[str, Any]] = []
     if truncated:
-        hints.append({
-            "kind": "tip",
-            "text": (
-                f"{RESOURCE_ROW_LIMIT} of {true_count} rows available at the "
-                "resource URI. For full results, narrow the query or use "
-                "MyDB-staged storage (Slice C)."
-            ),
-            "source": None,
-        })
+        hints.append(
+            {
+                "kind": "tip",
+                "text": (
+                    f"{RESOURCE_ROW_LIMIT} of {true_count} rows available at the "
+                    "resource URI. For full results, narrow the query or raise maxrec."
+                ),
+                "source": None,
+            }
+        )
 
     return {
         "row_count": true_count,
@@ -120,7 +126,6 @@ def _shape_resource(table: Table, *, archive: str, maxrec: int) -> dict[str, Any
         "preview": preview_envelope["rows"],
         "resource_uri": f"resource://results/{uuid_hex}.parquet",
         "resource_expires_at": expires_at.isoformat(),
-        "mydb_table": None,
         "truncated": truncated,
         "truncation_reason": TRUNCATION_REASON_OVERSIZE if truncated else None,
         "archive": archive,

@@ -66,7 +66,7 @@ def test_large_table_truncated_at_resource_limit():
     assert out["truncation_reason"] == TRUNCATION_REASON_OVERSIZE
     assert out["resource_uri"] is not None
     assert len(out["hints"]) >= 1
-    assert any("mydb" in h["text"].lower() for h in out["hints"])
+    assert any("resource uri" in h["text"].lower() for h in out["hints"])
 
 
 def test_edge_inline_limit_exact():

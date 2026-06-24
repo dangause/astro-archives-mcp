@@ -3,6 +3,7 @@
 Verifies that the curated KNOWN_ARCHIVES registry — particularly the
 usage_notes — surfaces correctly to the LLM via the tool layer.
 """
+
 import pytest
 from fastmcp import Client
 
@@ -58,6 +59,61 @@ async def test_vo_archive_list_serializes_tuple_fields_as_lists(mcp_server):
 
 
 @pytest.mark.asyncio
+async def test_vo_archive_list_filter_by_short_name_returns_single_entry(mcp_server):
+    """short_name filter narrows to one archive — the token-saving path
+    once the agent knows which archive it wants."""
+    async with Client(mcp_server) as client:
+        result = await client.call_tool("vo_archive_list", {"short_name": "nrao"})
+        payload = result.structured_content
+
+    assert payload["count"] == 1
+    assert payload["archives"][0]["short_name"] == "nrao"
+
+
+@pytest.mark.asyncio
+async def test_vo_archive_list_short_name_is_case_insensitive(mcp_server):
+    async with Client(mcp_server) as client:
+        result = await client.call_tool("vo_archive_list", {"short_name": "NRAO"})
+        payload = result.structured_content
+
+    assert payload["count"] == 1
+    assert payload["archives"][0]["short_name"] == "nrao"
+
+
+@pytest.mark.asyncio
+async def test_vo_archive_list_unknown_short_name_returns_empty(mcp_server):
+    """Unknown name soft-fails to an empty list, not an error."""
+    async with Client(mcp_server) as client:
+        result = await client.call_tool("vo_archive_list", {"short_name": "does-not-exist"})
+        payload = result.structured_content
+
+    assert payload["count"] == 0
+    assert payload["archives"] == []
+
+
+@pytest.mark.asyncio
+async def test_vo_archive_list_filter_by_waveband(mcp_server):
+    """waveband filter returns only matching archives; 'radio' is NRAO-only."""
+    async with Client(mcp_server) as client:
+        result = await client.call_tool("vo_archive_list", {"waveband": "radio"})
+        payload = result.structured_content
+
+    short_names = {a["short_name"] for a in payload["archives"]}
+    assert short_names == {"nrao"}
+    assert payload["count"] == len(payload["archives"])
+
+
+@pytest.mark.asyncio
+async def test_vo_archive_list_no_args_still_returns_full_set(mcp_server):
+    """Backward compatibility: no arguments returns every known archive."""
+    async with Client(mcp_server) as client:
+        result = await client.call_tool("vo_archive_list", {})
+        payload = result.structured_content
+
+    assert payload["count"] >= 8
+
+
+@pytest.mark.asyncio
 async def test_vo_archive_list_includes_capabilities_for_each_archive(mcp_server):
     """Every entry should at minimum identify itself by short_name +
     display_name and expose the protocol URL fields (even when None)."""
@@ -66,12 +122,18 @@ async def test_vo_archive_list_includes_capabilities_for_each_archive(mcp_server
         payload = result.structured_content
 
     required_keys = {
-        "short_name", "display_name", "host_substrings",
-        "tap_url", "sia_url", "scs_url",
-        "waveband", "description", "notable_tables", "usage_notes",
+        "short_name",
+        "display_name",
+        "host_substrings",
+        "tap_url",
+        "sia_url",
+        "scs_url",
+        "waveband",
+        "description",
+        "notable_tables",
+        "usage_notes",
     }
     for entry in payload["archives"]:
         assert required_keys.issubset(entry.keys()), (
-            f"archive {entry.get('short_name')} missing keys: "
-            f"{required_keys - entry.keys()}"
+            f"archive {entry.get('short_name')} missing keys: {required_keys - entry.keys()}"
         )

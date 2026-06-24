@@ -7,6 +7,7 @@ and log records. In-memory MCP client tests bypass the HTTP stack, so the
 ContextVar will return ``None`` there — that is expected and the tools tolerate
 it.
 """
+
 import contextvars
 import json
 import logging
@@ -40,7 +41,7 @@ class _JsonFormatter(logging.Formatter):
 
 
 def configure_logging(level: str = "INFO") -> None:
-    handler = logging.StreamHandler(stream=sys.stdout)
+    handler = logging.StreamHandler(stream=sys.stderr)
     handler.setFormatter(_JsonFormatter())
     root = logging.getLogger()
     root.setLevel(level)

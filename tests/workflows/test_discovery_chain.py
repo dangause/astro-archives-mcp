@@ -14,11 +14,12 @@ right query. This file pins that intent:
 If a regression strips a load-bearing note out of NRAO/DataLab/CADC,
 this file fails immediately.
 """
+
 import pytest
 from astropy.table import Table
 from fastmcp import Client
 
-from astro_archives_mcp import _archive_label, job_store
+from astro_archives_mcp import job_store
 from astro_archives_mcp.tools import tap as tap_tools
 
 
@@ -44,6 +45,7 @@ class _FakeTapClient:
             starttime = None
             endtime = None
             error_summary = None
+
         return _J()
 
     def abort_job(self, job_url):
@@ -57,14 +59,6 @@ def _clear_jobs():
     yield
     with job_store._LOCK:
         job_store._STORE.clear()
-
-
-@pytest.fixture(autouse=True)
-def _offline_archive_label(monkeypatch):
-    _archive_label._CACHE.clear()
-    monkeypatch.setattr(
-        _archive_label, "_registry_find_label", lambda _endpoint: None,
-    )
 
 
 @pytest.fixture
@@ -85,9 +79,7 @@ async def test_archive_list_surfaces_the_archives_we_promise(mcp_server):
     short_names = {a["short_name"] for a in payload["archives"]}
     must_include = {"datalab", "nrao", "alma", "cadc", "gaia"}
     missing = must_include - short_names
-    assert not missing, (
-        f"vo_archive_list missing well-known archives: {missing}"
-    )
+    assert not missing, f"vo_archive_list missing well-known archives: {missing}"
 
 
 @pytest.mark.asyncio

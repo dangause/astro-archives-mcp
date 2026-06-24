@@ -15,6 +15,7 @@ tests under tests/tools/, which exercise the same astropy votable code path.
 import pytest
 from vcr.stubs import VCRHTTPResponse
 
+from astro_archives_mcp import _archive_label
 from astro_archives_mcp.app import build_mcp
 
 
@@ -22,6 +23,16 @@ from astro_archives_mcp.app import build_mcp
 def mcp_server():
     """In-memory FastMCP instance for tests that talk to it via fastmcp.Client."""
     return build_mcp()
+
+
+@pytest.fixture(autouse=True)
+def _clear_archive_label_cache():
+    """archive_label() memoizes hostname-derived labels for process lifetime.
+    Wipe it around every test so the (deterministic) cache can't couple tests
+    to each other or to ordering."""
+    _archive_label._CACHE.clear()
+    yield
+    _archive_label._CACHE.clear()
 
 
 def _read(self, *args, **kwargs):

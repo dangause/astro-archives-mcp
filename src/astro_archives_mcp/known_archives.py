@@ -15,6 +15,7 @@ To add a new archive: add one `Archive(...)` entry to `KNOWN_ARCHIVES`.
 No other file needs to be touched. Derived structures (the substring
 map, schema examples, allow-list) update automatically.
 """
+
 from dataclasses import dataclass, field
 
 
@@ -55,9 +56,7 @@ KNOWN_ARCHIVES: tuple[Archive, ...] = (
         host_substrings=("datalab.noirlab",),
         tap_url="https://datalab.noirlab.edu/tap",
         waveband="optical",
-        description=(
-            "Optical surveys: NSC, SMASH, DECaPS, DES. Large object catalogs."
-        ),
+        description=("Optical surveys: NSC, SMASH, DECaPS, DES. Large object catalogs."),
         notable_tables=(
             "nsc_dr2.object",
             "smash_dr2.object",
@@ -73,9 +72,7 @@ KNOWN_ARCHIVES: tuple[Archive, ...] = (
             "Hipparcos, Tycho-2, and Stripe82 cross-matches.",
             "Data Lab is fully registered in the IVOA registry under "
             "`ivo://noirlab.edu/...` — vo_registry_search and "
-            "vo_registry_describe both work normally. The Data Lab "
-            "Python SDK call `dl.queryClient.services()` is an "
-            "equivalent vendor-specific catalog.",
+            "vo_registry_describe both work normally.",
             "Each survey has its own schema namespace (smash_dr2, nsc_dr2, "
             "des_dr2, decaps_dr2, etc.). Inside each schema, the main "
             "table is usually `<schema>.object`.",
@@ -219,10 +216,7 @@ KNOWN_ARCHIVES: tuple[Archive, ...] = (
         tap_url="https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/tap",
         sia_url="https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/sia",
         waveband="multi",
-        description=(
-            "Multi-mission archive — TESS, JWST, CFHT, HST imaging "
-            "available via SIA2."
-        ),
+        description=("Multi-mission archive — TESS, JWST, CFHT, HST imaging available via SIA2."),
         usage_notes=(
             "SIA2 results' `access_url` column points at a DataLink VOTable, "
             "NOT directly at the FITS file. Check `access_format` — if it "
@@ -235,8 +229,7 @@ KNOWN_ARCHIVES: tuple[Archive, ...] = (
             "(4) GET its access_url to get the real FITS bytes "
             "(the destination may be on a different host like "
             "mast.stsci.edu or S3 — follow redirects).",
-            "Use `obs_collection` to filter by mission: 'TESS', 'JWST', "
-            "'CFHT', 'HST', etc.",
+            "Use `obs_collection` to filter by mission: 'TESS', 'JWST', 'CFHT', 'HST', etc.",
         ),
     ),
     Archive(
@@ -263,8 +256,7 @@ KNOWN_ARCHIVES: tuple[Archive, ...] = (
         scs_url="https://gaia.ari.uni-heidelberg.de/cone/gaiadr2?",
         waveband="optical",
         description=(
-            "Heidelberg's Gaia mirror — exposes a Simple Cone Search "
-            "endpoint for legacy clients."
+            "Heidelberg's Gaia mirror — exposes a Simple Cone Search endpoint for legacy clients."
         ),
     ),
     Archive(
@@ -278,6 +270,7 @@ KNOWN_ARCHIVES: tuple[Archive, ...] = (
 
 
 # ---------- derived lookups ----------
+
 
 def by_short_name(name: str) -> Archive | None:
     """Return the archive with the given short_name, or None."""
@@ -295,9 +288,7 @@ def host_substring_to_short_name() -> dict[str, str]:
     mapping to the same short_name.
     """
     return {
-        sub: archive.short_name
-        for archive in KNOWN_ARCHIVES
-        for sub in archive.host_substrings
+        sub: archive.short_name for archive in KNOWN_ARCHIVES for sub in archive.host_substrings
     }
 
 
@@ -317,6 +308,7 @@ def scs_endpoint_urls() -> list[str]:
 
 
 # ---------- description helpers (used by tool Field descriptions) ----------
+
 
 def _format_examples(archives: list[Archive], protocol: str) -> str:
     """Render a few example URLs inline for a tool's Field description.

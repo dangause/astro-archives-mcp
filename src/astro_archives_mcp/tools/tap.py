@@ -1,4 +1,5 @@
 """Tools for IVOA TAP."""
+
 from datetime import UTC, datetime
 from typing import Annotated, Literal
 
@@ -7,10 +8,12 @@ from pydantic import Field
 from astro_archives_mcp import job_store
 from astro_archives_mcp._archive_label import archive_label
 from astro_archives_mcp.backends.tap import TapClient
+from astro_archives_mcp.config import get_settings
 from astro_archives_mcp.errors import (
     ArchiveError,
     DalQueryError,
     JobNotReadyError,
+    TimeoutArchiveError,
     ValidationError,
     wrap_tool_errors,
 )
@@ -28,7 +31,9 @@ def _get_tap() -> TapClient:
     """Lazy accessor so tests can patch TapClient without import-time side effects."""
     global _tap
     if _tap is None:
-        _tap = TapClient()
+        _tap = TapClient(
+            sync_timeout_seconds=get_settings().tap_sync_timeout_seconds,
+        )
     return _tap
 
 
@@ -40,7 +45,12 @@ def _promote_async(*, endpoint: str, adql: str, maxrec: int) -> dict:
     structured payload via wrap_tool_errors).
     """
     job_url = _get_tap().submit_async(endpoint=endpoint, adql=adql, maxrec=maxrec)
-    job_id, _ = job_store.put(job_url=job_url, endpoint=endpoint, adql=adql)
+    job_id, _ = job_store.put(
+        job_url=job_url,
+        endpoint=endpoint,
+        adql=adql,
+        ttl_seconds=get_settings().job_ttl_seconds,
+    )
     return shape_promotion(
         job_id=job_id,
         archive=archive_label(endpoint),
@@ -76,7 +86,8 @@ def vo_tap_query(
     maxrec: Annotated[
         int,
         Field(
-            ge=1, le=100_000,
+            ge=1,
+            le=100_000,
             description="Hard cap on rows returned. Default 10_000.",
         ),
     ] = 10_000,
@@ -122,25 +133,20 @@ def vo_tap_query(
         table = _get_tap().query(endpoint=endpoint, adql=adql, maxrec=maxrec)
         return shape_table(table, archive=archive_label(endpoint), maxrec=maxrec)
 
-    # mode == "auto": try sync, fall through to async on timeout.
+    # mode == "auto": try sync, promote to async only on a sync timeout.
+    # The discriminator is the exception TYPE (TimeoutArchiveError), not a
+    # substring of the message — other archive errors (unreachable host,
+    # 5xx, etc.) are plain ArchiveError and propagate unpromoted.
     try:
         table = _get_tap().query(endpoint=endpoint, adql=adql, maxrec=maxrec)
-    except ArchiveError as e:
-        # ArchiveError from TapClient.query that originated as a Timeout
-        # carries the timeout language in the message. We use the
-        # message prefix as the discriminator — only timeouts promote;
-        # other archive errors (unreachable host, 5xx, etc.) propagate.
-        if "timed out" in (e.message or "").lower():
-            try:
-                return _promote_async(endpoint=endpoint, adql=adql, maxrec=maxrec)
-            except ArchiveError as submit_err:
-                raise ArchiveError(
-                    message=(
-                        f"auto-promote submission failed: {submit_err.message}"
-                    ),
-                    retry_strategy="wait_and_retry",
-                ) from submit_err
-        raise
+    except TimeoutArchiveError:
+        try:
+            return _promote_async(endpoint=endpoint, adql=adql, maxrec=maxrec)
+        except ArchiveError as submit_err:
+            raise ArchiveError(
+                message=f"auto-promote submission failed: {submit_err.message}",
+                retry_strategy="wait_and_retry",
+            ) from submit_err
     return shape_table(table, archive=archive_label(endpoint), maxrec=maxrec)
 
 
@@ -176,7 +182,8 @@ def vo_tap_status(
                 "Opaque 12-character job_id returned by vo_tap_query "
                 "when it goes async (mode='async' or auto-promote)."
             ),
-            min_length=12, max_length=12,
+            min_length=12,
+            max_length=12,
         ),
     ],
 ) -> dict:
@@ -192,10 +199,7 @@ def vo_tap_status(
     entry = job_store.get(job_id)
     if entry is None:
         raise ValidationError(
-            message=(
-                f"Unknown or expired job_id '{job_id}'. Re-submit with "
-                "vo_tap_query."
-            ),
+            message=(f"Unknown or expired job_id '{job_id}'. Re-submit with vo_tap_query."),
             retry_strategy="abandon",
         )
     job = _get_tap().load_job(entry.job_url)
@@ -211,7 +215,8 @@ def vo_tap_results(
         str,
         Field(
             description="Opaque 12-character job_id from vo_tap_query (async).",
-            min_length=12, max_length=12,
+            min_length=12,
+            max_length=12,
         ),
     ],
 ) -> dict:
@@ -227,10 +232,7 @@ def vo_tap_results(
     entry = job_store.get(job_id)
     if entry is None:
         raise ValidationError(
-            message=(
-                f"Unknown or expired job_id '{job_id}'. Re-submit with "
-                "vo_tap_query."
-            ),
+            message=(f"Unknown or expired job_id '{job_id}'. Re-submit with vo_tap_query."),
             retry_strategy="abandon",
         )
 
@@ -254,7 +256,9 @@ def vo_tap_results(
 
     table = job.fetch_result().to_table()
     return shape_table(
-        table, archive=archive_label(entry.endpoint), maxrec=len(table),
+        table,
+        archive=archive_label(entry.endpoint),
+        maxrec=len(table),
     )
 
 
@@ -267,7 +271,8 @@ def vo_tap_abort(
         str,
         Field(
             description="Opaque 12-character job_id from vo_tap_query (async).",
-            min_length=12, max_length=12,
+            min_length=12,
+            max_length=12,
         ),
     ],
 ) -> dict:

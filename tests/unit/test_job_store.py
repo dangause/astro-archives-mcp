@@ -3,6 +3,7 @@
 Sibling pattern to result_store.py — same TTL discipline, but holds job
 metadata (URL, ADQL, endpoint), not bytes.
 """
+
 import re
 import threading
 import time
@@ -53,7 +54,9 @@ def test_get_returns_none_for_unknown_id():
 
 def test_evict_removes_entry():
     job_id, _ = job_store.put(
-        job_url="u", endpoint="e", adql="a",
+        job_url="u",
+        endpoint="e",
+        adql="a",
     )
     assert job_store.get(job_id) is not None
     job_store.evict(job_id)
@@ -67,7 +70,10 @@ def test_evict_on_unknown_id_is_a_noop():
 
 def test_ttl_expiry_drops_entry_on_read():
     job_id, _ = job_store.put(
-        job_url="u", endpoint="e", adql="a", ttl_seconds=0.01,
+        job_url="u",
+        endpoint="e",
+        adql="a",
+        ttl_seconds=0.01,
     )
     time.sleep(0.05)
     assert job_store.get(job_id) is None
@@ -93,7 +99,9 @@ def test_concurrent_put_get_under_lock():
 
     def worker(i):
         job_id, _ = job_store.put(
-            job_url=f"u{i}", endpoint="e", adql="a",
+            job_url=f"u{i}",
+            endpoint="e",
+            adql="a",
         )
         results.append(job_id)
 

@@ -12,6 +12,7 @@ Without this, hitting ``/mcp`` raises
 ``RuntimeError(StreamableHTTPSessionManager task group was not initialized)``
 — which is exactly the regression we are guarding against.
 """
+
 import contextlib
 
 import httpx

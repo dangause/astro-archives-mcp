@@ -34,7 +34,8 @@ class _FakeRegistry:
 
 def test_vo_registry_search_archive_error_returns_payload(monkeypatch):
     monkeypatch.setattr(
-        ivoa_tools, "_get_registry",
+        ivoa_tools,
+        "_get_registry",
         lambda: _FakeRegistry(exc=ArchiveError(message="registry down")),
     )
     out = ivoa_tools.vo_registry_search(keywords=["x"], servicetype=None, waveband=None, maxrec=5)

@@ -3,6 +3,7 @@
 The test mounts the real FastMCP server (via the ``mcp_server`` fixture) and
 talks to it with ``fastmcp.Client``. Network traffic is recorded with vcrpy.
 """
+
 import pytest
 from fastmcp import Client
 
@@ -73,9 +74,7 @@ class _FakeTap:
         (RuntimeError("upstream blew up"), "internal_error"),
     ],
 )
-def test_vo_tap_query_error_path_returns_structured_payload(
-    exc, expected_error_class, monkeypatch
-):
+def test_vo_tap_query_error_path_returns_structured_payload(exc, expected_error_class, monkeypatch):
     """When the backend raises, vo_tap_query returns a structured payload
     keyed on ``error_class`` (NOT ``isError``). The protocol-level
     ``is_error`` flag is FastMCP's separate concern.
@@ -86,6 +85,8 @@ def test_vo_tap_query_error_path_returns_structured_payload(
         adql="SELECT 1",
         maxrec=10,
     )
-    assert "isError" not in payload, "isError key should not be in the payload (see ivoa.py docstring)"
+    assert "isError" not in payload, (
+        "isError key should not be in the payload (see ivoa.py docstring)"
+    )
     assert payload["error_class"] == expected_error_class
     assert "retry_strategy" in payload

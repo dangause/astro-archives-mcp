@@ -3,6 +3,7 @@
 This module is the ONLY place that imports pyvo. Tools work in terms of
 job_url strings and astropy.Table — they do not touch AsyncTAPJob.
 """
+
 import logging
 
 import pyvo
@@ -11,7 +12,7 @@ from astropy.table import Table
 from pyvo.dal import AsyncTAPJob
 from pyvo.dal.exceptions import DALQueryError, DALServiceError
 
-from astro_archives_mcp.errors import ArchiveError, DalQueryError
+from astro_archives_mcp.errors import ArchiveError, DalQueryError, TimeoutArchiveError
 
 log = logging.getLogger(__name__)
 
@@ -58,17 +59,21 @@ class TapClient:
         """
         try:
             service = pyvo.dal.TAPService(endpoint, session=self._session())
-            result = service.search(adql, maxrec=maxrec)
+            result = service.search(adql, maxrec=maxrec)  # pyright: ignore[reportCallIssue]
         except DALQueryError as e:
             raise DalQueryError(message=str(e)) from e
         except DALServiceError as e:
             raise ArchiveError(message=str(e)) from e
         except requests.exceptions.Timeout as e:
-            raise ArchiveError(message=f"TAP sync request timed out: {e}") from e
+            raise TimeoutArchiveError(message=f"TAP sync request timed out: {e}") from e
         return result.to_table()
 
     def submit_async(
-        self, *, endpoint: str, adql: str, maxrec: int = 10_000,
+        self,
+        *,
+        endpoint: str,
+        adql: str,
+        maxrec: int = 10_000,
     ) -> str:
         """Submit a TAP query as an async UWS job and start execution.
 
@@ -94,7 +99,7 @@ class TapClient:
             raise ArchiveError(message=str(e)) from e
         except requests.exceptions.Timeout as e:
             raise ArchiveError(message=f"TAP async submit timed out: {e}") from e
-        return job.url
+        return job.url  # pyright: ignore[reportReturnType]
 
     def load_job(self, job_url: str) -> AsyncTAPJob:
         """Re-hydrate an AsyncTAPJob from a previously-stored job_url.

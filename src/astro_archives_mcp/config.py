@@ -1,3 +1,4 @@
+from functools import lru_cache
 from typing import Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -15,8 +16,18 @@ class Settings(BaseSettings):
     port: int = 8000
     deployment: Literal["local", "adl", "tacc"] = "local"
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
-    # Slice-A: NoAuth only. BearerTokenProvider / OIDC arrive in later slices.
-    auth_mode: Literal["none"] = "none"
     # Slice 5: async TAP family.
     tap_sync_timeout_seconds: float = 20.0
     job_ttl_seconds: int = 3600
+
+
+@lru_cache(maxsize=1)
+def get_settings() -> Settings:
+    """Process-wide Settings singleton.
+
+    Cached so runtime consumers (the lazy backend accessors, job_store
+    writes) read environment / .env once rather than re-parsing per call.
+    Tests that mutate the environment must call ``get_settings.cache_clear()``
+    to force a re-read.
+    """
+    return Settings()
