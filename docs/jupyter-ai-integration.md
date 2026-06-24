@@ -33,8 +33,8 @@ JupyterLab chat  →  ACP agent ("persona")  →  MCP servers
 |------------------|----------------------------------------------------------------|-------|
 | JupyterLab 4 + Jupyter AI v3 | `pip install jupyter-ai` (or conda-forge)          | Use a **separate env** from this server's `uv` env. |
 | Node.js          | conda/system package                                           | Required by the Claude Code ACP adapter. |
-| An ACP agent     | e.g. `npm install -g @zed-industries/claude-code-acp`          | Confirm the current package name in the [Getting Started](https://jupyter-ai.readthedocs.io/en/v3/getting-started.html) docs — these move fast. |
-| Agent auth       | log in / API key for the chosen agent                          | If not logged in, the persona silently won't respond; it may open a terminal to prompt. |
+| An ACP agent     | `npm install -g @zed-industries/claude-agent-acp`              | Provides the `claude-agent-acp` binary the Claude persona launches (verified against `jupyter_ai_acp_client` 0.1.5). npm warns it was renamed to `@agentclientprotocol/claude-agent-acp` — either works today. |
+| Agent auth       | reuse your existing Claude Code login                          | The Claude persona wraps the `claude` CLI's own auth, so if you already use Claude Code you're set. If a token is expired the persona replies telling you to run `claude /login`. No separate API key step. |
 | This MCP server  | `uv run python -m astro_archives_mcp`                          | Serves `http://localhost:8000/mcp/`. |
 
 ## Local test recipe
@@ -49,17 +49,21 @@ JupyterLab chat  →  ACP agent ("persona")  →  MCP servers
 2. **Set up Jupyter AI** (terminal B, a *separate* env):
    ```bash
    python -m venv ~/jai-test && source ~/jai-test/bin/activate
-   pip install jupyter-ai jupyterlab
-   # install + authenticate an agent, e.g. Claude Code:
-   #   (needs Node.js)
-   npm install -g @zed-industries/claude-code-acp
+   pip install "jupyter-ai>=3" jupyterlab
+   # install the Claude persona's ACP adapter (needs Node.js):
+   npm install -g @zed-industries/claude-agent-acp
    ```
+   > Tip: pin a venv to Python 3.12 — the Jupyter stack may lack wheels on very new
+   > Python (e.g. 3.14). `uv venv --python 3.12 .venv` works well.
 
-3. **Register this server** by copying `docs/examples/mcp_settings.json` to the Jupyter
-   config dir where you launch JupyterLab:
+3. **Register this server.** Jupyter AI reads `.jupyter/mcp_settings.json` resolved by
+   walking up from the chat file's directory to the JupyterLab **root dir** (`find_dot_dir`,
+   per `jupyter_ai_persona_manager`). So it lives in the directory tree JupyterLab serves —
+   *not* `JUPYTER_CONFIG_DIR`. Put it at the root of your workspace:
    ```bash
-   mkdir -p .jupyter
-   cp /path/to/astro-archives-mcp/docs/examples/mcp_settings.json .jupyter/mcp_settings.json
+   mkdir -p <jupyterlab-root>/.jupyter
+   cp /path/to/astro-archives-mcp/docs/examples/mcp_settings.json \
+      <jupyterlab-root>/.jupyter/mcp_settings.json
    ```
    The config:
    ```json
