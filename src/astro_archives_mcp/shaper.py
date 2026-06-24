@@ -26,8 +26,8 @@ def shape_inline_table(
 ) -> dict[str, Any]:
     """Convert an astropy.Table into the inline-tier response envelope.
 
-    Inline tier only. Resource / MyDB tiers handled by other functions
-    once result sizes warrant them.
+    Inline tier only. The Resource tier is handled by _shape_resource
+    once result sizes warrant it.
     """
     n_in = len(table)
     truncated = n_in > maxrec
@@ -59,7 +59,6 @@ def shape_inline_table(
         "rows": rows,
         "preview": None,
         "resource_uri": None,
-        "mydb_table": None,
         "truncated": truncated,
         "truncation_reason": "maxrec_exceeded" if truncated else None,
         "archive": archive,
@@ -114,8 +113,7 @@ def _shape_resource(table: Table, *, archive: str, maxrec: int) -> dict[str, Any
                 "kind": "tip",
                 "text": (
                     f"{RESOURCE_ROW_LIMIT} of {true_count} rows available at the "
-                    "resource URI. For full results, narrow the query or use "
-                    "MyDB-staged storage (Slice C)."
+                    "resource URI. For full results, narrow the query or raise maxrec."
                 ),
                 "source": None,
             }
@@ -128,7 +126,6 @@ def _shape_resource(table: Table, *, archive: str, maxrec: int) -> dict[str, Any
         "preview": preview_envelope["rows"],
         "resource_uri": f"resource://results/{uuid_hex}.parquet",
         "resource_expires_at": expires_at.isoformat(),
-        "mydb_table": None,
         "truncated": truncated,
         "truncation_reason": TRUNCATION_REASON_OVERSIZE if truncated else None,
         "archive": archive,
