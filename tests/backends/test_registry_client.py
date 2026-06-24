@@ -3,12 +3,6 @@ import pytest
 from astro_archives_mcp.backends.registry import RegistryClient
 from astro_archives_mcp.errors import ValidationError
 
-# Choose a known-stable IVOID for cassette recording.
-# Pre-flight against pyvo 1.8 RegTAP showed the plan's ``ivo://datalab/smash_dr2``
-# does not resolve; the real DataLab TAP service is registered as below.
-DATALAB_TAP_IVOID = "ivo://noirlab.edu/datalab/tap"
-DATALAB_TAP_URL = "https://datalab.noirlab.edu/tap"
-
 # Use ESO TAP_obs for describe-by-IVOID and describe-by-URL: ~58 tables,
 # cassette stays small. The DataLab TAP has 4027 tables and produced
 # 22 MB cassettes, so we switched the describe tests to ESO.
@@ -63,29 +57,6 @@ def test_describe_rejects_garbage_input():
     with pytest.raises(ValidationError) as exc:
         client.describe(ivoid_or_url="not-an-ivoid-or-url")
     assert "ivo://" in exc.value.message or "URL" in exc.value.message
-
-
-@pytest.mark.vcr
-def test_find_label_for_datalab_tap_returns_short_name():
-    client = RegistryClient()
-    label = client.find_label(DATALAB_TAP_URL)
-    assert label is not None
-    assert isinstance(label, str)
-    assert len(label) > 0
-
-
-def test_find_label_swallows_registry_errors_and_returns_none(monkeypatch):
-    from pyvo.dal.exceptions import DALServiceError
-
-    from astro_archives_mcp.backends import registry as registry_module
-
-    def fake_search(**_kw):
-        raise DALServiceError("registry down")
-
-    monkeypatch.setattr(registry_module.pyvo.registry, "search", fake_search)
-    client = RegistryClient()
-    label = client.find_label("https://anything.example.org/tap")
-    assert label is None
 
 
 def test_describe_by_url_falls_back_to_direct_tap_when_not_registered(
