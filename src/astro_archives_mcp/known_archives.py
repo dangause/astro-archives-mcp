@@ -72,9 +72,7 @@ KNOWN_ARCHIVES: tuple[Archive, ...] = (
             "Hipparcos, Tycho-2, and Stripe82 cross-matches.",
             "Data Lab is fully registered in the IVOA registry under "
             "`ivo://noirlab.edu/...` — vo_registry_search and "
-            "vo_registry_describe both work normally. The Data Lab "
-            "Python SDK call `dl.queryClient.services()` is an "
-            "equivalent vendor-specific catalog.",
+            "vo_registry_describe both work normally.",
             "Each survey has its own schema namespace (smash_dr2, nsc_dr2, "
             "des_dr2, decaps_dr2, etc.). Inside each schema, the main "
             "table is usually `<schema>.object`.",

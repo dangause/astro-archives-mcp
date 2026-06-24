@@ -20,7 +20,6 @@ Settings env vars are `STABLE_*` (Pydantic Settings, `extra="ignore"`). See `.en
 
 ```
 src/astro_archives_mcp/
-├── auth/              # CallerContext, AuthProvider Protocol, NoAuthProvider
 ├── backends/          # TapClient, SiaClient, ConeClient, RegistryClient, ResolverClient
 │                      # (typed pyvo/httpx/astropy wrappers — tools never import pyvo directly)
 ├── tools/

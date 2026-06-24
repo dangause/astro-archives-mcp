@@ -25,7 +25,6 @@ def test_inline_envelope_basic_shape():
     assert out["truncated"] is False
     assert out["truncation_reason"] is None
     assert out["resource_uri"] is None
-    assert out["mydb_table"] is None
     assert out["archive"] == "datalab"
     assert len(out["rows"]) == 2
     assert out["preview"] is None
