@@ -88,10 +88,11 @@ the `claude` CLI — it reads credentials from `$CLAUDE_CONFIG_DIR` (default
   governance. Pin the account with `CLAUDE_CONFIG_DIR` (the same mechanism used to
   select the work account in local testing).
 - **Local model on dlai01** — point Claude Code at an on-prem model via
-  `ANTHROPIC_BASE_URL`/`ANTHROPIC_AUTH_TOKEN` (vLLM/SGLang + an Anthropic↔OpenAI
-  bridge). No per-call cost, data stays on-prem; tool-use quality depends on the
-  model. Orthogonal to everything above — the MCP path is unchanged. Needs its own
-  research pass before committing details.
+  `ANTHROPIC_BASE_URL`/`ANTHROPIC_AUTH_TOKEN`. No per-call cost, data stays on-prem;
+  tool-use quality depends on the model. Orthogonal to everything above — the MCP path
+  is unchanged. See **`docs/local-model-backend.md`** for the researched PoC stack
+  (vLLM native Anthropic endpoint + Qwen3 + tool-call/reasoning parser flags) and the
+  Blackwell/sm_120 serving gotchas.
 
 ## Verify (inside a spawned single-user server)
 
