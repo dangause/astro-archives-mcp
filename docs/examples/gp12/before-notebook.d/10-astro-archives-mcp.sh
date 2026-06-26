@@ -18,7 +18,9 @@ export TMPDIR="${TMPDIR:-$HOME/.cache/tmp}"
 export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
 mkdir -p "$TMPDIR" "$XDG_CACHE_HOME"
 
-if curl -sf "http://127.0.0.1:${ASTRO_MCP_PORT}/health" >/dev/null 2>&1; then
+# Health probe via python (always present in a Jupyter image; minimal-notebook
+# has no curl) so this hook is base-image-agnostic.
+if python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:${ASTRO_MCP_PORT}/health', timeout=2)" >/dev/null 2>&1; then
     echo "[astro-archives-mcp] already running on :${ASTRO_MCP_PORT}"
 else
     echo "[astro-archives-mcp] starting on 127.0.0.1:${ASTRO_MCP_PORT}"

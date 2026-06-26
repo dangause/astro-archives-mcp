@@ -36,6 +36,19 @@ cluster service and only change the config URL.
 
 ## What the single-user image needs (Topology A)
 
+> **Locally validated (2026-06-26).** A `docs/examples/gp12/Dockerfile` builds these
+> additions onto `jupyter/minimal-notebook`; in the running container the hook launched
+> the MCP server on loopback, the seeded config was in place, and `vo_target_resolve`
+> returned real coordinates (astropy cache writable). Untested: node + the ACP adapter /
+> persona LLM call, and gp12's actual base image.
+>
+> **Build the single-user image with the example dir as context, not the repo root:**
+> ```bash
+> docker build -t astro-archives-singleuser docs/examples/gp12/
+> ```
+> The repo-root `.dockerignore` excludes `docs/`, `deploy/`, `tests/`, so a repo-root
+> context can't `COPY` the hook or config. Building from the subdir sidesteps that.
+
 1. **Python deps** — Jupyter AI v3 and this server, into the image's env:
    ```dockerfile
    RUN pip install --no-cache-dir "jupyter-ai>=3" jupyterlab \
