@@ -82,6 +82,22 @@ SCHEMA_KB: tuple[Schema, ...] = (
         cross_refs=(("nrao", "tap_schema.obscore"),),
     ),
     Schema(
+        archive="alma",
+        table="sourcecatalogue.source_cone_search",
+        notes=(
+            "Calibrator / source flux catalogue (the SCS-backed view), NOT "
+            "the observation obscore. Columns: m_ra/m_dec (deg), m_frequency "
+            "(Hz), m_flux (Jy), band_name, source_names, catalogue_name.",
+            "Filter spatially on m_ra/m_dec. The s_ra_deg/s_dec_deg columns "
+            "can be NULL, so CONTAINS(POINT('ICRS', s_ra_deg, s_dec_deg), ...) "
+            "raises ORA-13032 (Invalid NULL SDO_GEOMETRY).",
+            "band_name includes 'non-ALMA Band' rows (e.g. VLBI catalogue "
+            "entries at 8.3/23 GHz) — filter band_name if you only want ALMA "
+            "receiver bands.",
+        ),
+        cross_refs=(("alma", "ivoa.obscore"),),
+    ),
+    Schema(
         archive="nrao",
         table="tap_schema.obscore",
         missing_standard_columns=("dataproduct_subtype",),

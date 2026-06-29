@@ -48,6 +48,17 @@ def test_lookup_schema_finds_alma_obscore():
     assert ("nrao", "tap_schema.obscore") in s.cross_refs
 
 
+def test_lookup_schema_finds_alma_source_catalogue():
+    s = lookup_schema(archive="alma", table="sourcecatalogue.source_cone_search")
+    assert s is not None
+    notes_joined = " ".join(s.notes).lower()
+    # The load-bearing surprise: s_ra_deg/s_dec_deg are nullable -> CONTAINS
+    # on them errors; filter on m_ra/m_dec instead.
+    assert "m_ra" in notes_joined and "m_dec" in notes_joined
+    assert "null" in notes_joined
+    assert ("alma", "ivoa.obscore") in s.cross_refs
+
+
 def test_lookup_schema_returns_none_for_unknown_pair():
     assert lookup_schema(archive="bogus", table="bogus") is None
 

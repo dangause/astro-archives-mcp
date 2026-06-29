@@ -150,6 +150,18 @@ def test_alma_usage_notes_capture_critical_gotchas():
     assert "member_ous_uid" in notes_joined
     # Science-vs-calibration filtering.
     assert "science_observation" in notes_joined
+    # ALMA exposes more than TAP — SIAv2 and DataLink must be surfaced.
+    assert "siav2" in notes_joined or "sia2" in notes_joined
+    assert "datalink" in notes_joined
+
+
+def test_alma_exposes_sia2_endpoint():
+    """ALMA publishes a SIAv2 image-discovery service in addition to TAP;
+    the entry must carry its sia_url so vo_sia_search can reach it."""
+    alma = by_short_name("alma")
+    assert alma is not None
+    assert alma.sia_url == "https://almascience.nrao.edu/sia2"
+    assert alma.sia_url in sia_endpoint_urls()
 
 
 def test_tap_endpoint_urls_has_alma_and_datalab():

@@ -98,13 +98,15 @@ KNOWN_ARCHIVES: tuple[Archive, ...] = (
         display_name="ALMA Science Archive",
         host_substrings=("almascience",),
         tap_url="https://almascience.nrao.edu/tap",
+        sia_url="https://almascience.nrao.edu/sia2",
         waveband="millimeter",
         description=(
             "Millimeter/submillimeter interferometric data from ALMA, served "
             "as an extended ObsCore 1.1 view (ivoa.obscore) with ALMA-specific "
             "columns (proposal/PI metadata, receiver bands, QA flags, "
             "sensitivities) and bibliography links to refereed publications. "
-            "Mirrored at NRAO (NA), ESO (EU), and NAOJ (EA)."
+            "Also exposes a SIAv2 image-discovery service and a DataLink "
+            "download service. Mirrored at NRAO (NA), ESO (EU), and NAOJ (EA)."
         ),
         notable_tables=("ivoa.obscore", "sourcecatalogue.source_cone_search"),
         usage_notes=(
@@ -145,9 +147,27 @@ KNOWN_ARCHIVES: tuple[Archive, ...] = (
             "(still inside their proprietary period) are listed but not "
             "downloadable; obs_release_date is the public-availability "
             "timestamp.",
+            "Beyond TAP, ALMA exposes a SIAv2 service "
+            "(https://almascience.nrao.edu/sia2) for positional image "
+            "discovery. It returns the same extended-ObsCore columns as the "
+            "TAP view, so the obscore filtering knowledge applies. Use "
+            "vo_sia_search for 'what ALMA images cover this position' without "
+            "writing ADQL.",
+            "Downloads go through DataLink, not direct file links. access_url "
+            "on both obscore and SIA rows points at "
+            "https://almascience.org/datalink/sync?ID=<member_ous_uid>, which "
+            "returns a VOTable of the actual files to fetch (follow the "
+            "indirection, as with CADC). Don't rely on access_format to detect "
+            "this — ALMA truncates it to 9 chars ('applicati').",
+            "The sourcecatalogue.source_cone_search table is a calibrator / "
+            "source flux catalogue (m_ra, m_dec, m_frequency in Hz, m_flux in "
+            "Jy, band_name — including 'non-ALMA Band' entries), separate from "
+            "the obscore observation view. Filter it spatially on m_ra/m_dec; "
+            "its s_ra_deg/s_dec_deg can be NULL, so CONTAINS on those throws "
+            "an Oracle SDO_GEOMETRY error.",
             "Mirrored at almascience.nrao.edu (NA), almascience.eso.org (EU), "
-            "and almascience.nao.ac.jp (EA). All three TAP endpoints serve "
-            "identical data.",
+            "and almascience.nao.ac.jp (EA). All three serve identical data, "
+            "over TAP, SIAv2, and DataLink alike.",
         ),
     ),
     Archive(
