@@ -37,6 +37,51 @@ class Schema:
 
 SCHEMA_KB: tuple[Schema, ...] = (
     Schema(
+        archive="alma",
+        table="ivoa.obscore",
+        # Extended ObsCore 1.1 view — all mandatory ObsCore columns present.
+        value_enums={
+            # Controlled vocabulary (full-table DISTINCT). Empty string also
+            # occurs for rows with no assigned category.
+            "scientific_category": (
+                "Active galaxies",
+                "Cosmology",
+                "Disks and planet formation",
+                "Galaxy evolution",
+                "ISM and star formation",
+                "Local Universe",
+                "Solar system",
+                "Stars and stellar evolution",
+                "Sun",
+            ),
+            "dataproduct_type": ("cube", "image"),
+            "data_rights": ("Public", "Proprietary"),
+            # 'T'/'F' char flags, not SQL booleans.
+            "science_observation": ("T", "F"),
+            "qa2_passed": ("T", "F"),
+        },
+        notes=(
+            "member_ous_uid identifies a downloadable dataset (Member OUS). "
+            "Rows are finer than that — one per spectral window per execution "
+            "— so SELECT DISTINCT member_ous_uid is the way to count/collapse "
+            "to datasets.",
+            "Two spatial columns: s_ra/s_dec is the pointing centre (a point); "
+            "s_region is the WKT footprint of the observed field. Use "
+            "INTERSECTS(CIRCLE(...), s_region) to catch mosaics and fields "
+            "whose centre lies outside a small search radius.",
+            "band_list is a space-separated list of ALMA receiver bands "
+            "present, e.g. '6' or '3 6 7'. Bands run 1, 3-10 (no band 2). "
+            "Beware LIKE '%1%' — it also matches band 10; match an exact token "
+            "(band_list = '6') or pad with delimiters.",
+            "calib_level: 2 = Member-OUS (per-execution) products, 3 = "
+            "Group-OUS (combined) products.",
+            "frequency is the tuned sky reference frequency (GHz); "
+            "frequency_support holds the full per-spectral-window frequency "
+            "ranges. em_min/em_max are the standard ObsCore wavelengths (m).",
+        ),
+        cross_refs=(("nrao", "tap_schema.obscore"),),
+    ),
+    Schema(
         archive="nrao",
         table="tap_schema.obscore",
         missing_standard_columns=("dataproduct_subtype",),

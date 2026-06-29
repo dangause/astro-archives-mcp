@@ -37,6 +37,17 @@ def test_lookup_schema_finds_known_entry():
     assert s.table == "tap_schema.obscore"
 
 
+def test_lookup_schema_finds_alma_obscore():
+    s = lookup_schema(archive="alma", table="ivoa.obscore")
+    assert s is not None
+    # Controlled vocabularies the LLM filters on (verified against live TAP).
+    assert "scientific_category" in s.value_enums
+    assert s.value_enums["data_rights"] == ("Public", "Proprietary")
+    assert s.value_enums["science_observation"] == ("T", "F")
+    # Cross-linked to NRAO's obscore (ALMA is mirrored at NRAO).
+    assert ("nrao", "tap_schema.obscore") in s.cross_refs
+
+
 def test_lookup_schema_returns_none_for_unknown_pair():
     assert lookup_schema(archive="bogus", table="bogus") is None
 
