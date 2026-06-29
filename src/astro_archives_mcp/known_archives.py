@@ -56,6 +56,10 @@ KNOWN_ARCHIVES: tuple[Archive, ...] = (
         display_name="NOIRLab Astro Data Lab",
         host_substrings=("datalab.noirlab",),
         tap_url="https://datalab.noirlab.edu/tap",
+        # SIA 1.0 (per-survey endpoints under /sia/...). coadd_all searches
+        # every coadded survey at once; vo_sia_search reaches it via its
+        # SIA1 fallback.
+        sia_url="https://datalab.noirlab.edu/sia/coadd_all",
         waveband="optical",
         description=("Optical surveys: NSC, SMASH, DECaPS, DES. Large object catalogs."),
         notable_tables=(
@@ -91,11 +95,13 @@ KNOWN_ARCHIVES: tuple[Archive, ...] = (
             "parser. q3c_ellipse_query / q3c_poly_query exist too. A "
             "bounding-box (`ra BETWEEN ... AND dec BETWEEN ...`) also works "
             "but returns a box, not a circle.",
-            "Image access is SIAv1, not SIA2: each survey/image-type has its "
-            "own endpoint (e.g. https://datalab.noirlab.edu/sia/coadd/ls_dr9, "
-            "/sia/coadd/des_dr1, /sia/calibrated/smash_dr2). vo_sia_search "
-            "speaks SIA2 and CANNOT drive these — its capabilities probe 400s "
-            "against them. Reach them only with a SIAv1-capable client.",
+            "Image access is SIA 1.0 (not SIA2), exposed per survey/image-type: "
+            "https://datalab.noirlab.edu/sia/coadd_all (all coadds at once), "
+            "or specific ones like /sia/coadd/ls_dr9, /sia/coadd/des_dr1, "
+            "/sia/calibrated/smash_dr2. vo_sia_search drives these via its "
+            "SIA1 fallback (version='auto'), or pass version='1'. Returned "
+            "access_url values are on-the-fly cutout links (/svc/cutout?...), "
+            "fetchable with vo_sia_fetch.",
             "vo_cone_search works (e.g. /scs/nsc_dr2/object) but SCS returns "
             "EVERY column of these very wide tables (nsc_dr2.object has ~99). "
             "When you need only a few columns, prefer a TAP query with an "
@@ -403,9 +409,10 @@ def sia_endpoint_description() -> str:
     primary = [a for a in KNOWN_ARCHIVES if a.sia_url][:2]
     examples_text = _format_examples(primary, "sia")
     return (
-        f"SIA 2.0 endpoint URL. Example: {examples_text}. "
-        "Note: NOIRLab Data Lab is SIA v1; use SIA2-capable archives. "
-        "Discover with vo_registry_search(servicetype='sia')."
+        f"SIA endpoint URL — SIA 2.0 or 1.0. Example: {examples_text}. "
+        "vo_sia_search auto-detects the version (SIA2, falling back to SIA1 "
+        "as used by NOIRLab Data Lab); pass the version argument to force one. "
+        "Discover endpoints with vo_registry_search(servicetype='sia')."
     )
 
 
