@@ -112,8 +112,23 @@ def test_datalab_usage_notes_cover_known_adql_quirks():
     notes_joined = " ".join(datalab.usage_notes).lower()
     # ADQL geometric function gap (D-02 + D-03)
     assert "bounding-box" in notes_joined or "bounding box" in notes_joined
+    # ...but the verified-live remedy is Q3C, not just client-side trimming.
+    assert "q3c_radial_query" in notes_joined
+    # Image access is SIAv1 — vo_sia_search (SIA2) can't drive it.
+    assert "siav1" in notes_joined or "sia2" in notes_joined
     # NSC blend flags on bright sources (D-04)
     assert "blend" in notes_joined or "flags" in notes_joined
+
+
+def test_datalab_schema_kb_nsc_recommends_q3c():
+    """The nsc_dr2.object curated entry should steer toward the Q3C cone
+    filter that actually works (ADQL CONTAINS does not)."""
+    from astro_archives_mcp.schema_kb import lookup_schema
+
+    s = lookup_schema(archive="datalab", table="nsc_dr2.object")
+    assert s is not None
+    notes_joined = " ".join(s.notes).lower()
+    assert "q3c_radial_query" in notes_joined
 
 
 def test_nrao_label_resolves_to_nrao_not_alma_for_data_nrao_host():

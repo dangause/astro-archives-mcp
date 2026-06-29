@@ -56,6 +56,10 @@ KNOWN_ARCHIVES: tuple[Archive, ...] = (
         display_name="NOIRLab Astro Data Lab",
         host_substrings=("datalab.noirlab",),
         tap_url="https://datalab.noirlab.edu/tap",
+        # SIA 1.0 (per-survey endpoints under /sia/...). coadd_all searches
+        # every coadded survey at once; vo_sia_search reaches it via its
+        # SIA1 fallback.
+        sia_url="https://datalab.noirlab.edu/sia/coadd_all",
         waveband="optical",
         description=("Optical surveys: NSC, SMASH, DECaPS, DES. Large object catalogs."),
         notable_tables=(
@@ -80,12 +84,28 @@ KNOWN_ARCHIVES: tuple[Archive, ...] = (
             "SCS URL convention is `/scs/<dataset>/<table>` (e.g. "
             "`/scs/nsc_dr2/object`), NOT `/scs/<dataset>`. The shorter "
             "form returns 404.",
-            "ADQL geometric functions (DISTANCE, POINT, CIRCLE, CONTAINS, "
-            "INTERSECTS) are NOT translated by the Data Lab backend, "
-            "despite being mandatory per TAP 1.1. Use bounding-box "
-            "predicates instead: `ra BETWEEN <lo> AND <hi> AND dec BETWEEN "
-            "<lo> AND <hi>`. Trim to a true circle / compute separations "
-            "client-side after fetching.",
+            "ADQL geometry functions (POINT, CIRCLE, CONTAINS, INTERSECTS, "
+            "DISTANCE) are NOT translated — the backend passes them straight "
+            "to PostgreSQL, so `CONTAINS(POINT('ICRS', ra, dec), CIRCLE(...))` "
+            "fails with `function point(...) does not exist`. For a true "
+            "indexed cone use the Q3C functions the tables are clustered on, "
+            "compared to a boolean literal: `WHERE q3c_radial_query(ra, dec, "
+            "<ra0>, <dec0>, <radius_deg>) = 't'`. The `= 't'` is required — a "
+            "bare `q3c_radial_query(...)` predicate is rejected by the ADQL "
+            "parser. q3c_ellipse_query / q3c_poly_query exist too. A "
+            "bounding-box (`ra BETWEEN ... AND dec BETWEEN ...`) also works "
+            "but returns a box, not a circle.",
+            "Image access is SIA 1.0 (not SIA2), exposed per survey/image-type: "
+            "https://datalab.noirlab.edu/sia/coadd_all (all coadds at once), "
+            "or specific ones like /sia/coadd/ls_dr9, /sia/coadd/des_dr1, "
+            "/sia/calibrated/smash_dr2. vo_sia_search drives these via its "
+            "SIA1 fallback (version='auto'), or pass version='1'. Returned "
+            "access_url values are on-the-fly cutout links (/svc/cutout?...), "
+            "fetchable with vo_sia_fetch.",
+            "vo_cone_search works (e.g. /scs/nsc_dr2/object) but SCS returns "
+            "EVERY column of these very wide tables (nsc_dr2.object has ~99). "
+            "When you need only a few columns, prefer a TAP query with an "
+            "explicit column list plus a q3c_radial_query filter.",
             "Bright/extended sources in NSC DR2 (e.g. BCGs, large "
             "galaxies) commonly carry blend flags (flags=3). Filtering "
             "with flags=0 silently excludes them. When searching for "
@@ -389,9 +409,10 @@ def sia_endpoint_description() -> str:
     primary = [a for a in KNOWN_ARCHIVES if a.sia_url][:2]
     examples_text = _format_examples(primary, "sia")
     return (
-        f"SIA 2.0 endpoint URL. Example: {examples_text}. "
-        "Note: NOIRLab Data Lab is SIA v1; use SIA2-capable archives. "
-        "Discover with vo_registry_search(servicetype='sia')."
+        f"SIA endpoint URL — SIA 2.0 or 1.0. Example: {examples_text}. "
+        "vo_sia_search auto-detects the version (SIA2, falling back to SIA1 "
+        "as used by NOIRLab Data Lab); pass the version argument to force one. "
+        "Discover endpoints with vo_registry_search(servicetype='sia')."
     )
 
 
