@@ -48,8 +48,9 @@ class Archive:
 
 
 KNOWN_ARCHIVES: tuple[Archive, ...] = (
-    # Primary collaborator archives (NOIRLab + NRAO) come first so they
-    # take the top two slots in tool schema examples.
+    # Declaration order is load-bearing: the first TAP-having entries are the
+    # endpoint examples surfaced in tool schemas (see tap_endpoint_description).
+    # Keep the archives we most want the LLM to reach for at the top.
     Archive(
         short_name="datalab",
         display_name="NOIRLab Astro Data Lab",
@@ -90,6 +91,83 @@ KNOWN_ARCHIVES: tuple[Archive, ...] = (
             "with flags=0 silently excludes them. When searching for "
             "bright objects in dense regions (cluster cores, etc.), drop "
             "the flag filter or post-filter client-side.",
+        ),
+    ),
+    Archive(
+        short_name="alma",
+        display_name="ALMA Science Archive",
+        host_substrings=("almascience",),
+        tap_url="https://almascience.nrao.edu/tap",
+        sia_url="https://almascience.nrao.edu/sia2",
+        waveband="millimeter",
+        description=(
+            "Millimeter/submillimeter interferometric data from ALMA, served "
+            "as an extended ObsCore 1.1 view (ivoa.obscore) with ALMA-specific "
+            "columns (proposal/PI metadata, receiver bands, QA flags, "
+            "sensitivities) and bibliography links to refereed publications. "
+            "Also exposes a SIAv2 image-discovery service and a DataLink "
+            "download service. Mirrored at NRAO (NA), ESO (EU), and NAOJ (EA)."
+        ),
+        notable_tables=("ivoa.obscore", "sourcecatalogue.source_cone_search"),
+        usage_notes=(
+            "Spatial filters work directly in sync — no need to avoid them. "
+            "Two forms: INTERSECTS(CIRCLE('ICRS', ra, dec, r), s_region) = 1 "
+            "matches the actual observed field footprint (mosaics included) "
+            "and is the form ALMA's own example queries use; "
+            "CONTAINS(POINT('ICRS', s_ra, s_dec), CIRCLE('ICRS', ra, dec, r)) "
+            "= 1 matches only the pointing centre. Prefer INTERSECTS against "
+            "s_region for completeness.",
+            "Sync is fine for spatially- or proposal-filtered queries. "
+            "Unfiltered full-table scans and aggregates (e.g. SELECT DISTINCT "
+            "<col> or GROUP BY <col> with no WHERE) time out on /sync against "
+            "this large table — run those with mode='async' (or 'auto', which "
+            "auto-promotes on timeout).",
+            "Rows are at spectral-window x execution granularity: one Member "
+            "OUS yields many rows (one per spectral window per execution "
+            "block). member_ous_uid is the canonical key for a downloadable "
+            "dataset — use SELECT DISTINCT member_ous_uid to collapse to "
+            "distinct datasets. Do NOT GROUP BY t_min: a single OUS spans "
+            "multiple executions with different t_min.",
+            "Every observation also carries calibration scans. Filter "
+            "science_observation = 'T' to drop pointing/calibration rows, and "
+            "qa2_passed = 'T' to keep only data that passed Quality Assurance "
+            "2 (both are 'T'/'F' char flags, not booleans).",
+            "target_name often holds a calibrator/source designation (e.g. "
+            "'J1325-4301'), not a popular source name. Match cross-archive by "
+            "POSITION (cone on s_ra/s_dec or INTERSECTS on s_region), not by "
+            "target_name. A separate sourcecatalogue.source_cone_search view "
+            "exposes measured calibrator fluxes.",
+            "The obscore view is enriched for literature/PI discovery: "
+            "obs_creator_name and pi_name (PI, case-insensitive partial "
+            "match), proposal_authors, first_author / authors / pub_title / "
+            "pub_abstract / publication_year / bib_reference (refereed "
+            "publications), and proposal_abstract. These support 'find the "
+            "ALMA data behind paper X' or 'data with PI Y' directly in ADQL.",
+            "data_rights is 'Public' or 'Proprietary'. Proprietary datasets "
+            "(still inside their proprietary period) are listed but not "
+            "downloadable; obs_release_date is the public-availability "
+            "timestamp.",
+            "Beyond TAP, ALMA exposes a SIAv2 service "
+            "(https://almascience.nrao.edu/sia2) for positional image "
+            "discovery. It returns the same extended-ObsCore columns as the "
+            "TAP view, so the obscore filtering knowledge applies. Use "
+            "vo_sia_search for 'what ALMA images cover this position' without "
+            "writing ADQL.",
+            "Downloads go through DataLink, not direct file links. access_url "
+            "on both obscore and SIA rows points at "
+            "https://almascience.org/datalink/sync?ID=<member_ous_uid>, which "
+            "returns a VOTable of the actual files to fetch (follow the "
+            "indirection, as with CADC). Don't rely on access_format to detect "
+            "this — ALMA truncates it to 9 chars ('applicati').",
+            "The sourcecatalogue.source_cone_search table is a calibrator / "
+            "source flux catalogue (m_ra, m_dec, m_frequency in Hz, m_flux in "
+            "Jy, band_name — including 'non-ALMA Band' entries), separate from "
+            "the obscore observation view. Filter it spatially on m_ra/m_dec; "
+            "its s_ra_deg/s_dec_deg can be NULL, so CONTAINS on those throws "
+            "an Oracle SDO_GEOMETRY error.",
+            "Mirrored at almascience.nrao.edu (NA), almascience.eso.org (EU), "
+            "and almascience.nao.ac.jp (EA). All three serve identical data, "
+            "over TAP, SIAv2, and DataLink alike.",
         ),
     ),
     Archive(
@@ -171,33 +249,6 @@ KNOWN_ARCHIVES: tuple[Archive, ...] = (
             "(raw Tomcat HTML). ObsCore-by-datamodel discovery is impossible "
             "because no capability document declares the data model. Always "
             "validate Content-Type is text/xml before trusting any VOSI body.",
-        ),
-    ),
-    Archive(
-        short_name="alma",
-        display_name="ALMA Science Archive",
-        host_substrings=("almascience",),
-        tap_url="https://almascience.nrao.edu/tap",
-        waveband="millimeter",
-        description=(
-            "Millimeter/submillimeter interferometric data from ALMA. "
-            "Mirrored at NRAO (almascience.nrao.edu) and ESO. Schema "
-            "follows ivoa.obscore."
-        ),
-        notable_tables=("ivoa.obscore",),
-        usage_notes=(
-            "Rows in ivoa.obscore are at the spectral-window / tuning "
-            "granularity, NOT execution-block. A single observing execution "
-            "produces multiple rows (one per spectral window). For "
-            "'N most recent epochs' style queries, GROUP BY t_min (or "
-            "obs_publisher_did) to collapse to distinct executions.",
-            "Geometry queries using CONTAINS(POINT('ICRS', s_ra, s_dec), "
-            "CIRCLE(...)) have been observed to fail or hit timeouts on "
-            "ALMA's obscore. Consider mode='async' or fall back to a "
-            "target_name LIKE filter when positional joins misbehave.",
-            "Mirrored at almascience.nrao.edu (NA), almascience.eso.org "
-            "(EU), and almascience.nao.ac.jp (EA). All three TAP endpoints "
-            "serve identical data.",
         ),
     ),
     Archive(
