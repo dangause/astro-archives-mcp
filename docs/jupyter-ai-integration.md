@@ -1,7 +1,7 @@
 # Integrating astro-archives-mcp with Jupyter AI
 
 Status: working notes / local-test recipe. Target deployment: Astro Data Lab notebook
-server **gp12**, surfacing the VO tools to notebook users via Jupyter AI chat.
+server **gp13**, surfacing the VO tools to notebook users via Jupyter AI chat.
 
 ## How the pieces fit
 
@@ -33,7 +33,7 @@ JupyterLab chat  →  ACP agent ("persona")  →  MCP servers
 |------------------|----------------------------------------------------------------|-------|
 | JupyterLab 4 + Jupyter AI v3 | `pip install jupyter-ai` (or conda-forge)          | Use a **separate env** from this server's `uv` env. |
 | Node.js          | conda/system package                                           | Required by the Claude Code ACP adapter. |
-| An ACP agent     | `npm install -g @zed-industries/claude-agent-acp`              | Provides the `claude-agent-acp` binary the Claude persona launches (verified against `jupyter_ai_acp_client` 0.1.5). npm warns it was renamed to `@agentclientprotocol/claude-agent-acp` — either works today. |
+| An ACP agent     | `npm install -g @anthropic-ai/claude-code @zed-industries/claude-agent-acp` | Provides the `claude-agent-acp` binary the Claude persona launches; it wraps the `claude` CLI for auth/model calls, so install both (verified against `jupyter_ai_acp_client` 0.1.5). npm warns the adapter was renamed to `@agentclientprotocol/claude-agent-acp` — either works today. |
 | Agent auth       | reuse your existing Claude Code login                          | The Claude persona wraps the `claude` CLI's own auth, so if you already use Claude Code you're set. If a token is expired the persona replies telling you to run `claude /login`. No separate API key step. |
 | This MCP server  | `uv run python -m astro_archives_mcp`                          | Serves `http://localhost:8000/mcp/`. |
 
@@ -50,8 +50,8 @@ JupyterLab chat  →  ACP agent ("persona")  →  MCP servers
    ```bash
    python -m venv ~/jai-test && source ~/jai-test/bin/activate
    pip install "jupyter-ai>=3" jupyterlab
-   # install the Claude persona's ACP adapter (needs Node.js):
-   npm install -g @zed-industries/claude-agent-acp
+   # the Claude persona's ACP adapter wraps the `claude` CLI, so install both (needs Node.js):
+   npm install -g @anthropic-ai/claude-code @zed-industries/claude-agent-acp
    ```
    > Tip: pin a venv to Python 3.12 — the Jupyter stack may lack wheels on very new
    > Python (e.g. 3.14). `uv venv --python 3.12 .venv` works well.
@@ -87,9 +87,9 @@ JupyterLab chat  →  ACP agent ("persona")  →  MCP servers
    > coordinates of M51."
    The persona should call `vo_archive_list` / `vo_target_resolve`.
 
-## gp12 deployment notes (after local works)
+## gp13 deployment notes (after local works)
 
-gp12 is a **shared JupyterHub**: it spawns a per-user single-user notebook server
+gp13 is a **shared JupyterHub**: it spawns a per-user single-user notebook server
 (effectively a VM/container per user when they open a notebook). That changes where the
 MCP server should run, because "localhost" means *inside the user's spawned VM*, not a
 shared host. Two topologies:
@@ -100,13 +100,13 @@ shared host. Two topologies:
 | **B. Shared service** | One MCP server on a host reachable from all user VMs (e.g. `http://astro-mcp.internal:8000/mcp/`). | Single deployment to operate/upgrade. | Needs network reachability from spawned VMs + likely auth once off-loopback (see `docs/adl-split.md` bearer path, `deploy/staging-runbook.md` nginx/timeout tuning). |
 
 Because the tools are **anonymous and read-only**, topology A is the path of least
-resistance for a first gp12 rollout — no auth surface, no shared-host networking, and the
+resistance for a first gp13 rollout — no auth surface, no shared-host networking, and the
 config is byte-for-byte the local recipe.
 
 - **Config delivery.** Whichever topology, `mcp_settings.json` must land where each user's
   JupyterLab reads Jupyter config. Bake it into the single-user image (system Jupyter
   config dir) so every spawned VM has it without per-user setup. Confirm the exact path
-  against the gp12 image's `jupyter --paths`.
+  against the gp13 image's `jupyter --paths`.
 - **Agent (Claude Code) at scale.** The persona is Claude Code via its ACP adapter; every
   user's persona needs its own model auth. Options: a shared org Anthropic key provisioned
   into the image/env, or each user logging in. This is the main provisioning decision and

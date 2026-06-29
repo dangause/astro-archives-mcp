@@ -6,10 +6,20 @@
 # docker-stacks *sources* these files, so we background the server (never block
 # startup) and make the launch idempotent (safe if the hook runs more than once).
 #
-# Pairs with ~/.jupyter/mcp_settings.json (see ../mcp_settings.json), which points
-# the Jupyter AI persona at http://127.0.0.1:8000/mcp/.
+# Also seeds ~/.jupyter/mcp_settings.json from the image-staged copy under /opt,
+# pointing the Jupyter AI persona at http://127.0.0.1:8000/mcp/. Seeding here
+# (rather than baking into the image's $HOME) means the config survives a
+# persistent-$HOME volume mount, which would otherwise shadow a baked-in file.
 
 ASTRO_MCP_PORT="${ASTRO_MCP_PORT:-8000}"
+
+# Seed the MCP config into the dir Jupyter AI resolves (~/.jupyter). Authoritative
+# refresh each spawn so the deployment's URL can't drift; staged file is read-only.
+ASTRO_MCP_CFG_SRC="${ASTRO_MCP_CFG_SRC:-/opt/astro-archives/mcp_settings.json}"
+if [ -f "$ASTRO_MCP_CFG_SRC" ]; then
+    mkdir -p "$HOME/.jupyter"
+    cp -f "$ASTRO_MCP_CFG_SRC" "$HOME/.jupyter/mcp_settings.json"
+fi
 
 # Astropy/pyvo MUST have writable scratch for their caches, or every
 # vo_target_resolve / vo_registry_search returns archive_error. Keep these on the

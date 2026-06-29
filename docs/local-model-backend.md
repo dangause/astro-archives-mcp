@@ -3,9 +3,9 @@
 Status: **research draft — validate on the box before relying on it.** This explores
 backing the Jupyter AI "Claude" persona with a self-hosted model on the GPU box
 `dlai01` (4× NVIDIA RTX PRO 6000 Blackwell, ~96 GB each ≈ 384 GB, sm_120, CUDA 13.x)
-instead of hosted Claude. It's the §4 "local model" option in `deploy/gp12-runbook.md`.
+instead of hosted Claude. It's the §4 "local model" option in `deploy/gp13-runbook.md`.
 Goal framing: **PoC feasibility, optimized for agentic MCP tool-calling reliability.**
-Throughput/concurrency was out of the original PoC scope but matters for gp12's dozens of
+Throughput/concurrency was out of the original PoC scope but matters for gp13's dozens of
 users — covered in **§5**.
 
 > **Confidence note.** Backed by a deep-research pass (25 sources). Across two
@@ -111,9 +111,9 @@ Two candidates, and an honest tradeoff between them:
   back on the strict-mode specifics, so treat as unconfirmed). Regardless, expect
   occasional malformed args; the agent loop should tolerate/retry.
 
-## 5. Concurrency — supporting dozens of gp12 users
+## 5. Concurrency — supporting dozens of gp13 users
 
-The PoC research was deliberately scoped to single-user feasibility. gp12 must serve
+The PoC research was deliberately scoped to single-user feasibility. gp13 must serve
 **dozens of concurrent users**, which materially changes the calculus. (Sources: VRLA
 Tech RTX PRO 6000 capacity analysis, allenkuo Blackwell-vLLM benchmarks, vLLM
 optimization docs, Spheron KV-cache guide — all [lead].)
@@ -166,7 +166,7 @@ only way to fix the numbers.
 recipe; llama.cpp's default CUDA build is broken on sm_120); (2) the `qwen3_coder` +
 `qwen3` reasoning-parser tool-loss bug (disable thinking, verify calls land); (3)
 thinking-token budget exhaustion stalling the agent loop; (4) version-specific streaming
-tool-call bugs; (5) **concurrency at gp12 scale** — KV cache, not compute, is the limiter
+tool-call bugs; (5) **concurrency at gp13 scale** — KV cache, not compute, is the limiter
 for long agentic contexts; the tool-use-max 235B trades away concurrency headroom (§5).
 
 ## Sources
