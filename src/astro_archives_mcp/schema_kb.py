@@ -110,10 +110,15 @@ SCHEMA_KB: tuple[Schema, ...] = (
         archive="datalab",
         table="nsc_dr2.object",
         notes=(
-            "Convenience columns for indexed spatial filtering: htm9 "
-            "(~10 arcmin), healpix_ring256 (~14 arcmin), "
-            "healpix_nest4096 (~52 arcsec). These work in bounding-box "
-            "queries even when ADQL geometry functions don't.",
+            "For a cone, the simplest reliable filter is "
+            "q3c_radial_query(ra, dec, <ra0>, <dec0>, <radius_deg>) = 't' "
+            "(the table is Q3C-clustered on ra/dec). ADQL CONTAINS/POINT do "
+            "NOT work here — see the datalab usage_notes.",
+            "Pre-computed index columns also exist for coarse bucketing: htm9 "
+            "(~10 arcmin), healpix_ring256 (~14 arcmin), healpix_nest4096 "
+            "(~52 arcsec). Usable in bounding-box / equality predicates.",
+            "~99 columns wide. Always project an explicit column list; "
+            "SELECT * (or an SCS cone) returns the whole row.",
         ),
     ),
     Schema(

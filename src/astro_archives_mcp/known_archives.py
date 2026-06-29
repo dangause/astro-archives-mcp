@@ -80,12 +80,26 @@ KNOWN_ARCHIVES: tuple[Archive, ...] = (
             "SCS URL convention is `/scs/<dataset>/<table>` (e.g. "
             "`/scs/nsc_dr2/object`), NOT `/scs/<dataset>`. The shorter "
             "form returns 404.",
-            "ADQL geometric functions (DISTANCE, POINT, CIRCLE, CONTAINS, "
-            "INTERSECTS) are NOT translated by the Data Lab backend, "
-            "despite being mandatory per TAP 1.1. Use bounding-box "
-            "predicates instead: `ra BETWEEN <lo> AND <hi> AND dec BETWEEN "
-            "<lo> AND <hi>`. Trim to a true circle / compute separations "
-            "client-side after fetching.",
+            "ADQL geometry functions (POINT, CIRCLE, CONTAINS, INTERSECTS, "
+            "DISTANCE) are NOT translated — the backend passes them straight "
+            "to PostgreSQL, so `CONTAINS(POINT('ICRS', ra, dec), CIRCLE(...))` "
+            "fails with `function point(...) does not exist`. For a true "
+            "indexed cone use the Q3C functions the tables are clustered on, "
+            "compared to a boolean literal: `WHERE q3c_radial_query(ra, dec, "
+            "<ra0>, <dec0>, <radius_deg>) = 't'`. The `= 't'` is required — a "
+            "bare `q3c_radial_query(...)` predicate is rejected by the ADQL "
+            "parser. q3c_ellipse_query / q3c_poly_query exist too. A "
+            "bounding-box (`ra BETWEEN ... AND dec BETWEEN ...`) also works "
+            "but returns a box, not a circle.",
+            "Image access is SIAv1, not SIA2: each survey/image-type has its "
+            "own endpoint (e.g. https://datalab.noirlab.edu/sia/coadd/ls_dr9, "
+            "/sia/coadd/des_dr1, /sia/calibrated/smash_dr2). vo_sia_search "
+            "speaks SIA2 and CANNOT drive these — its capabilities probe 400s "
+            "against them. Reach them only with a SIAv1-capable client.",
+            "vo_cone_search works (e.g. /scs/nsc_dr2/object) but SCS returns "
+            "EVERY column of these very wide tables (nsc_dr2.object has ~99). "
+            "When you need only a few columns, prefer a TAP query with an "
+            "explicit column list plus a q3c_radial_query filter.",
             "Bright/extended sources in NSC DR2 (e.g. BCGs, large "
             "galaxies) commonly carry blend flags (flags=3). Filtering "
             "with flags=0 silently excludes them. When searching for "
