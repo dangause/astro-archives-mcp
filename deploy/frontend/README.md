@@ -63,16 +63,18 @@ faithful stand-in for a single spawned user session.
 
 ## Status / caveats
 
-- **`chat` mode build + plumbing VALIDATED** (2026-07-01, macOS arm64): both images build;
-  `mcp` service healthy; the lab container has node + `claude` + `claude-agent-acp` +
-  jupyter-ai 3.0.1, the seeded `mcp_settings.json`, and reaches `http://mcp:8000/health`
-  cross-container; JupyterLab serves. First-run fix applied: host port is now
-  `JUPYTER_PORT` (8888 was taken locally).
-- **Not yet exercised:** the live persona→model→tool call (needs Claude creds in the
-  container + a reachable model endpoint), and **`hub` mode** (not yet built/run — watch
-  the jupyterhub↔singleuser version match and the `DOCKER_NETWORK` name).
-- **Model reachability:** local→dlai01 needs 443 open + authenticated (pending IT). Until
-  then, run with hosted Claude (blank `ANTHROPIC_BASE_URL` + your token/login) to exercise
-  the full chain.
+- **`chat` mode VALIDATED end-to-end** (2026-07-01, macOS arm64, hosted Claude): both
+  images build; `mcp` service healthy; the lab container has node + `claude` +
+  `claude-agent-acp` + jupyter-ai 3.0.1 + seeded `mcp_settings.json`; reaches
+  `http://mcp:8000` cross-container; JupyterLab serves; and an **in-container persona call
+  resolved M51 via the MCP tool** (persona → hosted Claude → `mcp:8000` →
+  `vo_target_resolve`). First-run fixes: host port is now `JUPYTER_PORT` (8888 was taken),
+  and — see below — the `*_MODEL` overrides must be cleared for hosted Claude.
+- **Gotcha — `ANTHROPIC_DEFAULT_*_MODEL` is backend-coupled.** Set to vLLM's served name
+  for the local backend; **comment out for hosted Claude** or Claude Code requests a
+  "Qwen/…" model Anthropic doesn't have ("model may not exist"). See `.env.example`.
+- **Not yet exercised:** the **local dlai01 backend** over 443 (needs 443 open +
+  authenticated, pending IT — flip to Option B in `.env`), and **`hub` mode** (not yet
+  built/run — watch the jupyterhub↔singleuser version match and the `DOCKER_NETWORK` name).
 - **Auth is dummy** in hub mode — local dev only. Replace the authenticator for anything
   exposed.
