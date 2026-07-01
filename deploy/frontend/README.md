@@ -63,12 +63,16 @@ faithful stand-in for a single spawned user session.
 
 ## Status / caveats
 
-- **Not yet test-run end to end** — authored against the documented interfaces; needs a
-  pass on a docker host (the Mac or dlai01). Most likely first-run fixes: exact
-  docker-stacks start-command flags, jupyterhub↔singleuser version match, and the
-  DockerSpawner network name.
+- **`chat` mode build + plumbing VALIDATED** (2026-07-01, macOS arm64): both images build;
+  `mcp` service healthy; the lab container has node + `claude` + `claude-agent-acp` +
+  jupyter-ai 3.0.1, the seeded `mcp_settings.json`, and reaches `http://mcp:8000/health`
+  cross-container; JupyterLab serves. First-run fix applied: host port is now
+  `JUPYTER_PORT` (8888 was taken locally).
+- **Not yet exercised:** the live persona→model→tool call (needs Claude creds in the
+  container + a reachable model endpoint), and **`hub` mode** (not yet built/run — watch
+  the jupyterhub↔singleuser version match and the `DOCKER_NETWORK` name).
 - **Model reachability:** local→dlai01 needs 443 open + authenticated (pending IT). Until
-  then, run with hosted Claude (blank `ANTHROPIC_BASE_URL`) to validate the frontend
-  plumbing (MCP loads, persona calls tools).
+  then, run with hosted Claude (blank `ANTHROPIC_BASE_URL` + your token/login) to exercise
+  the full chain.
 - **Auth is dummy** in hub mode — local dev only. Replace the authenticator for anything
   exposed.

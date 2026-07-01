@@ -42,7 +42,7 @@ services:
     image: ${FRONTEND_IMAGE:-astro-frontend:dev}
     command: ["start-notebook.py", "--IdentityProvider.token="]  # no token, local only
     ports:
-      - "127.0.0.1:8888:8888"
+      - "127.0.0.1:${JUPYTER_PORT:-8888}:8888"
     env_file: .env
     depends_on:
       mcp:
