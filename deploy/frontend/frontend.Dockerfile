@@ -25,6 +25,10 @@ RUN mamba install -y -c conda-forge nodejs && mamba clean -afy \
 USER ${NB_UID}
 COPY --chown=${NB_UID}:${NB_GID} mcp_settings.json /home/${NB_USER}/.jupyter/mcp_settings.json
 
+# Pre-allow all astro-archives MCP tools so the persona runs them without a per-call
+# permission prompt (Claude Code reads permissions.allow from ~/.claude/settings.json).
+COPY --chown=${NB_UID}:${NB_GID} claude_settings.json /home/${NB_USER}/.claude/settings.json
+
 # Persona credentials/model endpoint are injected at runtime (compose env_file),
 # never baked: ANTHROPIC_BASE_URL / ANTHROPIC_AUTH_TOKEN / ANTHROPIC_DEFAULT_*_MODEL
 # / CLAUDE_CODE_MAX_OUTPUT_TOKENS.

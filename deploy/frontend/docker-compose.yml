@@ -64,6 +64,7 @@ services:
       HUB_SERVICE_NAME: hub
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock   # DockerSpawner needs the daemon
+      - ./jupyterhub_config.py:/srv/jupyterhub/jupyterhub_config.py:ro  # edit → restart, no rebuild
     depends_on:
       mcp:
         condition: service_healthy

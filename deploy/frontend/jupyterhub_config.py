@@ -21,6 +21,10 @@ c.JupyterHub.hub_connect_ip = os.environ.get("HUB_SERVICE_NAME", "hub")
 c.DockerSpawner.environment = {
     k: os.environ[k]
     for k in (
+        # persona auth — one of these must be forwarded or the spawned persona
+        # has no Claude credentials (hosted: OAUTH_TOKEN or API_KEY; local vLLM: AUTH_TOKEN)
+        "CLAUDE_CODE_OAUTH_TOKEN",
+        "ANTHROPIC_API_KEY",
         "ANTHROPIC_BASE_URL",
         "ANTHROPIC_AUTH_TOKEN",
         "ANTHROPIC_DEFAULT_OPUS_MODEL",
