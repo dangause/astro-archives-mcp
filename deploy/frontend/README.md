@@ -36,10 +36,14 @@ docker compose --profile hub up --build
 
 ## Configuration (`.env`)
 
-- **Model backend:** set `ANTHROPIC_BASE_URL` + `ANTHROPIC_AUTH_TOKEN` to the dlai01
-  endpoint once 443 is open (the token = vLLM's `--api-key`). Leave blank to use
-  **hosted Claude** — useful for exercising the frontend *before* 443 is ready.
-- `ANTHROPIC_DEFAULT_*_MODEL` must match vLLM's served model name.
+- **Model backend:** point `ANTHROPIC_BASE_URL` at the **datalab nginx proxy**
+  (`https://datalab.noirlab.edu/astro-archives-mcp`) and put the Basic-auth
+  credential in `ANTHROPIC_CUSTOM_HEADERS` (`Authorization: Basic <base64>`).
+  **Do NOT set `ANTHROPIC_AUTH_TOKEN`** — it injects a `Bearer` header that
+  collides with the Basic header and nginx 401s (see `.env.example` for the full
+  note). Leave `ANTHROPIC_BASE_URL` blank to fall back to **hosted Claude**.
+- `ANTHROPIC_DEFAULT_*_MODEL` must match vLLM's served model name (local backend
+  only; comment out for hosted Claude).
 - `CLAUDE_CODE_MAX_OUTPUT_TOKENS` caps output to fit the served window (runbook Gotcha 4).
 - Hub mode: `JUPYTERHUB_DUMMY_PASSWORD`, and `DOCKER_NETWORK` must equal the compose
   network (`<project>_default`; default `frontend_default` — update if you run with a
@@ -63,18 +67,32 @@ faithful stand-in for a single spawned user session.
 
 ## Status / caveats
 
-- **`chat` mode VALIDATED end-to-end** (2026-07-01, macOS arm64, hosted Claude): both
-  images build; `mcp` service healthy; the lab container has node + `claude` +
-  `claude-agent-acp` + jupyter-ai 3.0.1 + seeded `mcp_settings.json`; reaches
-  `http://mcp:8000` cross-container; JupyterLab serves; and an **in-container persona call
-  resolved M51 via the MCP tool** (persona → hosted Claude → `mcp:8000` →
-  `vo_target_resolve`). First-run fixes: host port is now `JUPYTER_PORT` (8888 was taken),
-  and — see below — the `*_MODEL` overrides must be cleared for hosted Claude.
+- **`chat` mode VALIDATED end-to-end against the real vLLM** (2026-07-02, macOS arm64):
+  `mcp` service healthy; the lab container reaches `http://mcp:8000` cross-container AND
+  the `datalab.noirlab.edu` proxy (HTTP 200 with Basic auth); and an **in-container
+  persona call resolved M51 via the MCP tool through vLLM** (persona → datalab proxy →
+  Qwen3.5 vLLM → `mcp:8000` → `vo_target_resolve` → RA 202.4696°, Dec +47.195°).
+  Previously (2026-07-01) validated against hosted Claude.
+- **Gotcha — Basic auth vs. `ANTHROPIC_AUTH_TOKEN`.** The proxy uses HTTP Basic auth
+  carried in `ANTHROPIC_CUSTOM_HEADERS`. Setting `ANTHROPIC_AUTH_TOKEN` too makes Claude
+  Code send a competing `Bearer` header → nginx 401. Leave AUTH_TOKEN unset. See
+  `.env.example`.
+- **Gotcha — set `ANTHROPIC_API_KEY=dummy` or you get logged out mid-session.** With auth
+  living only in `CUSTOM_HEADERS`, Claude Code has no credential its own login-state check
+  recognizes, so it intermittently prints *"You're not authenticated / run claude /login"*
+  mid-session. A dummy `ANTHROPIC_API_KEY` rides `x-api-key` (separate header, no collision
+  with Basic; keyless vLLM ignores it) and keeps Claude Code "logged in". Forwarded to
+  spawned hub containers via `jupyterhub_config.py`.
 - **Gotcha — `ANTHROPIC_DEFAULT_*_MODEL` is backend-coupled.** Set to vLLM's served name
   for the local backend; **comment out for hosted Claude** or Claude Code requests a
   "Qwen/…" model Anthropic doesn't have ("model may not exist"). See `.env.example`.
-- **Not yet exercised:** the **local dlai01 backend** over 443 (needs 443 open +
-  authenticated, pending IT — flip to Option B in `.env`), and **`hub` mode** (not yet
-  built/run — watch the jupyterhub↔singleuser version match and the `DOCKER_NETWORK` name).
+- **Cosmetic — `<think>` leak.** Qwen's replies begin with a reasoning preamble ending in
+  `</think>` before the answer (runbook Gotcha 5). Harmless; deferred.
+- **`hub` mode VALIDATED against vLLM** (2026-07-02): a hub-spawned single-user container
+  inherited the forwarded `ANTHROPIC_*` env (incl. `ANTHROPIC_CUSTOM_HEADERS`, with
+  `AUTH_TOKEN` unset) and its persona resolved M51 via the MCP tool through vLLM. Note:
+  `jupyterhub_config.py` must forward `ANTHROPIC_CUSTOM_HEADERS` (added 2026-07-02) or the
+  spawned persona has no Basic-auth header → 401. Watch the jupyterhub↔singleuser version
+  match and the `DOCKER_NETWORK` name when porting.
 - **Auth is dummy** in hub mode — local dev only. Replace the authenticator for anything
   exposed.

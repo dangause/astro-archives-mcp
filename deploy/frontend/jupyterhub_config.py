@@ -21,12 +21,15 @@ c.JupyterHub.hub_connect_ip = os.environ.get("HUB_SERVICE_NAME", "hub")
 c.DockerSpawner.environment = {
     k: os.environ[k]
     for k in (
-        # persona auth — one of these must be forwarded or the spawned persona
-        # has no Claude credentials (hosted: OAUTH_TOKEN or API_KEY; local vLLM: AUTH_TOKEN)
+        # persona auth — one of these must be forwarded or the spawned persona has no
+        # Claude credentials. Hosted: OAUTH_TOKEN or API_KEY. dlai01 vLLM via the datalab
+        # proxy: ANTHROPIC_CUSTOM_HEADERS carries the Basic-auth header (and AUTH_TOKEN
+        # must stay UNSET — a Bearer header collides with it → nginx 401; see .env.example).
         "CLAUDE_CODE_OAUTH_TOKEN",
         "ANTHROPIC_API_KEY",
         "ANTHROPIC_BASE_URL",
         "ANTHROPIC_AUTH_TOKEN",
+        "ANTHROPIC_CUSTOM_HEADERS",
         "ANTHROPIC_DEFAULT_OPUS_MODEL",
         "ANTHROPIC_DEFAULT_SONNET_MODEL",
         "ANTHROPIC_DEFAULT_HAIKU_MODEL",

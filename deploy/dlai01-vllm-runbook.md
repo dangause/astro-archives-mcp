@@ -7,7 +7,8 @@ commands, verified results, and every gotcha we hit.
 
 Paired with `docs/local-model-backend.md` (the *why* behind model choice) and
 `docs/jupyter-ai-integration.md` (the persona/MCP architecture). Status: **local chain
-VALIDATED**; not yet exposed off-box (see *Current status* at the end).
+VALIDATED** and **exposed off-box via the datalab nginx proxy (2026-07-02)** — reachable
+from a laptop and from the dockerized frontend (see *Current status* at the end).
 
 ---
 
@@ -112,9 +113,17 @@ docker run -d --name vllm --gpus all --ipc=host \
   --model Qwen/Qwen3.5-122B-A10B-FP8 \
   --tensor-parallel-size 4 \
   --enable-auto-tool-choice --tool-call-parser qwen3_coder \
-  --max-model-len 65536
+  --max-model-len 131072
 docker logs -f vllm            # wait for "Application startup complete" (~130 s)
 ```
+
+> **`--max-model-len` sizing (updated 2026-07-02).** Originally `65536`; agent loops that
+> accumulate tool results overflowed it (see Gotcha 4c). Raised to **131072**. First verify
+> the checkpoint's native limit — `docker exec vllm python -c "import json,glob; \
+> print(json.load(open(glob.glob('/root/.cache/huggingface/**/config.json',recursive=True)[0]))['max_position_embeddings'])"` —
+> if it's below your target you'd need `--rope-scaling` (YaRN), unvalidated here. Watch KV
+> memory on startup (`GPU KV cache size` in the logs); the box has headroom but a larger
+> window costs cache.
 
 Notes / verified behavior:
 - **sm_120 works out of the box** on `vllm/vllm-openai:latest` (vLLM **v0.23.0**) —
@@ -171,12 +180,26 @@ grep -c "CallToolRequest" ~/sbx/mcp.log            # ≥1 = tool actually fired
 3. **`claude mcp add --scope user`.** The default `local`/project scope only loads when
    `claude` runs from that project dir; `-p` from `~` saw *no* servers and the model
    reported "no astro-archives tools". User scope loads everywhere.
-4. **Token budget — two failure modes.** (a) Claude Code requests up to `32000` output
-   tokens by default; if that exceeds `--max-model-len`, vLLM returns **HTTP 500**. (b)
-   Claude Code's input floor is **~24.5K tokens** (its system prompt + the 12 `vo_*`
-   tool schemas). Fix: run vLLM at a generous `--max-model-len` (≥65536) **and** cap
-   `CLAUDE_CODE_MAX_OUTPUT_TOKENS` (8192). Long agent loops accumulate tool results, so
-   headroom matters.
+4. **Token budget — THREE failure modes, all surface as a bogus "You're not
+   authenticated with Claude" in chat** (Claude Code mis-maps the vLLM **HTTP 500** to an
+   auth error — the `ANTHROPIC_API_KEY=dummy` trick only hides the *intermittent* login
+   check, not a real 500). The arithmetic vLLM enforces is `input + max_output ≤
+   --max-model-len`; blow it and every retry re-sends the same oversized prompt → three
+   identical 500s.
+   - **(a) Output request too big.** Claude Code requests up to `32000` output tokens by
+     default; cap it with `CLAUDE_CODE_MAX_OUTPUT_TOKENS` (8192).
+   - **(b) Input floor.** ~24.5K tokens before any conversation (system prompt + the 12
+     `vo_*` tool schemas).
+   - **(c) Tool results accumulate.** THE one that bit us (2026-07-02): a long agent loop
+     stacked several `vo_tap_query` results and hit `57345 input + 8192 output = 65537`,
+     one token over a 65536 window. **Two independent fixes, both now in place:**
+     - **Bigger window** — raise `--max-model-len` (see Part 2; 131072 if the checkpoint's
+       `max_position_embeddings` allows). The Blackwell box has ample KV headroom.
+     - **Smaller tool results** — the MCP server spills tabular results to the Parquet
+       Resource tier (a tiny `resource_uri` + 50-row preview) past `STABLE_INLINE_ROW_LIMIT`
+       (default **200 rows**) / `STABLE_INLINE_BYTE_LIMIT` (default **48 KB**). These
+       defaults are sized for a 64K backend; a single inline result can no longer overflow
+       the window. Raise them for large-context models.
 5. **The Qwen3 `<think>` tool-loss footgun (vLLM #39056) — and the mitigation we use.**
    With `--reasoning-parser qwen3` + `--tool-call-parser qwen3_coder`, a `<tool_call>`
    emitted inside `<think>` is pulled into the *reasoning* field and never reaches the
@@ -198,16 +221,54 @@ grep -c "CallToolRequest" ~/sbx/mcp.log            # ≥1 = tool actually fired
 **Done:** local model (Qwen3.5-122B-A10B) hosted on dlai01 and consumed by the persona
 + MCP, end to end. All on loopback / inside dlai01.
 
+**Done (2026-07-02) — vLLM exposed off-box, validated from a laptop AND from the
+dockerized frontend.** The topology differs from the plan below: instead of a
+self-hosted TLS proxy on `dlai01.csdc.noirlab.edu:443` with a `vllm --api-key` bearer,
+**Chadd stood up an nginx proxy** that terminates TLS + HTTP Basic auth and forwards to
+vLLM:
+
+```
+laptop / frontend container ──HTTPS+Basic──► https://datalab.noirlab.edu/astro-archives-mcp
+                                             └─ nginx (TLS, Basic auth) ─► dlai01:8002 ─► vLLM (keyless)
+```
+
+- vLLM is relaunched with **`-p 8002:8000`** (0.0.0.0 bind, not loopback) so the off-box
+  nginx can reach it. It runs **keyless** — nginx does the auth.
+- **Client config (bare curl / laptop):** send `Authorization: Basic <base64 user:pass>`
+  (creds DM'd by Chadd). A 200 + `{"type":"message",…}` envelope = the full chain works.
+- **Claude Code / persona config — the load-bearing gotcha:** carry the Basic credential
+  in **`ANTHROPIC_CUSTOM_HEADERS`**, and **do NOT set `ANTHROPIC_AUTH_TOKEN`**. Setting
+  the token makes Claude Code send a competing `Authorization: Bearer` header → nginx
+  401 (even though bare curl with only the Basic header returns 200). Confirmed inside
+  `frontend-lab-1`: with AUTH_TOKEN set → 401; unset → the persona resolves M51 via the
+  MCP tool through vLLM.
+- **Also set `ANTHROPIC_API_KEY=dummy`** (rides `x-api-key`, a different header — no
+  collision with the Basic `Authorization`, and the keyless vLLM ignores it). Without a
+  credential Claude Code natively recognizes, it intermittently declares *"You're not
+  authenticated / run claude /login"* mid-session even though the CUSTOM_HEADERS Basic auth
+  is working. The dummy key keeps Claude Code's login-state check satisfied.
+- ⚠️ **Note the path name:** the proxy path is `/astro-archives-mcp` but it fronts the
+  **LLM**, not the MCP server (a naming coincidence). Worth asking Chadd to rename.
+
+**Done (2026-07-02) — dockerized frontend validated against this backend.** The
+`deploy/frontend/` stack (MCP + Jupyter AI persona), **chat mode**, reaches the proxy and
+resolves M51 end-to-end. Config lives in `deploy/frontend/.env(.example)`. Because the
+proxy is public TLS, the exact same `.env` works from a Data Lab server unchanged.
+
+**Done (2026-07-02) — context-overflow fix.** A `vo_tap_query`-heavy agent loop overflowed
+the 65536 window (`57345 + 8192 = 65537`), surfacing as a spurious "You're not authenticated
+with Claude" (Gotcha 4c). Fixed on both sides: `--max-model-len` raised to 131072, and the
+MCP server now spills large tabular results to the Parquet Resource tier at much lower inline
+caps (`STABLE_INLINE_ROW_LIMIT=200`, `STABLE_INLINE_BYTE_LIMIT=48 KB`).
+
 **Next (not yet started):**
-- **Expose dlai01's vLLM off-box via authenticated TLS on 443.** External traffic to
-  dlai01 is being opened by IT on **443 only** (no port 80). Requires a TLS-terminating
-  reverse proxy (Caddy/nginx) in front of vLLM **and a bearer token** (`vllm --api-key`,
-  client sends it as `ANTHROPIC_AUTH_TOKEN`) — an open internet LLM endpoint must not be
-  unauthenticated. Cert for `dlai01.csdc.noirlab.edu` (Let's Encrypt once 443 is
-  reachable, or IT-provided).
-- **Dockerized frontend as a gp13 stand-in** (run locally first): MCP server + Jupyter AI
-  + persona, persona pointed at `https://dlai01.csdc.noirlab.edu` + token. Dockerized so
-  it lifts to gp13 unchanged.
+- **Harden the exposed endpoint.** vLLM now binds `0.0.0.0:8002` **keyless** — anything
+  that can reach `dlai01:8002` directly bypasses nginx's Basic auth. Confirm with Randy
+  that the firewall restricts 8002 to the proxy host only; if it's broader, add
+  `vllm --api-key <secret>` and have Chadd inject it upstream.
+- **Persistence.** The `docker run` won't survive a reboot (and dlai01 reboots
+  periodically). Wrap vLLM in a `restart: unless-stopped` compose service or systemd unit.
+- **`hub` mode against vLLM** — re-validate JupyterHub + DockerSpawner with the same `.env`.
 - **Thinking-off** cleanup (Gotcha 5) for clean chat UX.
 - **Concurrency load test** at agentic context lengths (KV cache is the limiter;
   prefix-caching the ~24.5K static tool-schema prefix is the big lever) to size gp13.
@@ -225,7 +286,7 @@ docker rm -f vllm 2>/dev/null
 docker run -d --name vllm --gpus all --ipc=host \
   -v /mlhome/dgause/hf:/root/.cache/huggingface -p 127.0.0.1:8001:8000 \
   vllm/vllm-openai:latest --model Qwen/Qwen3.5-122B-A10B-FP8 \
-  --tensor-parallel-size 4 --enable-auto-tool-choice --tool-call-parser qwen3_coder --max-model-len 65536
+  --tensor-parallel-size 4 --enable-auto-tool-choice --tool-call-parser qwen3_coder --max-model-len 131072
 
 # 3. Persona → local model, validate
 export ANTHROPIC_BASE_URL=http://127.0.0.1:8001 ANTHROPIC_AUTH_TOKEN=dummy CLAUDE_CODE_MAX_OUTPUT_TOKENS=8192
