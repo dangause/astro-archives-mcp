@@ -231,7 +231,13 @@ def vo_tap_query(
             # archive holds the bytes and we can hand back a fetch URL. The first
             # (discarded) execution is the cost of not knowing the size upfront.
             return _auto_promote(endpoint=endpoint, adql=adql, maxrec=maxrec)
-        return shape_inline_table(table, archive=archive_label(endpoint), maxrec=maxrec)
+        return attach_cache_fields(
+            shape_inline_table(table, archive=archive_label(endpoint), maxrec=maxrec),
+            fingerprint=query_fingerprint("tap", endpoint, adql),
+            tool="tap",
+            endpoint=endpoint,
+            query=adql,
+        )
 
 
 vo_tap_query.__doc__ = (vo_tap_query.__doc__ or "") + _ERROR_DOCSTRING
