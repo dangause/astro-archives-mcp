@@ -98,3 +98,44 @@ def test_attach_cache_fields_reads_envelope_state():
     assert out["query_fingerprint"] == "abc123def456"
     assert "True" in out["save_recipe"]["code"]  # truncated flag propagated
     assert "alma" in out["save_recipe"]["code"]
+
+
+def test_attach_cache_fields_sets_next_steps_when_none():
+    """Inline envelopes start with next_steps=None; attach must create the list
+    so weak models (which ignore nested save_recipe.instructions) still see
+    an imperative save action at the top level."""
+    envelope = {"archive": "alma", "truncated": False, "rows": [], "next_steps": None}
+    out = attach_cache_fields(
+        envelope,
+        fingerprint="abc123def456",
+        tool="cone",
+        endpoint="https://example.org/scs",
+        query="ra=1.000000 dec=2.000000 radius=0.100000",
+    )
+    assert isinstance(out["next_steps"], list)
+    last = out["next_steps"][-1]
+    assert "save_recipe.code" in last
+    assert "abc123def456" in last
+
+
+def test_attach_cache_fields_appends_to_existing_next_steps():
+    """The async shape_result_url envelope already has a next_steps list —
+    attach must append, not clobber, preserving the existing items."""
+    existing_step = "Execute fetch_recipe.code with your code-execution tool."
+    envelope = {
+        "archive": "alma",
+        "truncated": False,
+        "rows": [],
+        "next_steps": [existing_step],
+    }
+    out = attach_cache_fields(
+        envelope,
+        fingerprint="abc123def456",
+        tool="tap",
+        endpoint="https://example.org/tap",
+        query="SELECT 1",
+    )
+    assert out["next_steps"][0] == existing_step  # preserved
+    last = out["next_steps"][-1]
+    assert "save_recipe.code" in last
+    assert "abc123def456" in last

@@ -44,6 +44,8 @@ def test_success_envelopes_carry_cache_fields(monkeypatch):
         recipe = env["save_recipe"]
         assert set(recipe) == {"path", "instructions", "code"}
         assert recipe["path"] == f"manna_cache/{env['query_fingerprint']}.csv"
+        assert isinstance(env["next_steps"], list)
+        assert any("save_recipe.code" in step for step in env["next_steps"])
 
 
 def test_error_payloads_never_carry_cache_fields(monkeypatch):

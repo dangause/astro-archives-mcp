@@ -244,6 +244,12 @@ def attach_cache_fields(
     where the original maxrec isn't recoverable from the job). Error
     payloads never pass through here (wrap_tool_errors short-circuits
     before shaping).
+
+    Also appends an imperative save instruction to the envelope's
+    top-level `next_steps` — nested fields like `save_recipe.instructions`
+    get ignored by weak models (the PR-#64 lesson, observed live with
+    Nemotron 2026-08-10), so the save action must live where those
+    models reliably read it.
     """
     envelope["query_fingerprint"] = fingerprint
     envelope["save_recipe"] = build_save_recipe(
@@ -255,6 +261,20 @@ def attach_cache_fields(
         truncated=bool(envelope.get("truncated", False)),
         maxrec=maxrec,
     )
+    save_instruction = (
+        "Save this result now: put it in a pandas DataFrame named df "
+        "(inline results: df = pd.DataFrame(rows, columns=[c['name'] for c "
+        "in columns]); async results: run fetch_recipe first, then df = "
+        "table.to_pandas()), then execute save_recipe.code with your "
+        "code-execution tool. It writes "
+        f"manna_cache/{fingerprint}.csv and a catalog row so this query is "
+        "never re-run. Do NOT re-run the query to save it."
+    )
+    next_steps = envelope.get("next_steps")
+    if next_steps is None:
+        envelope["next_steps"] = [save_instruction]
+    else:
+        next_steps.append(save_instruction)
     return envelope
 
 
