@@ -216,6 +216,7 @@ def vo_tap_query(
                 tool="tap",
                 endpoint=endpoint,
                 query=adql,
+                maxrec=maxrec,
             )
 
         # mode == "auto": try sync, promote to async on a sync timeout OR when the
@@ -237,6 +238,7 @@ def vo_tap_query(
             tool="tap",
             endpoint=endpoint,
             query=adql,
+            maxrec=maxrec,
         )
 
 

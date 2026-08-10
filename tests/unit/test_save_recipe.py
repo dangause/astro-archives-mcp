@@ -41,7 +41,7 @@ def test_recipe_executes_and_catalog_roundtrips(tmp_path, monkeypatch):
     pd = pytest.importorskip("pandas")
     monkeypatch.chdir(tmp_path)
     df = pd.DataFrame({"ra": [187.7, 12.3], "dec": [12.39, -4.5]})
-    code = _recipe()["code"]
+    code = _recipe(maxrec=5000)["code"]
 
     exec(code, {"df": df})  # first save: creates dir, CSV, catalog with header
     exec(code, {"df": df})  # second save: appends, no second header
@@ -60,13 +60,29 @@ def test_recipe_executes_and_catalog_roundtrips(tmp_path, monkeypatch):
         "target",
         "n_rows",
         "truncated",
+        "maxrec",
         "csv_path",
         "saved_at",
     ]
     assert len(rows) == 3  # header + two appends
     assert rows[1][4] == NASTY_QUERY  # quoting round-trips the ADQL intact
     assert rows[1][6] == "2"  # n_rows == len(df)
-    assert rows[1][8] == "manna_cache/abc123def456.csv"
+    assert rows[1][7] == "False"  # truncated flag
+    assert rows[1][8] == "5000"  # maxrec recorded when provided
+    assert rows[1][9] == "manna_cache/abc123def456.csv"
+
+
+def test_recipe_catalog_records_empty_maxrec_when_unknown(tmp_path, monkeypatch):
+    pd = pytest.importorskip("pandas")
+    monkeypatch.chdir(tmp_path)
+    df = pd.DataFrame({"ra": [187.7], "dec": [12.39]})
+    code = _recipe()["code"]  # no maxrec override -> defaults to None
+
+    exec(code, {"df": df})
+
+    with open(tmp_path / "manna_cache" / "catalog.csv", newline="") as f:
+        rows = list(csv.reader(f))
+    assert rows[1][8] == ""  # maxrec unknown -> empty string, not "None"
 
 
 def test_attach_cache_fields_reads_envelope_state():

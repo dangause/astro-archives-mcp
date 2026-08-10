@@ -106,6 +106,7 @@ def vo_sia_search(
         tool="sia",
         endpoint=endpoint,
         query=identity,
+        maxrec=maxrec,
     )
 
 

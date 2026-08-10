@@ -70,6 +70,7 @@ def vo_cone_search(
         tool="cone",
         endpoint=endpoint,
         query=identity,
+        maxrec=maxrec,
     )
 
 

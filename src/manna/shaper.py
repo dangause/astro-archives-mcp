@@ -171,6 +171,7 @@ def build_save_recipe(
     archive: str,
     query: str,
     truncated: bool,
+    maxrec: int | None = None,
 ) -> dict[str, Any]:
     """Client-side recipe for persisting a query result as a CSV + catalog row.
 
@@ -186,9 +187,14 @@ def build_save_recipe(
     `target` column is left empty for the agent to fill when it resolved a
     target name this conversation; `saved_at` is stamped client-side at
     execution time. The embedded values use !r so the generated snippet
-    stays valid Python for any query text.
+    stays valid Python for any query text. `maxrec` records the upstream
+    row cap that was in effect (or '' when unknown, e.g. from
+    vo_tap_results) — without it, a result capped upstream catalogs as
+    truncated=False with no record of the cap, and a capped CSV can be
+    mistaken for the full result.
     """
     csv_path = f"manna_cache/{fingerprint}.csv"
+    maxrec_value = maxrec if maxrec is not None else ""
     code = (
         "import csv, os\n"
         "from datetime import datetime, timezone\n"
@@ -199,9 +205,10 @@ def build_save_recipe(
         "    _w = csv.writer(_f, quoting=csv.QUOTE_ALL)\n"
         "    if _header_needed:\n"
         "        _w.writerow(['fingerprint', 'tool', 'endpoint', 'archive', 'query',\n"
-        "                     'target', 'n_rows', 'truncated', 'csv_path', 'saved_at'])\n"
+        "                     'target', 'n_rows', 'truncated', 'maxrec', 'csv_path',\n"
+        "                     'saved_at'])\n"
         f"    _w.writerow([{fingerprint!r}, {tool!r}, {endpoint!r}, {archive!r}, {query!r},\n"
-        f"                 '', len(df), {truncated!r}, {csv_path!r},\n"
+        f"                 '', len(df), {truncated!r}, {maxrec_value!r}, {csv_path!r},\n"
         "                 datetime.now(timezone.utc).isoformat()])"
     )
     return {
@@ -224,6 +231,7 @@ def attach_cache_fields(
     tool: str,
     endpoint: str,
     query: str,
+    maxrec: int | None = None,
 ) -> dict[str, Any]:
     """Add query_fingerprint + save_recipe to a success envelope (mutates).
 
@@ -231,8 +239,11 @@ def attach_cache_fields(
     `archive` and `truncated` are read off the envelope so the recipe's
     catalog row always matches what the envelope claims — a truncated
     inline result is recorded as truncated and never mistaken for the
-    full result by the client-side cache. Error payloads never pass
-    through here (wrap_tool_errors short-circuits before shaping).
+    full result by the client-side cache. `maxrec` is the upstream row
+    cap in effect for this query (None when unknown, e.g. vo_tap_results,
+    where the original maxrec isn't recoverable from the job). Error
+    payloads never pass through here (wrap_tool_errors short-circuits
+    before shaping).
     """
     envelope["query_fingerprint"] = fingerprint
     envelope["save_recipe"] = build_save_recipe(
@@ -242,6 +253,7 @@ def attach_cache_fields(
         archive=str(envelope.get("archive") or ""),
         query=query,
         truncated=bool(envelope.get("truncated", False)),
+        maxrec=maxrec,
     )
     return envelope
 
