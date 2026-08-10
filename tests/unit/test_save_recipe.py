@@ -1,0 +1,84 @@
+"""The save_recipe is executed verbatim in the user's notebook kernel, so
+these tests don't just inspect the string — they exec it against a real
+DataFrame and read the catalog back, proving the quoting survives ADQL."""
+
+import csv
+
+import pytest
+
+from manna.shaper import attach_cache_fields, build_save_recipe
+
+NASTY_QUERY = "SELECT ra, dec FROM t WHERE name = 'M87, \"the big one\"'\n  AND x > 1"
+
+
+def _recipe(**overrides):
+    kwargs = {
+        "fingerprint": "abc123def456",
+        "tool": "tap",
+        "endpoint": "https://example.org/tap",
+        "archive": "alma",
+        "query": NASTY_QUERY,
+        "truncated": False,
+    }
+    kwargs.update(overrides)
+    return build_save_recipe(**kwargs)
+
+
+def test_recipe_shape_and_path():
+    r = _recipe()
+    assert r["path"] == "manna_cache/abc123def456.csv"
+    assert "re-run" in r["instructions"] or "re-submit" in r["instructions"]
+    assert "QUOTE_ALL" in r["code"]
+    assert "manna_cache/catalog.csv" in r["code"]
+
+
+def test_recipe_code_is_valid_python_despite_nasty_query():
+    # Embedded quotes/commas/newlines in the ADQL must not break the snippet.
+    compile(_recipe()["code"], "<save_recipe>", "exec")
+
+
+def test_recipe_executes_and_catalog_roundtrips(tmp_path, monkeypatch):
+    pd = pytest.importorskip("pandas")
+    monkeypatch.chdir(tmp_path)
+    df = pd.DataFrame({"ra": [187.7, 12.3], "dec": [12.39, -4.5]})
+    code = _recipe()["code"]
+
+    exec(code, {"df": df})  # first save: creates dir, CSV, catalog with header
+    exec(code, {"df": df})  # second save: appends, no second header
+
+    saved = pd.read_csv(tmp_path / "manna_cache" / "abc123def456.csv")
+    assert len(saved) == 2
+
+    with open(tmp_path / "manna_cache" / "catalog.csv", newline="") as f:
+        rows = list(csv.reader(f))
+    assert rows[0] == [
+        "fingerprint",
+        "tool",
+        "endpoint",
+        "archive",
+        "query",
+        "target",
+        "n_rows",
+        "truncated",
+        "csv_path",
+        "saved_at",
+    ]
+    assert len(rows) == 3  # header + two appends
+    assert rows[1][4] == NASTY_QUERY  # quoting round-trips the ADQL intact
+    assert rows[1][6] == "2"  # n_rows == len(df)
+    assert rows[1][8] == "manna_cache/abc123def456.csv"
+
+
+def test_attach_cache_fields_reads_envelope_state():
+    envelope = {"archive": "alma", "truncated": True, "rows": []}
+    out = attach_cache_fields(
+        envelope,
+        fingerprint="abc123def456",
+        tool="cone",
+        endpoint="https://example.org/scs",
+        query="ra=1.000000 dec=2.000000 radius=0.100000",
+    )
+    assert out is envelope  # mutate-and-return
+    assert out["query_fingerprint"] == "abc123def456"
+    assert "True" in out["save_recipe"]["code"]  # truncated flag propagated
+    assert "alma" in out["save_recipe"]["code"]

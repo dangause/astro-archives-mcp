@@ -163,6 +163,89 @@ def build_fetch_recipe(job_url: str, result_url: str | None = None) -> dict[str,
     return recipe
 
 
+def build_save_recipe(
+    *,
+    fingerprint: str,
+    tool: str,
+    endpoint: str,
+    archive: str,
+    query: str,
+    truncated: bool,
+) -> dict[str, Any]:
+    """Client-side recipe for persisting a query result as a CSV + catalog row.
+
+    Same philosophy as build_fetch_recipe: the server never touches the
+    user's filesystem — it hands the LLM a self-contained snippet to run in
+    the user's own Python environment. The snippet assumes the result is in
+    a pandas DataFrame named `df` (built from the inline `rows` or loaded
+    via fetch_recipe), writes manna_cache/<fingerprint>.csv, and appends a
+    metadata row to manna_cache/catalog.csv.
+
+    Catalog appends go through csv.QUOTE_ALL — ADQL is full of commas and
+    quotes, and a hand-concatenated row would corrupt the catalog. The
+    `target` column is left empty for the agent to fill when it resolved a
+    target name this conversation; `saved_at` is stamped client-side at
+    execution time. The embedded values use !r so the generated snippet
+    stays valid Python for any query text.
+    """
+    csv_path = f"manna_cache/{fingerprint}.csv"
+    code = (
+        "import csv, os\n"
+        "from datetime import datetime, timezone\n"
+        "os.makedirs('manna_cache', exist_ok=True)\n"
+        f"df.to_csv({csv_path!r}, index=False)\n"
+        "_header_needed = not os.path.exists('manna_cache/catalog.csv')\n"
+        "with open('manna_cache/catalog.csv', 'a', newline='') as _f:\n"
+        "    _w = csv.writer(_f, quoting=csv.QUOTE_ALL)\n"
+        "    if _header_needed:\n"
+        "        _w.writerow(['fingerprint', 'tool', 'endpoint', 'archive', 'query',\n"
+        "                     'target', 'n_rows', 'truncated', 'csv_path', 'saved_at'])\n"
+        f"    _w.writerow([{fingerprint!r}, {tool!r}, {endpoint!r}, {archive!r}, {query!r},\n"
+        f"                 '', len(df), {truncated!r}, {csv_path!r},\n"
+        "                 datetime.now(timezone.utc).isoformat()])"
+    )
+    return {
+        "path": csv_path,
+        "instructions": (
+            "After the result is in a pandas DataFrame named `df` (build it "
+            "from the inline rows, or via fetch_recipe for async results), "
+            "execute save_recipe.code with your code-execution tool. It saves "
+            "the result CSV and updates manna_cache/catalog.csv so this query "
+            "is not re-run later. Do NOT re-run the query just to save it."
+        ),
+        "code": code,
+    }
+
+
+def attach_cache_fields(
+    envelope: dict[str, Any],
+    *,
+    fingerprint: str,
+    tool: str,
+    endpoint: str,
+    query: str,
+) -> dict[str, Any]:
+    """Add query_fingerprint + save_recipe to a success envelope (mutates).
+
+    Called by the primitive query tools (TAP/cone/SIA) after shaping.
+    `archive` and `truncated` are read off the envelope so the recipe's
+    catalog row always matches what the envelope claims — a truncated
+    inline result is recorded as truncated and never mistaken for the
+    full result by the client-side cache. Error payloads never pass
+    through here (wrap_tool_errors short-circuits before shaping).
+    """
+    envelope["query_fingerprint"] = fingerprint
+    envelope["save_recipe"] = build_save_recipe(
+        fingerprint=fingerprint,
+        tool=tool,
+        endpoint=endpoint,
+        archive=str(envelope.get("archive") or ""),
+        query=query,
+        truncated=bool(envelope.get("truncated", False)),
+    )
+    return envelope
+
+
 def shape_result_url(
     *,
     job_url: str,
