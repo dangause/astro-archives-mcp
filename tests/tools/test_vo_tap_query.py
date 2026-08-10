@@ -164,6 +164,19 @@ def test_inline_envelope_carries_cache_fields(monkeypatch):
     assert "catalog.csv" in out["save_recipe"]["code"]
 
 
+def test_auto_mode_fast_path_also_carries_cache_fields(monkeypatch):
+    """mode='auto' has its own inline return distinct from mode='sync' — a
+    literal-string edit that only matches one of the two returns (they sit
+    at different indentation levels) would wire one and silently miss the
+    other. Regression guard for exactly that."""
+    from manna.tools import tap as tap_tools
+
+    monkeypatch.setattr(tap_tools, "_get_tap", lambda: _FakeTapInline())
+    out = tap_tools.vo_tap_query(endpoint=_EP, adql="SELECT ra, dec FROM t", mode="auto")
+    assert out["query_fingerprint"] == _qfp("tap", _EP, "SELECT ra, dec FROM t")
+    assert "save_recipe" in out
+
+
 class _FakeCompletedJob:
     phase = "COMPLETED"
     query = "SELECT ra FROM big_table"
