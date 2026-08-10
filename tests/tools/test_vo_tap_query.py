@@ -177,6 +177,21 @@ def test_auto_mode_fast_path_also_carries_cache_fields(monkeypatch):
     assert "save_recipe" in out
 
 
+def test_endpoint_from_job_url_standard_uws_layout():
+    from manna.tools.tap import _endpoint_from_job_url
+
+    assert (
+        _endpoint_from_job_url("https://example.org/tap/async/1234567") == "https://example.org/tap"
+    )
+
+
+def test_endpoint_from_job_url_without_async_segment_returns_unchanged():
+    from manna.tools.tap import _endpoint_from_job_url
+
+    job_url = "https://example.org/tap/weird-nonstandard-path"
+    assert _endpoint_from_job_url(job_url) == job_url
+
+
 class _FakeCompletedJob:
     phase = "COMPLETED"
     query = "SELECT ra FROM big_table"

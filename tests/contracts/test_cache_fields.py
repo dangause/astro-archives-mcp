@@ -61,6 +61,31 @@ def test_error_payloads_never_carry_cache_fields(monkeypatch):
         assert "save_recipe" not in p
 
 
+class _FakeErrorJob:
+    phase = "ERROR"
+
+    class error_summary:  # noqa: N801 — mirrors pyvo's attribute-object shape
+        message = "upstream query failed"
+
+
+class _FakeTapWithErrorJob:
+    def load_job(self, job_url):
+        return _FakeErrorJob()
+
+
+def test_async_results_error_payload_never_carries_cache_fields(monkeypatch):
+    """vo_tap_results on a job that ended in ERROR must surface the standard
+    error envelope (error_class + retry_strategy) and must NOT carry
+    query_fingerprint/save_recipe — those are attached only on the success
+    path, after shape_result_url, which this path never reaches."""
+    monkeypatch.setattr(tap_tools, "_get_tap", lambda: _FakeTapWithErrorJob())
+    payload = tap_tools.vo_tap_results(job_url="https://example.org/tap/async/99")
+    assert "error_class" in payload
+    assert "retry_strategy" in payload
+    assert "query_fingerprint" not in payload
+    assert "save_recipe" not in payload
+
+
 def test_recipe_text_keeps_load_bearing_phrases():
     r = build_save_recipe(
         fingerprint="abc123def456",
