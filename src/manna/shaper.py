@@ -209,32 +209,38 @@ def build_save_recipe(
     row cap that was in effect (or '' when unknown, e.g. from
     vo_tap_results) — without it, a result capped upstream catalogs as
     truncated=False with no record of the cap, and a capped CSV can be
-    mistaken for the full result. The catalog append is idempotent per
-    fingerprint — rerunning the save cell, or refreshing the same query
-    later, replaces that row in place instead of duplicating it (duplicate
-    rows observed live 2026-08-11).
+    mistaken for the full result.
+
+    The catalog append is deliberately append-only, not idempotent. Models
+    retype this snippet by hand into notebook cells rather than executing
+    it verbatim (observed live), and the previous read-filter-rewrite
+    version was long enough that retyping corrupted it in roughly a third
+    of runs — a dropped header line in one, a SyntaxError in another
+    (observed live 2026-08-11). Every physical line is a retype hazard, so
+    this version just appends: it can produce duplicate rows for the same
+    fingerprint (rerunning the save cell, or refreshing the same query
+    later). That's accepted here — READERS must dedupe by taking the
+    newest (last) row per fingerprint; that rule lives in the deployment
+    persona, not in this snippet.
     """
     csv_path = f"manna_cache/{fingerprint}.csv"
     maxrec_value = maxrec if maxrec is not None else ""
+    header = (
+        "['fingerprint', 'tool', 'endpoint', 'archive', 'query', 'target', "
+        "'n_rows', 'truncated', 'maxrec', 'csv_path', 'saved_at']"
+    )
     code = (
         "import csv, os\n"
         "from datetime import datetime, timezone\n"
         "os.makedirs('manna_cache', exist_ok=True)\n"
         f"df.to_csv({csv_path!r}, index=False)\n"
-        "_kept = []\n"
-        "if os.path.exists('manna_cache/catalog.csv'):\n"
-        "    with open('manna_cache/catalog.csv', newline='') as _f:\n"
-        "        _existing = list(csv.reader(_f))\n"
-        f"    _kept = [_r for _r in _existing[1:] if _r and _r[0] != {fingerprint!r}]\n"
-        "with open('manna_cache/catalog.csv', 'w', newline='') as _f:\n"
+        "_new = not os.path.exists('manna_cache/catalog.csv')\n"
+        "with open('manna_cache/catalog.csv', 'a', newline='') as _f:\n"
         "    _w = csv.writer(_f, quoting=csv.QUOTE_ALL)\n"
-        "    _w.writerow(['fingerprint', 'tool', 'endpoint', 'archive', 'query',\n"
-        "                 'target', 'n_rows', 'truncated', 'maxrec', 'csv_path',\n"
-        "                 'saved_at'])\n"
-        "    _w.writerows(_kept)\n"
-        f"    _w.writerow([{fingerprint!r}, {tool!r}, {endpoint!r}, {archive!r}, {query!r},\n"
-        f"                 '', len(df), {truncated!r}, {maxrec_value!r}, {csv_path!r},\n"
-        "                 datetime.now(timezone.utc).isoformat()])"
+        f"    if _new: _w.writerow({header})\n"
+        f"    _w.writerow([{fingerprint!r}, {tool!r}, {endpoint!r}, {archive!r}, "
+        f"{query!r}, '', len(df), {truncated!r}, {maxrec_value!r}, {csv_path!r}, "
+        "datetime.now(timezone.utc).isoformat()])"
     )
     return {
         "path": csv_path,
