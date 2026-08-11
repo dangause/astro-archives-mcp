@@ -44,7 +44,7 @@ def test_recipe_executes_and_catalog_roundtrips(tmp_path, monkeypatch):
     code = _recipe(maxrec=5000)["code"]
 
     exec(code, {"df": df})  # first save: creates dir, CSV, catalog with header
-    exec(code, {"df": df})  # second save: appends, no second header
+    exec(code, {"df": df})  # second save: same fingerprint replaces the row
 
     saved = pd.read_csv(tmp_path / "manna_cache" / "abc123def456.csv")
     assert len(saved) == 2
@@ -64,12 +64,41 @@ def test_recipe_executes_and_catalog_roundtrips(tmp_path, monkeypatch):
         "csv_path",
         "saved_at",
     ]
-    assert len(rows) == 3  # header + two appends
+    assert len(rows) == 2  # header + one row — rerun replaced, not duplicated
     assert rows[1][4] == NASTY_QUERY  # quoting round-trips the ADQL intact
     assert rows[1][6] == "2"  # n_rows == len(df)
     assert rows[1][7] == "False"  # truncated flag
     assert rows[1][8] == "5000"  # maxrec recorded when provided
     assert rows[1][9] == "manna_cache/abc123def456.csv"
+
+
+def test_recipe_rerun_replaces_row_across_other_fingerprints(tmp_path, monkeypatch):
+    """Saving A, then B (different fingerprint), then A again must leave
+    exactly one row per fingerprint — B's row untouched, A's row refreshed
+    (not appended a second time) and positioned after B's since it was
+    rewritten last."""
+    pd = pytest.importorskip("pandas")
+    monkeypatch.chdir(tmp_path)
+    df = pd.DataFrame({"ra": [187.7], "dec": [12.39]})
+
+    code_a = _recipe(fingerprint="aaa111", query="SELECT a FROM t")["code"]
+    code_b = _recipe(fingerprint="bbb222", query="SELECT b FROM t")["code"]
+
+    exec(code_a, {"df": df})
+    exec(code_b, {"df": df})
+    exec(code_a, {"df": df})  # rerun/refresh of A
+
+    with open(tmp_path / "manna_cache" / "catalog.csv", newline="") as f:
+        rows = list(csv.reader(f))
+
+    assert len(rows) == 3  # header + one row per fingerprint
+    body = rows[1:]
+    fingerprints = [r[0] for r in body]
+    assert sorted(fingerprints) == ["aaa111", "bbb222"]
+    assert fingerprints.count("aaa111") == 1
+    assert fingerprints.count("bbb222") == 1
+    # A's surviving row is the one rewritten last (appended after B's kept row).
+    assert body[-1][0] == "aaa111"
 
 
 def test_recipe_catalog_records_empty_maxrec_when_unknown(tmp_path, monkeypatch):
