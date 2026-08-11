@@ -57,6 +57,19 @@ def test_tap_success_envelope_carries_load_recipe(monkeypatch):
     assert set(out["load_recipe"]) == {"module", "code"}
 
 
+def test_tap_success_envelope_load_recipe_is_fused_with_save(monkeypatch):
+    """Saving must be a side effect of load_recipe.code, not a separate cell
+    the model can skip (live runs: models ran load_recipe + plotted but
+    never ran the standalone save cell). One cell does both."""
+    monkeypatch.setattr(tap_tools, "_get_tap", lambda: _FakeOk())
+    out = tap_tools.vo_tap_query(endpoint=_EP, adql="SELECT 1", mode="sync")
+    code = out["load_recipe"]["code"]
+    assert "manna_cache/catalog.csv" in code
+    assert "csv.QUOTE_ALL" in code
+    assert "run_sync" in code
+    assert any("ONE notebook cell" in step for step in out["next_steps"])
+
+
 def test_error_payloads_never_carry_cache_fields(monkeypatch):
     monkeypatch.setattr(tap_tools, "_get_tap", lambda: _FakeErr())
     monkeypatch.setattr(cone_tools, "_get_cone", lambda: _FakeErr())

@@ -174,9 +174,14 @@ def test_build_load_recipe_shape_and_content():
     assert "to_pandas" in r["code"]
 
 
-def test_attach_cache_fields_with_load_recipe_sets_envelope_field():
+def test_attach_cache_fields_fuses_save_into_load_recipe_code():
+    """Live runs showed models running load_recipe + plotting but skipping the
+    standalone save cell entirely (~50% observed). Fix: saving is folded into
+    load_recipe.code as a side effect of the transport cell the model must
+    run anyway, rather than a separate cell it can drop."""
     envelope = {"archive": "alma", "truncated": False, "rows": [], "next_steps": None}
     load_recipe = build_load_recipe(endpoint="https://example.org/tap", adql="SELECT 1")
+    original_load_code = load_recipe["code"]
     out = attach_cache_fields(
         envelope,
         fingerprint="abc123def456",
@@ -185,10 +190,28 @@ def test_attach_cache_fields_with_load_recipe_sets_envelope_field():
         query="SELECT 1",
         load_recipe=load_recipe,
     )
-    assert out["load_recipe"] == load_recipe
+    # Composition: load lines, then the exact save_recipe code, joined by \n —
+    # reused verbatim from save_recipe, not a re-derived duplicate string.
+    assert out["load_recipe"]["code"] == original_load_code + "\n" + out["save_recipe"]["code"]
+    assert out["load_recipe"]["module"] == load_recipe["module"]
+    compile(out["load_recipe"]["code"], "<fused load+save recipe>", "exec")
+    assert "run_sync" in out["load_recipe"]["code"]
+    assert "to_pandas" in out["load_recipe"]["code"]
+    assert "manna_cache/catalog.csv" in out["load_recipe"]["code"]
+    assert "csv.QUOTE_ALL" in out["load_recipe"]["code"]
+
+    # The passed-in load_recipe dict itself must be untouched (still just the
+    # load lines) — attach must not mutate the caller's dict in place.
+    assert load_recipe["code"] == original_load_code
+
+    # save_recipe stays attached standalone too (async / cache-only re-save).
+    assert out["save_recipe"]["code"] != out["load_recipe"]["code"]
+
     last = out["next_steps"][-1]
     assert "load_recipe.code" in last
-    assert "Never paste" in last
+    assert "ONE notebook cell" in last
+    assert "fetch_recipe.code" in last
+    assert "save_recipe.code" in last
 
 
 def test_attach_cache_fields_without_load_recipe_has_no_key_and_old_wording():

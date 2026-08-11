@@ -284,6 +284,17 @@ def attach_cache_fields(
     async vo_tap_results path, where fetch_recipe already covers loading),
     no `load_recipe` key is added to the envelope.
 
+    When `load_recipe` is given, its `code` is fused with the save
+    snippet's code (load lines, then save lines, joined with a newline) —
+    saving becomes a side effect of running load_recipe.code, not a
+    separate cell the model can skip. Live runs showed models executing
+    load_recipe + plotting but never running the standalone save cell at
+    all (observed live, roughly half of runs) — a save action described as
+    a second, later step is easy to drop once the model has what it wanted
+    (`df`). `save_recipe` is still attached standalone too: async results
+    load via fetch_recipe (not load_recipe) and still need it, and it
+    covers a cache-only re-save of already-loaded data.
+
     Also appends an imperative save instruction to the envelope's
     top-level `next_steps` — nested fields like `save_recipe.instructions`
     get ignored by weak models (the PR-#64 lesson, observed live with
@@ -301,17 +312,13 @@ def attach_cache_fields(
         maxrec=maxrec,
     )
     if load_recipe is not None:
-        envelope["load_recipe"] = load_recipe
+        fused_code = load_recipe["code"] + "\n" + envelope["save_recipe"]["code"]
+        envelope["load_recipe"] = {**load_recipe, "code": fused_code}
         save_instruction = (
-            "Save this result now: first bind df — run load_recipe.code in "
-            "a notebook cell (it re-executes this query in your kernel and "
-            "sets `table` and `df`; for async results run fetch_recipe then "
-            "df = table.to_pandas(); only for tiny results may you build df "
-            "from the inline rows). Then execute save_recipe.code. It "
-            f"writes manna_cache/{fingerprint}.csv and a catalog row so "
-            "this query is never re-run. Never paste large row literals "
-            "into a cell — tool calls truncate. Do NOT re-run the query "
-            "via the MCP tool to save it."
+            "Run load_recipe.code in ONE notebook cell — it loads the data "
+            "as `table`/`df` AND saves the cache CSV + catalog row in the "
+            "same cell. For async results run fetch_recipe.code then "
+            "save_recipe.code."
         )
     else:
         save_instruction = (
