@@ -163,6 +163,24 @@ def build_fetch_recipe(job_url: str, result_url: str | None = None) -> dict[str,
     return recipe
 
 
+def build_load_recipe(*, endpoint: str, adql: str) -> dict[str, Any]:
+    """Client-side recipe re-executing a sync TAP query in the user's kernel.
+
+    Inline rows in the envelope are for the MODEL to read; getting them into
+    a notebook by pasting literals truncates tool calls past ~100 rows
+    (observed live 2026-08-11: edit_cell arrived with empty args). This
+    recipe is the size-independent transport — the kernel re-runs the same
+    sync query directly against the archive (constant-size cell, same trade
+    as auto-promote's discarded first execution) and binds `table` + `df`.
+    """
+    code = (
+        "import pyvo\n"
+        f"table = pyvo.dal.TAPService({endpoint!r}).run_sync({adql!r}).to_table()\n"
+        "df = table.to_pandas()"
+    )
+    return {"module": "pyvo", "code": code}
+
+
 def build_save_recipe(
     *,
     fingerprint: str,
@@ -239,8 +257,10 @@ def attach_cache_fields(
     endpoint: str,
     query: str,
     maxrec: int | None = None,
+    load_recipe: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Add query_fingerprint + save_recipe to a success envelope (mutates).
+    """Add query_fingerprint + save_recipe (+ optional load_recipe) to a
+    success envelope (mutates).
 
     Called by the primitive query tools (TAP/cone/SIA) after shaping.
     `archive` and `truncated` are read off the envelope so the recipe's
@@ -251,6 +271,12 @@ def attach_cache_fields(
     where the original maxrec isn't recoverable from the job). Error
     payloads never pass through here (wrap_tool_errors short-circuits
     before shaping).
+
+    `load_recipe` (from build_load_recipe) is passed by the inline sync TAP
+    paths only — it re-executes the query kernel-side so the client never
+    has to paste inline rows into a cell to build `df`. When None (the
+    async vo_tap_results path, where fetch_recipe already covers loading),
+    no `load_recipe` key is added to the envelope.
 
     Also appends an imperative save instruction to the envelope's
     top-level `next_steps` — nested fields like `save_recipe.instructions`
@@ -268,15 +294,29 @@ def attach_cache_fields(
         truncated=bool(envelope.get("truncated", False)),
         maxrec=maxrec,
     )
-    save_instruction = (
-        "Save this result now: put it in a pandas DataFrame named df "
-        "(inline results: df = pd.DataFrame(rows, columns=[c['name'] for c "
-        "in columns]); async results: run fetch_recipe first, then df = "
-        "table.to_pandas()), then execute save_recipe.code with your "
-        "code-execution tool. It writes "
-        f"manna_cache/{fingerprint}.csv and a catalog row so this query is "
-        "never re-run. Do NOT re-run the query to save it."
-    )
+    if load_recipe is not None:
+        envelope["load_recipe"] = load_recipe
+        save_instruction = (
+            "Save this result now: first bind df — run load_recipe.code in "
+            "a notebook cell (it re-executes this query in your kernel and "
+            "sets `table` and `df`; for async results run fetch_recipe then "
+            "df = table.to_pandas(); only for tiny results may you build df "
+            "from the inline rows). Then execute save_recipe.code. It "
+            f"writes manna_cache/{fingerprint}.csv and a catalog row so "
+            "this query is never re-run. Never paste large row literals "
+            "into a cell — tool calls truncate. Do NOT re-run the query "
+            "via the MCP tool to save it."
+        )
+    else:
+        save_instruction = (
+            "Save this result now: put it in a pandas DataFrame named df "
+            "(inline results: df = pd.DataFrame(rows, columns=[c['name'] for c "
+            "in columns]); async results: run fetch_recipe first, then df = "
+            "table.to_pandas()), then execute save_recipe.code with your "
+            "code-execution tool. It writes "
+            f"manna_cache/{fingerprint}.csv and a catalog row so this query is "
+            "never re-run. Do NOT re-run the query to save it."
+        )
     next_steps = envelope.get("next_steps")
     if next_steps is None:
         envelope["next_steps"] = [save_instruction]

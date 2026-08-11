@@ -6,7 +6,7 @@ import csv
 
 import pytest
 
-from manna.shaper import attach_cache_fields, build_save_recipe
+from manna.shaper import attach_cache_fields, build_load_recipe, build_save_recipe
 
 NASTY_QUERY = "SELECT ra, dec FROM t WHERE name = 'M87, \"the big one\"'\n  AND x > 1"
 
@@ -145,6 +145,55 @@ def test_attach_cache_fields_sets_next_steps_when_none():
     last = out["next_steps"][-1]
     assert "save_recipe.code" in last
     assert "abc123def456" in last
+
+
+NASTY_ADQL = "SELECT ra, dec FROM t WHERE name = 'M87, \"the big one\"'\n  AND x > 1"
+
+
+def test_build_load_recipe_code_compiles():
+    r = build_load_recipe(endpoint="https://example.org/tap", adql=NASTY_ADQL)
+    compile(r["code"], "<load_recipe>", "exec")
+
+
+def test_build_load_recipe_shape_and_content():
+    r = build_load_recipe(endpoint="https://example.org/tap", adql=NASTY_ADQL)
+    assert r["module"] == "pyvo"
+    assert repr("https://example.org/tap") in r["code"]
+    assert repr(NASTY_ADQL) in r["code"]
+    assert "run_sync" in r["code"]
+    assert "to_pandas" in r["code"]
+
+
+def test_attach_cache_fields_with_load_recipe_sets_envelope_field():
+    envelope = {"archive": "alma", "truncated": False, "rows": [], "next_steps": None}
+    load_recipe = build_load_recipe(endpoint="https://example.org/tap", adql="SELECT 1")
+    out = attach_cache_fields(
+        envelope,
+        fingerprint="abc123def456",
+        tool="tap",
+        endpoint="https://example.org/tap",
+        query="SELECT 1",
+        load_recipe=load_recipe,
+    )
+    assert out["load_recipe"] == load_recipe
+    last = out["next_steps"][-1]
+    assert "load_recipe.code" in last
+    assert "Never paste" in last
+
+
+def test_attach_cache_fields_without_load_recipe_has_no_key_and_old_wording():
+    envelope = {"archive": "alma", "truncated": False, "rows": [], "next_steps": None}
+    out = attach_cache_fields(
+        envelope,
+        fingerprint="abc123def456",
+        tool="tap",
+        endpoint="https://example.org/tap",
+        query="SELECT 1",
+    )
+    assert "load_recipe" not in out
+    last = out["next_steps"][-1]
+    assert "pandas DataFrame named df" in last
+    assert "load_recipe.code" not in last
 
 
 def test_attach_cache_fields_appends_to_existing_next_steps():
